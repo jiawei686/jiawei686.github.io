@@ -25,7 +25,7 @@
 
 	p.click_about = function(){
 		$("#navigation div:eq(3)").click(function(){
-			location.href = "jiawei.github.io/about/about.html";
+			location.href = "jiawei1996.github.io/about/about.html";
 		})
 	}
 
