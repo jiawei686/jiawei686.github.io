@@ -46,7 +46,7 @@
 
 	p.click_computer = function(){
 		$(".article h3").click(function(){
-			location.href = "http://jiawei1996.github.io/computer/" + this.attr("id");
+			location.href = "http://jiawei1996.github.io/computer/" + this.id;
 		})
 	}
 
