@@ -6,6 +6,7 @@
 
 	var navi = function(){
 		this.click_home();
+		this.click_blog();
 		this.click_code();
 		this.click_about();
 		this.click_version();
@@ -18,7 +19,7 @@
 		})
 	}
 
-	p.click_code = function(){
+	p.click_blog = function(){
 		$("#navigation div:eq(1)").click(function(){
 			location.href = "http://jiawei1996.github.io/blog";
 		})
