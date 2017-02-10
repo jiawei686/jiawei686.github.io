@@ -20,7 +20,13 @@
 
 	p.click_code = function(){
 		$("#navigation div:eq(1)").click(function(){
-			location.href = "index.html";
+			location.href = "http://jiawei1996.github.io/blog";
+		})
+	}
+
+	p.click_code = function(){
+		$("#navigation div:eq(2)").click(function(){
+			location.href = "http://jiawei1996.github.io/computer";
 		})
 	}
 

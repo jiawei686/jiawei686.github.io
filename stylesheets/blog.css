@@ -1,0 +1,20 @@
+.article h3{
+	text-align: center;
+	margin: 0px;
+	height: 30px;
+	line-height: 30px;
+	transition: 0.3s;
+	font-size: 19px;
+}
+.article h3:hover{
+	box-shadow: 0 0 30px 10px black;
+}
+
+.article hr{
+	margin: 0px;
+	margin-bottom: -1px;
+}
+.article h3 span{
+	float: right;
+	font-size: 15px;
+}
