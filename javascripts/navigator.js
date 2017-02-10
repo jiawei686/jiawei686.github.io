@@ -8,12 +8,13 @@
 		this.click_home();
 		this.click_code();
 		this.click_about();
+		this.click_version();
 	}
 
 	var p = navi.prototype;
 	p.click_home = function(){
 		$("#navigation div:eq(0)").click(function(){
-			location.href = "jiawei1996.github.io/index.html";
+			location.href = "jiawei1996.github.io";
 		})
 	}
 
@@ -29,9 +30,9 @@
 		})
 	}
 
-	p.click_about = function(){
+	p.click_version = function(){
 		$("#navigation div:eq(4)").click(function(){
-			location.href = "jiawei1996.github.io/version/version.html";
+			location.href = "jiawei1996.github.io/version";
 		})
 	}
 
