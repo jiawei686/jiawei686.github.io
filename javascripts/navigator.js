@@ -10,6 +10,7 @@
 		this.click_code();
 		this.click_about();
 		this.click_version();
+		this.click_computer();
 	}
 
 	var p = navi.prototype;
@@ -40,6 +41,12 @@
 	p.click_version = function(){
 		$("#navigation div:eq(4)").click(function(){
 			location.href = "http://jiawei1996.github.io/version";
+		})
+	}
+
+	p.click_computer = function(){
+		$(".article h3").click(function(){
+			location.href = "http://jiawei1996.github.io/computer/" + this.attr("id");
 		})
 	}
 
