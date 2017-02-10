@@ -4,11 +4,12 @@ body div{
 
 body{
 	background-color: black;
-	overflow: hidden;
+	min-height: 800px;
+	/*overflow: hidden;*/
 }
 
 #positioner{
-	overflow: hidden;
+	/*overflow: hidden;*/
 }
 
 /*#top_shadow{
@@ -23,12 +24,13 @@ body{
 
 #top{
 	height: 240px;
-	width: 700px;
+	width: 240px;
+	margin-top: 40px;
 	margin-right: auto;
 	margin-left: auto;
-	border-radius: 150px 150px 50px 60px ;
+	border-radius: 60px 200px 200px 60px ;
 	background-color: #EEF2FE;
-	box-shadow:0 0 45px 30px #EEF2FE;
+	box-shadow:0 0 35px 30px #EEF2FE;
 
 }
 /*
@@ -128,7 +130,7 @@ body{
 
 
 #bottom{
-	height: 100px;
+	height: 120px;
 	width: 1400px;
 	margin-right: auto;
 	margin-left: auto;
