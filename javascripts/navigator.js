@@ -7,10 +7,11 @@
 	var navi = function(){
 		this.click_home();
 		this.click_blog();
-		this.click_code();
+		this.click_computer();
 		this.click_about();
 		this.click_version();
-		this.click_computer();
+		this.click_computerarti();
+		this.click_blogarti();
 	}
 
 	var p = navi.prototype;
@@ -26,7 +27,7 @@
 		})
 	}
 
-	p.click_code = function(){
+	p.click_computer = function(){
 		$("#navigation div:eq(2)").click(function(){
 			location.href = "http://jiawei1996.github.io/computer";
 		})
@@ -44,10 +45,19 @@
 		})
 	}
 
-	p.click_computer = function(){
-		$(".article h3").click(function(){
+	p.click_computerarti = function(){
+		$(".article .computer").click(function(){
 			location.href = "http://jiawei1996.github.io/computer/" + this.id;
 		})
 	}
+
+	p.click_blogarti = function(){
+		$(".article .blog").click(function(){
+			location.href = "http://jiawei1996.github.io/blog/" + this.id;			
+		})
+	}
+
+
+
 
 })();
