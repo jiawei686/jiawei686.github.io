@@ -1,3 +1,7 @@
+/**{
+	display: none;
+}*/
+
 body div{
 	/*border: 1px solid black;*/
 }
@@ -9,6 +13,7 @@ body{
 	background-repeat: repeat-y;
 	min-height: 800px;
 	/*overflow: hidden;*/
+	/*display: none;*/
 }
 
 #positioner{
@@ -52,6 +57,7 @@ body{
 	text-align: center;
 	font-size: 60px;
 	font-family: Brush Script MT;
+	display: none;
 }
 #Title span{
 	margin-top: 60px;
@@ -82,8 +88,9 @@ body{
 	background-color: #EEF2FE;
 	border: 2px solid black;
 	border-radius: 10px;
+	display: none;
 
-	transition: 0.3s;
+	/*transition: 0.3s;*/
 	/*background-color: white;*/
 }
 
@@ -129,6 +136,8 @@ body{
 	text-shadow:-2px -5px 10px #EEF2FE;*/
 	text-shadow:6px 10px 10px black;
 	/*background-color: white;*/
+		transition: 0.3s;
+
 }
 
 
