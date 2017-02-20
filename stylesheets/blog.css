@@ -1,6 +1,10 @@
+.article h2{
+	margin-left: 40px;
+}
 .article h3{
 	text-align: center;
 	margin: 0px;
+	margin-left: 20px;
 	height: 30px;
 	line-height: 30px;
 	transition: 0.3s;
@@ -12,7 +16,7 @@
 
 .article hr{
 	margin: 0px;
-	margin-bottom: -1px;
+	margin-bottom: 10px;
 }
 .article h3 span{
 	float: right;
