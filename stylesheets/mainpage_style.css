@@ -1,0 +1,64 @@
+
+#Title{
+	text-align: center;
+	font-size: 25px;
+	font-family: "Brush Script MT";
+	height: 30px;
+	color: gray;
+}
+
+
+
+
+#mainpage_singer{
+	margin: 0px;
+	padding: 0px;
+}
+
+#leftTotal{
+	padding-left: 0px;
+	box-shadow:10px 10px 25px #000;
+	z-index: 1;
+}
+
+#leftRight{
+	margin: 0px;
+}
+
+.intro{
+	text-align: left;
+	margin-left: 30px;
+	color: gray;
+	font-family: "Avant Garde", "Avantgarde", "Century Gothic", "CenturyGothic", "AppleGothic";
+}
+
+
+
+
+#rightTotal{
+	padding: 0px;
+	box-shadow:10px 0px 25px #000;
+}
+
+.navigation{
+	padding:0px;
+	margin: 0px;
+}
+
+.index_quate{
+	line-height: 35px;
+	font-family: STKaiti !important;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+

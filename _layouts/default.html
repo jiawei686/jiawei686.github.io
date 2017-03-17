@@ -1,0 +1,81 @@
+---
+
+---
+
+
+<!DOCTYPE html>
+	<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Like the ceiling can't hold us</title>
+		<!-- 新 Bootstrap 核心 CSS 文件 -->
+		<link href="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+		 
+		<!-- 可选的Bootstrap主题文件（一般不使用） -->
+		<script src="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/css/bootstrap-theme.min.css"></script>
+		 
+		<!-- jQuery文件。务必在bootstrap.min.js 之前引入 -->
+		<script src="http://cdn.static.runoob.com/libs/jquery/2.1.1/jquery.min.js"></script>
+		 
+		<!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
+		<script src="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+		<script src="http://apps.bdimg.com/libs/angular.js/1.4.6/angular.min.js"></script>
+        <script src="http://apps.bdimg.com/libs/angular-route/1.3.13/angular-route.js"></script>
+		<script type="text/javascript" src = {{"/javascripts/app.js"| absolute_url}}></script>
+
+		<link rel="stylesheet" type="text/css" href={{"/stylesheets/background.css"| absolute_url}}>
+		<link rel="stylesheet" type="text/css" href={{"/stylesheets/mainpage_style.css"| absolute_url}}>
+
+		<link rel="stylesheet" type="text/css" href={{"/stylesheets/navigation_component.css"| absolute_url}}>
+
+	</head>
+	<body>
+		<div class="container">
+		   
+		      <div  ng-app = "leftPart" class="col-md-9" id = "leftTotal">
+		      	 
+		         <h3 class = "col-md-9" id = "Title">Like the ceiling can't hold us</h3>
+		         <br><br><br><br>
+		    	{{ content }}
+
+		      </div>
+
+
+		      <div class="col-md-3" id = "rightTotal">
+		      	<figure class="effect-roxy col-md-12 navigation" onclick=" return function(){location.href =  '{{"/#/home" | absolute_url}}'}()">
+		            <img class = "col-md-12 navigation" src={{"/images/navigation_logos/home.png"| absolute_url}} alt="Home Page"/>
+		            <figcaption>
+		                <h2>Home <span>Page</span></h2>
+		            </figcaption>			
+		        </figure>
+		        <figure class="effect-roxy col-md-12 navigation" onclick=" return function(){location.href =  '{{"/#/blogs" | absolute_url}}'}()">
+		            <img class = "col-md-12 navigation" src={{"/images/navigation_logos/blog.jpg"| absolute_url}}  alt="Blogs"/>
+		            <figcaption>
+		                <h2>Blogs</h2>
+		            </figcaption>			
+		        </figure>
+		        <figure class="effect-roxy col-md-12 navigation" onclick=" return function(){location.href =  '{{"/#/computer_science" | absolute_url}}'}()">
+		            <img class = "col-md-12 navigation" src={{"/images/navigation_logos/tech.jpg"| absolute_url}}  alt="computer_science"/>
+		            <figcaption>
+		                <h2>Computer Science</h2>
+		            </figcaption>			
+		        </figure>
+		        <figure class="effect-roxy col-md-12 navigation" onclick=" return function(){location.href =  '{{"/#/about" | absolute_url}}'}()">
+		            <img class = "col-md-12 navigation" src={{"/images/navigation_logos/about.jpeg"| absolute_url}}  alt="about"/>
+		            <figcaption>
+		                <h2>About</h2>
+		            </figcaption>			
+		        </figure>
+		        <figure class="effect-roxy col-md-12 navigation" onclick=" return function(){location.href =  '{{"/#/version" | absolute_url}}'}()">
+		            <img class = "col-md-12 navigation" src={{"/images/navigation_logos/version.jpg"| absolute_url}}  alt="version"/>
+		            <figcaption>
+		                <h2>Version</h2>
+		            </figcaption>			
+		        </figure>
+		      </div>
+
+		 </div>
+
+	</body>
+</html>
