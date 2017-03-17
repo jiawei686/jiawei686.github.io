@@ -33,6 +33,7 @@ section {
 	overflow: hidden;
 	-webkit-backface-visibility: hidden;
 	backface-visibility: hidden;
+	font-family: Papyrus
 }
 
 section a {
@@ -43,7 +44,7 @@ section a {
 	color: #777777 !important;
 	text-decoration: none !important;
 	outline: none !important;
-	font-family: Papyrus
+	
 	
 }
 
