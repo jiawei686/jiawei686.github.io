@@ -2,6 +2,7 @@
 categories: Computer Science
 tags: Computer Science
 layout: post
+title: Some Web Problems
 ---
 ## Some Web Problems
 

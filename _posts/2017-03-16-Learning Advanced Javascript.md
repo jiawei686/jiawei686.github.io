@@ -2,6 +2,7 @@
 categories: Computer Science
 tags: Computer Science
 layout: post
+title: Learning Advanced Javascript
 ---
 ## Learning Advanced Javascript
 
