@@ -4,6 +4,12 @@ tags: Computer Science
 layout: post
 title: Some Web Problems
 ---
+```
+本页为原创内容，转载请注明出处{{page.url | absolute_url}}
+```
+
+
+
 ## Some Web Problems
 
 **#浏览器禁止跨域请求**

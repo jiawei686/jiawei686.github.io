@@ -4,6 +4,12 @@ tags: Computer Science
 layout: post
 title: Learning Advanced Javascript
 ---
+```
+本页为原创内容，转载请注明出处{{page.url | absolute_url}}
+```
+
+
+
 ## Learning Advanced Javascript
 
 **#2: Goal: To be able to understand this function:**
