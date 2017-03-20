@@ -55,6 +55,10 @@ github_username: jiawei1996
 # og_image: "images/accent.png" # This will show in facebook thumbnails
 # twitter_image: "http://ankitsultana.me/images/accent.png?1234" # This will show in twitter cards
 
+
+highlighter: rouge
+highlight: true
+
 ####################################
 ####################################
 ####################################

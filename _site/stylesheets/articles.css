@@ -33,7 +33,8 @@ section {
 	overflow: hidden;
 	-webkit-backface-visibility: hidden;
 	backface-visibility: hidden;
-	font-family: Papyrus
+	font-family: Papyrus;
+	text-align: center !important;
 }
 
 section a {

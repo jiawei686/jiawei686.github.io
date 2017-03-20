@@ -25,6 +25,8 @@
 
 		<link rel="stylesheet" type="text/css" href=http://localhost:4000/stylesheets/navigation_component.css>
 
+		<link rel="stylesheet" type="text/css" href=http://localhost:4000/stylesheets/syntax.css>
+		
 	</head>
 	<body>
 		<div class="container">
@@ -43,16 +45,22 @@
 
 <p><strong>#2: Goal: To be able to understand this function:</strong></p>
 
-<div class="language-javascript highlighter-rouge"><pre class="highlight"><code><span class="c1">// The .bind method from Prototype.js </span>
+<figure class="highlight"><pre><code class="language-javascript" data-lang="javascript"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8</pre></td><td class="code"><pre><span class="c1">// The .bind method from Prototype.js </span>
 <span class="nb">Function</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">bind</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){</span> 
   <span class="kd">var</span> <span class="nx">fn</span> <span class="o">=</span> <span class="k">this</span><span class="p">,</span> <span class="nx">args</span> <span class="o">=</span> <span class="nb">Array</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">slice</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">arguments</span><span class="p">),</span> <span class="nx">object</span> <span class="o">=</span> <span class="nx">args</span><span class="p">.</span><span class="nx">shift</span><span class="p">();</span> 
   <span class="k">return</span> <span class="kd">function</span><span class="p">(){</span> 
     <span class="k">return</span> <span class="nx">fn</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="nx">object</span><span class="p">,</span> 
       <span class="nx">args</span><span class="p">.</span><span class="nx">concat</span><span class="p">(</span><span class="nb">Array</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">slice</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">arguments</span><span class="p">)));</span> 
   <span class="p">};</span> 
-<span class="p">};</span>
-</code></pre>
-</div>
+<span class="p">};</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure>
 
 <p>要理解这段代码，首先要了解<em>javascript</em>的数组如下基本操作。</p>
 
@@ -64,10 +72,10 @@
 
 <p>涉及到一点函数知识，比如call与apply的区别。其实，call与apply的作用没有区别，都是给函数绑定对象，只不过call传递的是参数，apply传递的是数组。</p>
 
-<div class="language-javascript highlighter-rouge"><pre class="highlight"><code><span class="nx">func</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">arg1</span><span class="p">,</span> <span class="nx">arg2</span><span class="p">);</span>
-<span class="nx">func</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="p">[</span><span class="nx">arg1</span><span class="p">,</span> <span class="nx">arg2</span><span class="p">])</span>
-</code></pre>
-</div>
+<figure class="highlight"><pre><code class="language-javascript" data-lang="javascript"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2</pre></td><td class="code"><pre><span class="nx">func</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">arg1</span><span class="p">,</span> <span class="nx">arg2</span><span class="p">);</span>
+<span class="nx">func</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="p">[</span><span class="nx">arg1</span><span class="p">,</span> <span class="nx">arg2</span><span class="p">])</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure>
 
 <p>到此时，这段代码就可以基本读懂了。arguments不是数组，将其变成数组用了一步巧妙的<code class="highlighter-rouge">args = Array.prototype.slice.call(arguments)</code>因为arguments不是array，所以原本没有slice方法，不过Array.prototype有。随后用call将其绑定于arguments。</p>
 
@@ -75,14 +83,18 @@
 
 <p><strong>#11 the name of a function–匿名函数</strong></p>
 
-<div class="language-javascript highlighter-rouge"><pre class="highlight"><code><span class="kd">var</span> <span class="nx">ninja</span> <span class="o">=</span> <span class="kd">function</span> <span class="nx">myNinja</span><span class="p">(){</span> 
+<figure class="highlight"><pre><code class="language-javascript" data-lang="javascript"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3
+4
+5
+6</pre></td><td class="code"><pre><span class="kd">var</span> <span class="nx">ninja</span> <span class="o">=</span> <span class="kd">function</span> <span class="nx">myNinja</span><span class="p">(){</span> 
   <span class="nx">assert</span><span class="p">(</span> <span class="nx">ninja</span> <span class="o">==</span> <span class="nx">myNinja</span><span class="p">,</span> <span class="s2">"This function is named two things - at once!"</span> <span class="p">);</span> 
 <span class="p">};</span> 
 <span class="nx">ninja</span><span class="p">();</span> 
 <span class="nx">assert</span><span class="p">(</span> <span class="k">typeof</span> <span class="nx">myNinja</span> <span class="o">==</span> <span class="s2">"undefined"</span><span class="p">,</span> <span class="s2">"But myNinja isn't defined outside of the function."</span> <span class="p">);</span> 
-<span class="nx">log</span><span class="p">(</span> <span class="nx">ninja</span> <span class="p">);</span>
-</code></pre>
-</div>
+<span class="nx">log</span><span class="p">(</span> <span class="nx">ninja</span> <span class="p">);</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure>
 
 <p>这段代码的输出结果为</p>
 
@@ -96,20 +108,38 @@ LOG function myNinja(){ assert( ninja == myNinja, "This function is named two th
 
 <p><strong>#12: We can even do it if we’re an anonymous function that’s an object property.</strong></p>
 
-<div class="language-javascript highlighter-rouge"><pre class="highlight"><code><span class="kd">var</span> <span class="nx">ninja</span> <span class="o">=</span> <span class="p">{</span> 
+<figure class="highlight"><pre><code class="language-javascript" data-lang="javascript"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3
+4
+5
+6</pre></td><td class="code"><pre><span class="kd">var</span> <span class="nx">ninja</span> <span class="o">=</span> <span class="p">{</span> 
   <span class="na">yell</span><span class="p">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">n</span><span class="p">){</span> 
     <span class="k">return</span> <span class="nx">n</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="p">?</span> <span class="nx">ninja</span><span class="p">.</span><span class="nx">yell</span><span class="p">(</span><span class="nx">n</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s2">"a"</span> <span class="p">:</span> <span class="s2">"hiy"</span><span class="p">;</span> 
   <span class="p">}</span> 
 <span class="p">};</span> 
-<span class="nx">assert</span><span class="p">(</span> <span class="nx">ninja</span><span class="p">.</span><span class="nx">yell</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"hiyaaaa"</span><span class="p">,</span> <span class="s2">"A single object isn't too bad, either."</span> <span class="p">);</span>
-</code></pre>
-</div>
+<span class="nx">assert</span><span class="p">(</span> <span class="nx">ninja</span><span class="p">.</span><span class="nx">yell</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"hiyaaaa"</span><span class="p">,</span> <span class="s2">"A single object isn't too bad, either."</span> <span class="p">);</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure>
 
 <p>根据输出我们发现ninja.yell虽然定义在对象ninja内，仍然可以在对象外部调用它。</p>
 
 <p><strong>#13: But what happens when we remove the original object?</strong></p>
 
-<div class="language-javascript highlighter-rouge"><pre class="highlight"><code><span class="kd">var</span> <span class="nx">ninja</span> <span class="o">=</span> <span class="p">{</span> 
+<figure class="highlight"><pre><code class="language-javascript" data-lang="javascript"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15</pre></td><td class="code"><pre><span class="kd">var</span> <span class="nx">ninja</span> <span class="o">=</span> <span class="p">{</span> 
   <span class="na">yell</span><span class="p">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">n</span><span class="p">){</span> 
     <span class="k">return</span> <span class="nx">n</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="p">?</span> <span class="nx">ninja</span><span class="p">.</span><span class="nx">yell</span><span class="p">(</span><span class="nx">n</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s2">"a"</span> <span class="p">:</span> <span class="s2">"hiy"</span><span class="p">;</span> 
   <span class="p">}</span> 
@@ -123,9 +153,8 @@ LOG function myNinja(){ assert( ninja == myNinja, "This function is named two th
   <span class="nx">samurai</span><span class="p">.</span><span class="nx">yell</span><span class="p">(</span><span class="mi">4</span><span class="p">);</span> 
 <span class="p">}</span> <span class="k">catch</span><span class="p">(</span><span class="nx">e</span><span class="p">){</span> 
   <span class="nx">assert</span><span class="p">(</span> <span class="kc">false</span><span class="p">,</span> <span class="s2">"Uh, this isn't good! Where'd ninja.yell go?"</span> <span class="p">);</span> 
-<span class="p">}</span>
-</code></pre>
-</div>
+<span class="p">}</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure>
 
 <p>通过输出结果</p>
 
@@ -138,7 +167,16 @@ FAIL Uh, this isn't good! Where'd ninja.yell go?
 
 <p><strong>#14: Let’s give the anonymous function a name!</strong></p>
 
-<div class="language-javascript highlighter-rouge"><pre class="highlight"><code><span class="kd">var</span> <span class="nx">ninja</span> <span class="o">=</span> <span class="p">{</span> 
+<figure class="highlight"><pre><code class="language-javascript" data-lang="javascript"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10</pre></td><td class="code"><pre><span class="kd">var</span> <span class="nx">ninja</span> <span class="o">=</span> <span class="p">{</span> 
   <span class="na">yell</span><span class="p">:</span> <span class="kd">function</span> <span class="nx">yell</span><span class="p">(</span><span class="nx">n</span><span class="p">){</span> 
     <span class="k">return</span> <span class="nx">n</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="p">?</span> <span class="nx">yell</span><span class="p">(</span><span class="nx">n</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s2">"a"</span> <span class="p">:</span> <span class="s2">"hiy"</span><span class="p">;</span> 
   <span class="p">}</span> 
@@ -147,15 +185,29 @@ FAIL Uh, this isn't good! Where'd ninja.yell go?
  
 <span class="kd">var</span> <span class="nx">samurai</span> <span class="o">=</span> <span class="p">{</span> <span class="na">yell</span><span class="p">:</span> <span class="nx">ninja</span><span class="p">.</span><span class="nx">yell</span> <span class="p">};</span> 
 <span class="kd">var</span> <span class="nx">ninja</span> <span class="o">=</span> <span class="p">{};</span> 
-<span class="nx">assert</span><span class="p">(</span> <span class="nx">samurai</span><span class="p">.</span><span class="nx">yell</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"hiyaaaa"</span><span class="p">,</span> <span class="s2">"The method correctly calls itself."</span> <span class="p">);</span>
-</code></pre>
-</div>
+<span class="nx">assert</span><span class="p">(</span> <span class="nx">samurai</span><span class="p">.</span><span class="nx">yell</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"hiyaaaa"</span><span class="p">,</span> <span class="s2">"The method correctly calls itself."</span> <span class="p">);</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure>
 
 <p>通过比较之前的代码，我们发现如果不给匿名函数命名，我们即便是在函数里调用这个函数也要用对象的方法<code class="highlighter-rouge">ninja.yell(n-1)</code>，命名之后我们就可以直接通过<code class="highlighter-rouge">yell(n-1)</code>来直接调用了。如果我们不想给它命名，也可以通过<code class="highlighter-rouge">arguments.callee(n-1)</code>来调用。</p>
 
 <p><strong>#19: Is it possible to cache the return results from a function?</strong></p>
 
-<div class="language-javascript highlighter-rouge"><pre class="highlight"><code><span class="kd">function</span> <span class="nx">getElements</span><span class="p">(</span> <span class="nx">name</span> <span class="p">)</span> <span class="p">{</span> 
+<figure class="highlight"><pre><code class="language-javascript" data-lang="javascript"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16</pre></td><td class="code"><pre><span class="kd">function</span> <span class="nx">getElements</span><span class="p">(</span> <span class="nx">name</span> <span class="p">)</span> <span class="p">{</span> 
   <span class="kd">var</span> <span class="nx">results</span><span class="p">;</span> 
  
   <span class="k">if</span> <span class="p">(</span> <span class="nx">getElements</span><span class="p">.</span><span class="nx">cache</span><span class="p">[</span><span class="nx">name</span><span class="p">]</span> <span class="p">)</span> <span class="p">{</span> 
@@ -170,15 +222,26 @@ FAIL Uh, this isn't good! Where'd ninja.yell go?
 <span class="nx">getElements</span><span class="p">.</span><span class="nx">cache</span> <span class="o">=</span> <span class="p">{};</span> 
  
 <span class="nx">log</span><span class="p">(</span> <span class="s2">"Elements found: "</span><span class="p">,</span> <span class="nx">getElements</span><span class="p">(</span><span class="s2">"pre"</span><span class="p">).</span><span class="nx">length</span> <span class="p">);</span> 
-<span class="nx">log</span><span class="p">(</span> <span class="s2">"Cache found: "</span><span class="p">,</span> <span class="nx">getElements</span><span class="p">.</span><span class="nx">cache</span><span class="p">.</span><span class="nx">pre</span><span class="p">.</span><span class="nx">length</span> <span class="p">);</span>
-</code></pre>
-</div>
+<span class="nx">log</span><span class="p">(</span> <span class="s2">"Cache found: "</span><span class="p">,</span> <span class="nx">getElements</span><span class="p">.</span><span class="nx">cache</span><span class="p">.</span><span class="nx">pre</span><span class="p">.</span><span class="nx">length</span> <span class="p">);</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure>
 
 <p>可以通过cache的方式将函数运行的结果存储起来。</p>
 
 <p><strong>#20: QUIZ: Can you cache the results of this function?</strong></p>
 
-<div class="language-javascript highlighter-rouge"><pre class="highlight"><code><span class="kd">function</span> <span class="nx">isPrime</span><span class="p">(</span> <span class="nx">num</span> <span class="p">)</span> <span class="p">{</span>
+<figure class="highlight"><pre><code class="language-javascript" data-lang="javascript"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13</pre></td><td class="code"><pre><span class="kd">function</span> <span class="nx">isPrime</span><span class="p">(</span> <span class="nx">num</span> <span class="p">)</span> <span class="p">{</span>
   <span class="kd">var</span> <span class="nx">prime</span> <span class="o">=</span> <span class="nx">num</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">;</span> <span class="c1">// Everything but 1 can be prime</span>
   <span class="k">for</span> <span class="p">(</span> <span class="kd">var</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">2</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">num</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">)</span> <span class="p">{</span>
     <span class="k">if</span> <span class="p">(</span> <span class="nx">num</span> <span class="o">%</span> <span class="nx">i</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">)</span> <span class="p">{</span>
@@ -190,19 +253,21 @@ FAIL Uh, this isn't good! Where'd ninja.yell go?
 <span class="p">}</span>
 
 <span class="nx">assert</span><span class="p">(</span> <span class="nx">isPrime</span><span class="p">(</span><span class="mi">5</span><span class="p">),</span> <span class="s2">"Make sure the function works, 5 is prime."</span> <span class="p">);</span>
-<span class="nx">assert</span><span class="p">(</span> <span class="nx">isPrime</span><span class="p">.</span><span class="nx">cache</span><span class="p">[</span><span class="mi">5</span><span class="p">],</span> <span class="s2">"Is the answer cached?"</span> <span class="p">);</span>
-</code></pre>
-</div>
+<span class="nx">assert</span><span class="p">(</span> <span class="nx">isPrime</span><span class="p">.</span><span class="nx">cache</span><span class="p">[</span><span class="mi">5</span><span class="p">],</span> <span class="s2">"Is the answer cached?"</span> <span class="p">);</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure>
 
 <p>首先，看一道前端面试题目</p>
 
-<div class="language-javascript highlighter-rouge"><pre class="highlight"><code><span class="kd">var</span> <span class="nx">a</span> <span class="o">=</span> <span class="p">{</span><span class="na">n</span><span class="p">:</span><span class="mi">1</span><span class="p">};</span>  
+<figure class="highlight"><pre><code class="language-javascript" data-lang="javascript"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3
+4
+5</pre></td><td class="code"><pre><span class="kd">var</span> <span class="nx">a</span> <span class="o">=</span> <span class="p">{</span><span class="na">n</span><span class="p">:</span><span class="mi">1</span><span class="p">};</span>  
 <span class="kd">var</span> <span class="nx">b</span> <span class="o">=</span> <span class="nx">a</span><span class="p">;</span> <span class="c1">// 持有a，以回查  </span>
 <span class="nx">a</span><span class="p">.</span><span class="nx">x</span> <span class="o">=</span> <span class="nx">a</span> <span class="o">=</span> <span class="p">{</span><span class="na">n</span><span class="p">:</span><span class="mi">2</span><span class="p">};</span>  
 <span class="nx">alert</span><span class="p">(</span><span class="nx">a</span><span class="p">.</span><span class="nx">x</span><span class="p">);</span><span class="c1">// --&gt; undefined  </span>
-<span class="nx">alert</span><span class="p">(</span><span class="nx">b</span><span class="p">.</span><span class="nx">x</span><span class="p">);</span><span class="c1">// --&gt; {n:2}</span>
-</code></pre>
-</div>
+<span class="nx">alert</span><span class="p">(</span><span class="nx">b</span><span class="p">.</span><span class="nx">x</span><span class="p">);</span><span class="c1">// --&gt; {n:2}</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure>
 
 <p>它的结果为什么是这样。</p>
 
@@ -246,7 +311,26 @@ a 是有指针的，指向 <code class="highlighter-rouge"><span class="p">{</sp
 
 <p>正确答案如下：</p>
 
-<div class="language-javascript highlighter-rouge"><pre class="highlight"><code><span class="kd">function</span> <span class="nx">isPrime</span><span class="p">(</span> <span class="nx">num</span> <span class="p">)</span> <span class="p">{</span>
+<figure class="highlight"><pre><code class="language-javascript" data-lang="javascript"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20</pre></td><td class="code"><pre><span class="kd">function</span> <span class="nx">isPrime</span><span class="p">(</span> <span class="nx">num</span> <span class="p">)</span> <span class="p">{</span>
   <span class="k">if</span><span class="p">(</span><span class="nx">isPrime</span><span class="p">.</span><span class="nx">cache</span><span class="p">[</span><span class="nx">num</span><span class="p">])</span> <span class="k">return</span> <span class="nx">isPrime</span><span class="p">.</span><span class="nx">cache</span><span class="p">[</span><span class="nx">num</span><span class="p">];</span>
   <span class="k">else</span> <span class="p">{</span>
       <span class="kd">var</span> <span class="nx">prime</span> <span class="o">=</span> <span class="nx">num</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">;</span> <span class="c1">// Everything but 1 can be prime</span>
@@ -265,13 +349,21 @@ a 是有指针的，指向 <code class="highlighter-rouge"><span class="p">{</sp
 <span class="nx">isPrime</span><span class="p">.</span><span class="nx">cache</span> <span class="o">=</span> <span class="p">{};</span>
 
 <span class="nx">assert</span><span class="p">(</span> <span class="nx">isPrime</span><span class="p">(</span><span class="mi">5</span><span class="p">),</span> <span class="s2">"Make sure the function works, 5 is prime."</span> <span class="p">);</span>
-<span class="nx">assert</span><span class="p">(</span> <span class="nx">isPrime</span><span class="p">.</span><span class="nx">cache</span><span class="p">[</span><span class="mi">5</span><span class="p">],</span> <span class="s2">"Is the answer cached?"</span> <span class="p">);</span>
-</code></pre>
-</div>
+<span class="nx">assert</span><span class="p">(</span> <span class="nx">isPrime</span><span class="p">.</span><span class="nx">cache</span><span class="p">[</span><span class="mi">5</span><span class="p">],</span> <span class="s2">"Is the answer cached?"</span> <span class="p">);</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure>
 
 <p><strong>#27: QUIZ: How can we implement looping with a callback?</strong></p>
 
-<div class="language-javascript highlighter-rouge"><pre class="highlight"><code><span class="kd">function</span> <span class="nx">loop</span><span class="p">(</span><span class="nx">array</span><span class="p">,</span> <span class="nx">fn</span><span class="p">){</span>
+<figure class="highlight"><pre><code class="language-javascript" data-lang="javascript"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10</pre></td><td class="code"><pre><span class="kd">function</span> <span class="nx">loop</span><span class="p">(</span><span class="nx">array</span><span class="p">,</span> <span class="nx">fn</span><span class="p">){</span>
   <span class="k">for</span> <span class="p">(</span> <span class="kd">var</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">array</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">)</span> <span class="p">{</span>
     <span class="c1">// Implement me!</span>
   <span class="p">}</span>
@@ -280,13 +372,20 @@ a 是有指针的，指向 <code class="highlighter-rouge"><span class="p">{</sp
 <span class="nx">loop</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="kd">function</span><span class="p">(</span><span class="nx">value</span><span class="p">){</span>
   <span class="nx">assert</span><span class="p">(</span><span class="nx">value</span> <span class="o">==</span> <span class="nx">num</span><span class="o">++</span><span class="p">,</span> <span class="s2">"Make sure the contents are as we expect it."</span><span class="p">);</span>
   <span class="nx">assert</span><span class="p">(</span><span class="k">this</span> <span class="k">instanceof</span> <span class="nb">Array</span><span class="p">,</span> <span class="s2">"The context should be the full array."</span><span class="p">);</span>
-<span class="p">});</span>
-</code></pre>
-</div>
+<span class="p">});</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure>
 
 <p>一开到这个问题还有点头晕，不过想到是context里面的题目，于是想到solution</p>
 
-<div class="language-javascript highlighter-rouge"><pre class="highlight"><code><span class="kd">function</span> <span class="nx">loop</span><span class="p">(</span><span class="nx">array</span><span class="p">,</span> <span class="nx">fn</span><span class="p">){</span>
+<figure class="highlight"><pre><code class="language-javascript" data-lang="javascript"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9</pre></td><td class="code"><pre><span class="kd">function</span> <span class="nx">loop</span><span class="p">(</span><span class="nx">array</span><span class="p">,</span> <span class="nx">fn</span><span class="p">){</span>
   <span class="k">for</span> <span class="p">(</span> <span class="kd">var</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">array</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">)</span>
     <span class="nx">fn</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span> <span class="nx">array</span><span class="p">,</span> <span class="nx">array</span><span class="p">[</span><span class="nx">i</span><span class="p">],</span> <span class="nx">i</span> <span class="p">);</span>
 <span class="p">}</span>
@@ -294,9 +393,8 @@ a 是有指针的，指向 <code class="highlighter-rouge"><span class="p">{</sp
 <span class="nx">loop</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="kd">function</span><span class="p">(</span><span class="nx">value</span><span class="p">,</span> <span class="nx">i</span><span class="p">){</span>
   <span class="nx">assert</span><span class="p">(</span><span class="nx">value</span> <span class="o">==</span> <span class="nx">num</span><span class="o">++</span><span class="p">,</span> <span class="s2">"Make sure the contents are as we expect it."</span><span class="p">);</span>
   <span class="nx">assert</span><span class="p">(</span><span class="k">this</span> <span class="k">instanceof</span> <span class="nb">Array</span><span class="p">,</span> <span class="s2">"The context should be the full array."</span><span class="p">);</span>
-<span class="p">});</span>
-</code></pre>
-</div>
+<span class="p">});</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure>
 
 
 	</div>

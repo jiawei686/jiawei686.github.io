@@ -14,7 +14,7 @@ title: Learning Advanced Javascript
 
 **#2: Goal: To be able to understand this function:**
 
-```javascript
+{% highlight javascript linenos %}
 // The .bind method from Prototype.js 
 Function.prototype.bind = function(){ 
   var fn = this, args = Array.prototype.slice.call(arguments), object = args.shift(); 
@@ -23,7 +23,8 @@ Function.prototype.bind = function(){
       args.concat(Array.prototype.slice.call(arguments))); 
   }; 
 };
-```
+{% endhighlight %}
+
 
 要理解这段代码，首先要了解*javascript*的数组如下基本操作。
 
@@ -33,10 +34,10 @@ Function.prototype.bind = function(){
 
 涉及到一点函数知识，比如call与apply的区别。其实，call与apply的作用没有区别，都是给函数绑定对象，只不过call传递的是参数，apply传递的是数组。
 
-```javascript
+{% highlight javascript linenos %}
 func.call(this, arg1, arg2);
 func.apply(this, [arg1, arg2])
-```
+{% endhighlight %}
 
 到此时，这段代码就可以基本读懂了。arguments不是数组，将其变成数组用了一步巧妙的`args = Array.prototype.slice.call(arguments)`因为arguments不是array，所以原本没有slice方法，不过Array.prototype有。随后用call将其绑定于arguments。
 
@@ -46,14 +47,14 @@ func.apply(this, [arg1, arg2])
 
 **#11 the name of a function--匿名函数**
 
-```javascript
+{% highlight javascript linenos %}
 var ninja = function myNinja(){ 
   assert( ninja == myNinja, "This function is named two things - at once!" ); 
 }; 
 ninja(); 
 assert( typeof myNinja == "undefined", "But myNinja isn't defined outside of the function." ); 
 log( ninja );
-```
+{% endhighlight %}
 
 这段代码的输出结果为
 
@@ -69,14 +70,14 @@ LOG function myNinja(){ assert( ninja == myNinja, "This function is named two th
 
 **#12: We can even do it if we're an anonymous function that's an object property.**
 
-```javascript
+{% highlight javascript linenos %}
 var ninja = { 
   yell: function(n){ 
     return n > 0 ? ninja.yell(n-1) + "a" : "hiy"; 
   } 
 }; 
 assert( ninja.yell(4) == "hiyaaaa", "A single object isn't too bad, either." );
-```
+{% endhighlight %}
 
 根据输出我们发现ninja.yell虽然定义在对象ninja内，仍然可以在对象外部调用它。
 
@@ -84,7 +85,7 @@ assert( ninja.yell(4) == "hiyaaaa", "A single object isn't too bad, either." );
 
 **#13: But what happens when we remove the original object?**
 
-```javascript
+{% highlight javascript linenos %}
 var ninja = { 
   yell: function(n){ 
     return n > 0 ? ninja.yell(n-1) + "a" : "hiy"; 
@@ -100,7 +101,7 @@ try {
 } catch(e){ 
   assert( false, "Uh, this isn't good! Where'd ninja.yell go?" ); 
 }
-```
+{% endhighlight %}
 
 通过输出结果
 
@@ -115,7 +116,7 @@ FAIL Uh, this isn't good! Where'd ninja.yell go?
 
 **#14: Let's give the anonymous function a name!**
 
-```javascript
+{% highlight javascript linenos %}
 var ninja = { 
   yell: function yell(n){ 
     return n > 0 ? yell(n-1) + "a" : "hiy"; 
@@ -126,7 +127,7 @@ assert( ninja.yell(4) == "hiyaaaa", "Works as we would expect it to!" );
 var samurai = { yell: ninja.yell }; 
 var ninja = {}; 
 assert( samurai.yell(4) == "hiyaaaa", "The method correctly calls itself." );
-```
+{% endhighlight %}
 
 通过比较之前的代码，我们发现如果不给匿名函数命名，我们即便是在函数里调用这个函数也要用对象的方法`ninja.yell(n-1)`，命名之后我们就可以直接通过`yell(n-1)`来直接调用了。如果我们不想给它命名，也可以通过`arguments.callee(n-1)`来调用。
 
@@ -134,7 +135,7 @@ assert( samurai.yell(4) == "hiyaaaa", "The method correctly calls itself." );
 
 **#19: Is it possible to cache the return results from a function?**
 
-```javascript
+{% highlight javascript linenos %}
 function getElements( name ) { 
   var results; 
  
@@ -151,7 +152,7 @@ getElements.cache = {};
  
 log( "Elements found: ", getElements("pre").length ); 
 log( "Cache found: ", getElements.cache.pre.length );
-```
+{% endhighlight %}
 
 可以通过cache的方式将函数运行的结果存储起来。
 
@@ -159,7 +160,7 @@ log( "Cache found: ", getElements.cache.pre.length );
 
 **#20: QUIZ: Can you cache the results of this function?**
 
-```javascript
+{% highlight javascript linenos %}
 function isPrime( num ) {
   var prime = num != 1; // Everything but 1 can be prime
   for ( var i = 2; i < num; i++ ) {
@@ -173,19 +174,19 @@ function isPrime( num ) {
 
 assert( isPrime(5), "Make sure the function works, 5 is prime." );
 assert( isPrime.cache[5], "Is the answer cached?" );
-```
+{% endhighlight %}
 
 
 
 首先，看一道前端面试题目
 
-```javascript
+{% highlight javascript linenos %}
 var a = {n:1};  
 var b = a; // 持有a，以回查  
 a.x = a = {n:2};  
 alert(a.x);// --> undefined  
 alert(b.x);// --> {n:2}
-```
+{% endhighlight %}
 
 它的结果为什么是这样。
 
@@ -223,7 +224,7 @@ alert(b.x);// --> {n:2}
 
 正确答案如下：
 
-```javascript
+{% highlight javascript linenos %}
 function isPrime( num ) {
   if(isPrime.cache[num]) return isPrime.cache[num];
   else {
@@ -244,13 +245,13 @@ isPrime.cache = {};
 
 assert( isPrime(5), "Make sure the function works, 5 is prime." );
 assert( isPrime.cache[5], "Is the answer cached?" );
-```
+{% endhighlight %}
 
 
 
 **#27: QUIZ: How can we implement looping with a callback?**
 
-```javascript
+{% highlight javascript linenos %}
 function loop(array, fn){
   for ( var i = 0; i < array.length; i++ ) {
     // Implement me!
@@ -261,11 +262,11 @@ loop([0, 1, 2], function(value){
   assert(value == num++, "Make sure the contents are as we expect it.");
   assert(this instanceof Array, "The context should be the full array.");
 });
-```
+{% endhighlight %}
 
 一开到这个问题还有点头晕，不过想到是context里面的题目，于是想到solution
 
-```javascript
+{% highlight javascript linenos %}
 function loop(array, fn){
   for ( var i = 0; i < array.length; i++ )
     fn.call( array, array[i], i );
@@ -275,7 +276,7 @@ loop([0, 1, 2], function(value, i){
   assert(value == num++, "Make sure the contents are as we expect it.");
   assert(this instanceof Array, "The context should be the full array.");
 });
-```
+{% endhighlight %}
 
 
 
