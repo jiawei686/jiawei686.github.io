@@ -1,16 +1,10 @@
 ---
-categories: Computer Science
-tags: Computer Science
+categories: Computer_Science
+tags: Computer_Science
 layout: post
 title: Learning Advanced Javascript
 ---
-```
-本页为原创内容，转载请注明出处{{page.url | absolute_url}}
-```
 
-
-
-## Learning Advanced Javascript
 
 **#2: Goal: To be able to understand this function:**
 
@@ -92,10 +86,10 @@ var ninja = {
   } 
 }; 
 assert( ninja.yell(4) == "hiyaaaa", "A single object isn't too bad, either." ); 
- 
+
 var samurai = { yell: ninja.yell }; 
 var ninja = null; 
- 
+
 try { 
   samurai.yell(4); 
 } catch(e){ 
@@ -123,7 +117,7 @@ var ninja = {
   } 
 }; 
 assert( ninja.yell(4) == "hiyaaaa", "Works as we would expect it to!" ); 
- 
+
 var samurai = { yell: ninja.yell }; 
 var ninja = {}; 
 assert( samurai.yell(4) == "hiyaaaa", "The method correctly calls itself." );
@@ -138,18 +132,18 @@ assert( samurai.yell(4) == "hiyaaaa", "The method correctly calls itself." );
 {% highlight javascript linenos %}
 function getElements( name ) { 
   var results; 
- 
+
   if ( getElements.cache[name] ) { 
     results = getElements.cache[name]; 
   } else { 
     results = document.getElementsByTagName(name); 
     getElements.cache[name] = results; 
   } 
- 
+
   return results; 
 } 
 getElements.cache = {}; 
- 
+
 log( "Elements found: ", getElements("pre").length ); 
 log( "Cache found: ", getElements.cache.pre.length );
 {% endhighlight %}
@@ -277,6 +271,10 @@ loop([0, 1, 2], function(value, i){
   assert(this instanceof Array, "The context should be the full array.");
 });
 {% endhighlight %}
+
+```
+本页为原创内容，转载请注明出处{{page.url | absolute_url}}
+```
 
 
 

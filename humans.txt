@@ -1,0 +1,11 @@
+/* TEAM */
+Developer & Designer: Jiawei
+Site: http://jiawei1996.github.io
+						
+
+
+/* SITE */
+Last update: 2017/03/10
+Standards: HTML5, CSS3
+Components: Jekyll
+Software: Sublime Text, Photoshop
