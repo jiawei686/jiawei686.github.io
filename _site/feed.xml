@@ -5,9 +5,33 @@
     <description>- Web - iOS - .NET - me - there must be something you like</description>
     <link>http://localhost:4000//</link>
     <atom:link href="http://localhost:4000//feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Wed, 22 Mar 2017 21:24:26 +0800</pubDate>
-    <lastBuildDate>Wed, 22 Mar 2017 21:24:26 +0800</lastBuildDate>
+    <pubDate>Sat, 25 Mar 2017 14:31:04 +0800</pubDate>
+    <lastBuildDate>Sat, 25 Mar 2017 14:31:04 +0800</lastBuildDate>
     <generator>Jekyll v3.4.2</generator>
+    
+      <item>
+        <title>Mac OS下安装Ant--最简单方法</title>
+        <description>&lt;p&gt;如果你想熟悉一下系统编译的过程，可以到网上找下载安装包手动安装方法。当然，最简单的方法是用homebrew&lt;/p&gt;
+
+&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;brew install java
+brew install ant
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;以上两条命令即可&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://thumbnail0.baidupcs.com/thumbnail/7343106a04cbe8fb7e0ffd8f8e879359?fid=1126347302-250528-250534322781989&amp;amp;time=1490421600&amp;amp;rt=sh&amp;amp;sign=FDTAER-DCb740ccc5511e5e8fedcff06b081203-x8gsWLP13r9jdb5dlWrhdSZQiu0%3D&amp;amp;expires=8h&amp;amp;chkv=0&amp;amp;chkbd=0&amp;amp;chkpc=&amp;amp;dp-logid=1939028995448949513&amp;amp;dp-callid=0&amp;amp;size=c710_u400&amp;amp;quality=100&quot; alt=&quot;屏幕快照 2017-03-25 下午1.46.24&quot; /&gt;&lt;/p&gt;
+</description>
+        <pubDate>Fri, 17 Mar 2017 00:00:00 +0800</pubDate>
+        <link>http://localhost:4000//2017/Some-Web-Problemssadf/</link>
+        <guid isPermaLink="true">http://localhost:4000//2017/Some-Web-Problemssadf/</guid>
+        
+        <category>Computer_Science</category>
+        
+        
+        <category>Computer_Science</category>
+        
+      </item>
     
       <item>
         <title>Some Web Problems</title>
