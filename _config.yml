@@ -1,39 +1,94 @@
-# Site settings
-title: JIA-WEI · Blog
-description: '- Web - iOS - .NET - me - there must be something you like'
-# url: 'http://joshgerdes.com/jekyll-uno'
-baseurl: '/'
-# google_analytics: 'UA-XXXXXX-X'
-# disqus_shortname: 'your-disqus-name'
+# User Settings | Edit there as per required
 
-author:
-  name: '崔家维'
-  email: cuijiawei.cn@gmail.com
-  # twitter_username: joshgerdes
-  facebook_username: jiawei.cui.12
-  github_username:  jiawei1996
-  # linkedin_username:  joshgerdes
+title: Like the ceiling can't hold us
+# url: "http://ankitsultana.me"
+# baseurl: "/accent"
 
-defaults:
-  -
-    scope:
-      path: ''
-      type: 'posts'
-    values:
-        layout: 'post'
+# This will show up at the top of index page
+# site_heading: >
+    # foo <span class="faded">'s blog</span>
 
-# Build settings
-destination: _site
-paginate: 10
-permalink: /:year/:title/
-markdown: kramdown
+email: cuijiawei.cn@gmail.com
+author: Jiawei
+# This description will show up in google search results
+# (for index page) etc.
+description: >
+    Some web skills & ideas to share
+
+# This will what will show against &copy; in the footer
+copyright: jiawei
+# Toggle your short bio, which will displayed on your index page
+# Just toggle it and run jekyll again to see
+# intro: false         
+# Tip: Remove the span from site_heading if intro is set to true
+# This will be displayed in your intro
+short_bio: >
+    Welcome! This is <span>Jiawei's Blog</span>, a place where I have some web skills & ideas to share.
+
+# permalink: /:title.html
+
+# Comments are powered by disqus
+# comments: true
+
+# keep about_stub roughly 12 words long for best results
+# This will show up at the bottom of each post
+# Note that about_footer should be true if you want
+# to see author information at the bottom of each post
+# about_stub: >
+#     Keep this sentence less than 13 words or it won't look good.
+
+# about_footer: true
+
+# twitter_username: AnkitSultana
+github_username: jiawei1996
+# facebook_id: yourusername
+
+# favicon: true
+# favicon_location: "images/favicon.ico"
+
+# profile_picture: images/temp.png
+# paginate: 5
+# paginate_path: "/page/:num"
+# tracking_id: UA-69243698-7 # GA Tracking ID
+
+# Social Stuff | open graph and twitter cards
+# og_image: "images/accent.png" # This will show in facebook thumbnails
+# twitter_image: "http://ankitsultana.me/images/accent.png?1234" # This will show in twitter cards
+
+
 highlighter: rouge
+highlight: true
 
-kramdown:
-  # use Github Flavored Markdown
-  input: GFM
-  # do not replace newlines by <br>s
-  hard_wrap: false
+####################################
+####################################
+####################################
+### Build Settings | Don't Touch ###
+####################################
+####################################
+####################################
 
-gems: ['jekyll-paginate']
-exclude: ['README.md', 'Gemfile', 'Gemfile.lock', 'screenshot.png']
+markdown: kramdown
+
+# gems:
+#     - jekyll-paginate
+
+# sass:
+#     style: compressed
+#     sass_dir: _sass
+
+# Scopes
+# defaults:
+#     -
+#         scope:
+#             path:   ""
+#             type:   "pages"
+#         values:
+#             layout: "page"
+#     -
+#         scope:
+#             path:   ""
+#             type:   "posts"
+#         values:
+#             layout: "post"
+
+# exclude: [vendor] # For travis ci

@@ -1,41 +1,51 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>JIA-WEI · Blog</title>
-    <description>- Web - iOS - .NET - me - there must be something you like</description>
-    <link>http://localhost:4000//</link>
-    <atom:link href="http://localhost:4000//feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Sat, 25 Mar 2017 14:31:04 +0800</pubDate>
-    <lastBuildDate>Sat, 25 Mar 2017 14:31:04 +0800</lastBuildDate>
+    <title>Like the ceiling can't hold us</title>
+    <description>Some web skills &amp; ideas to share
+</description>
+    <link>http://localhost:4000/</link>
+    <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml" />
+    <pubDate>Mon, 27 Mar 2017 20:11:06 +0800</pubDate>
+    <lastBuildDate>Mon, 27 Mar 2017 20:11:06 +0800</lastBuildDate>
     <generator>Jekyll v3.4.2</generator>
     
       <item>
-        <title>Mac OS下安装Ant--最简单方法</title>
-        <description>&lt;p&gt;如果你想熟悉一下系统编译的过程，可以到网上找下载安装包手动安装方法。当然，最简单的方法是用homebrew&lt;/p&gt;
+        <title>Version</title>
+        <description>&lt;h2 id=&quot;version&quot;&gt;Version&lt;/h2&gt;
 
-&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;brew install java
-brew install ant
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;ul&gt;
+  &lt;li&gt;Version 1.0
+    &lt;ul&gt;
+      &lt;li&gt;尝试使用angularjs，并实现首页与博客页应用SPA技术&lt;/li&gt;
+      &lt;li&gt;应用jekyll提供后端并解析markdown文章&lt;/li&gt;
+      &lt;li&gt;页面采用bootstrap框架动态适配窗口大小&lt;/li&gt;
+      &lt;li&gt;导航按钮的css3创新&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
 
-&lt;p&gt;以上两条命令即可&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://thumbnail0.baidupcs.com/thumbnail/7343106a04cbe8fb7e0ffd8f8e879359?fid=1126347302-250528-250534322781989&amp;amp;time=1490421600&amp;amp;rt=sh&amp;amp;sign=FDTAER-DCb740ccc5511e5e8fedcff06b081203-x8gsWLP13r9jdb5dlWrhdSZQiu0%3D&amp;amp;expires=8h&amp;amp;chkv=0&amp;amp;chkbd=0&amp;amp;chkpc=&amp;amp;dp-logid=1939028995448949513&amp;amp;dp-callid=0&amp;amp;size=c710_u400&amp;amp;quality=100&quot; alt=&quot;屏幕快照 2017-03-25 下午1.46.24&quot; /&gt;&lt;/p&gt;
 </description>
         <pubDate>Fri, 17 Mar 2017 00:00:00 +0800</pubDate>
-        <link>http://localhost:4000//2017/Some-Web-Problemssadf/</link>
-        <guid isPermaLink="true">http://localhost:4000//2017/Some-Web-Problemssadf/</guid>
+        <link>http://localhost:4000/version/2017/03/17/Version.html</link>
+        <guid isPermaLink="true">http://localhost:4000/version/2017/03/17/Version.html</guid>
         
-        <category>Computer_Science</category>
+        <category>Version</category>
         
         
-        <category>Computer_Science</category>
+        <category>Version</category>
         
       </item>
     
       <item>
         <title>Some Web Problems</title>
-        <description>&lt;p&gt;&lt;strong&gt;#浏览器禁止跨域请求&lt;/strong&gt;&lt;/p&gt;
+        <description>&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;本页为原创内容，转载请注明出处http://localhost:4000/computer/science/2017/03/17/Some-Web-Problems.html
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h2 id=&quot;some-web-problems&quot;&gt;Some Web Problems&lt;/h2&gt;
+
+&lt;p&gt;&lt;strong&gt;#浏览器禁止跨域请求&lt;/strong&gt;&lt;/p&gt;
 
 &lt;p&gt;有时我们在本地测试前端代码时，可能会出现&lt;code class=&quot;highlighter-rouge&quot;&gt;No 'Access-Control-Allow-Origin' header is present on the requested resource&lt;/code&gt;这样的提示，原因是浏览器出于安全因素，不允许我们的页面使用来自多个页面的资源。此时我们需要开放浏览器的跨域请求。&lt;/p&gt;
 
@@ -69,25 +79,31 @@ brew install ant
 
 &lt;p&gt;有时我们在Git Pages上放前端代码时，可能会遇到引用的外部资源加载不了，有着类似的提示&lt;code class=&quot;highlighter-rouge&quot;&gt;Mixed Content: The page was loaded over HTTPS, but requested an insecure XMLHttpRequest endpoint HTTP&lt;/code&gt; 。这是因为https协议网站的内容不能引用http内容，此时我们可以在引用处省略协议名称，从而可以避免这个问题。如&lt;code class=&quot;highlighter-rouge&quot;&gt;src=&quot;//cdn.static.runoob.com/libs/jquery/2.1.1/jquery.min.js&quot;&lt;/code&gt; ，但是要记得//不可以去掉。&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;本页为原创内容，转载请注明出处http://localhost:4000//2017/Some-Web-Problems/
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
 </description>
         <pubDate>Fri, 17 Mar 2017 00:00:00 +0800</pubDate>
-        <link>http://localhost:4000//2017/Some-Web-Problems/</link>
-        <guid isPermaLink="true">http://localhost:4000//2017/Some-Web-Problems/</guid>
+        <link>http://localhost:4000/computer/science/2017/03/17/Some-Web-Problems.html</link>
+        <guid isPermaLink="true">http://localhost:4000/computer/science/2017/03/17/Some-Web-Problems.html</guid>
         
-        <category>Computer_Science</category>
+        <category>Computer</category>
+        
+        <category>Science</category>
         
         
-        <category>Computer_Science</category>
+        <category>Computer</category>
+        
+        <category>Science</category>
         
       </item>
     
       <item>
         <title>jekyll 入门与进阶</title>
-        <description>&lt;p&gt;最近为了补上之前没学的&lt;em&gt;angularjs&lt;/em&gt;和&lt;em&gt;SPA&lt;/em&gt;，写了个新的&lt;em&gt;blog&lt;/em&gt;前端来练手。但是到了链接&lt;em&gt;markdown&lt;/em&gt;文章的步骤时候又是焦头烂额，之前用的&lt;em&gt;showdown&lt;/em&gt;引擎渲染得有些不尽人意。好在这次用了&lt;em&gt;jekyll&lt;/em&gt;，几乎省去了所有的后端代码。但是在配置过程中深刻领略到学习一个东西还是要看官方文档，不能看过时博客。&lt;/p&gt;
+        <description>&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;本页为原创内容，转载请注明出处http://localhost:4000/computer/science/2017/03/17/Jekyll-%E5%85%A5%E9%97%A8%E4%B8%8E%E8%BF%9B%E9%98%B6.html
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h2 id=&quot;jekyll-搭建博客入门与进阶&quot;&gt;Jekyll 搭建博客入门与进阶&lt;/h2&gt;
+
+&lt;p&gt;最近为了补上之前没学的&lt;em&gt;angularjs&lt;/em&gt;和&lt;em&gt;SPA&lt;/em&gt;，写了个新的&lt;em&gt;blog&lt;/em&gt;前端来练手。但是到了链接&lt;em&gt;markdown&lt;/em&gt;文章的步骤时候又是焦头烂额，之前用的&lt;em&gt;showdown&lt;/em&gt;引擎渲染得有些不尽人意。好在这次用了&lt;em&gt;jekyll&lt;/em&gt;，几乎省去了所有的后端代码。但是在配置过程中深刻领略到学习一个东西还是要看官方文档，不能看过时博客。&lt;/p&gt;
 
 &lt;p&gt;其实用&lt;em&gt;jekyll&lt;/em&gt;很简单，几步就能搭建好博客。&lt;/p&gt;
 
@@ -136,25 +152,65 @@ gem install jekyll
 &lt;/ol&gt;
 
 &lt;ul&gt;
-  &lt;li&gt;首先，要自己写前端一定要看官网的模版语言介绍，里面要注意，如果用在&lt;code class=&quot;highlighter-rouge&quot;&gt;location.href&lt;/code&gt;里面，外面用了”“里面要轮流用单引号和双引号，如果需要更多的引号，一定要写在function里，比如&lt;code class=&quot;highlighter-rouge&quot;&gt;onclick=&quot; return function(){location.href =  'http://localhost:4000//#/version'}()&quot;&amp;gt;&lt;/code&gt;。不然html渲染的时候肯定会报错。&lt;/li&gt;
+  &lt;li&gt;首先，要自己写前端一定要看官网的模版语言介绍，里面要注意，如果用在&lt;code class=&quot;highlighter-rouge&quot;&gt;location.href&lt;/code&gt;里面，外面用了”“里面要轮流用单引号和双引号，如果需要更多的引号，一定要写在function里，比如&lt;code class=&quot;highlighter-rouge&quot;&gt;onclick=&quot; return function(){location.href =  'http://localhost:4000/#/version'}()&quot;&amp;gt;&lt;/code&gt;。不然html渲染的时候肯定会报错。&lt;/li&gt;
   &lt;li&gt;更多的liquid模版语言范式，请看http://jekyll.tips/jekyll-cheat-sheet/&lt;/li&gt;
   &lt;li&gt;在jekyll的SEO方面，请看http://pizn.github.io/2012/01/16/the-seo-for-jekyll-blog.html ，有比较详细的介绍。&lt;/li&gt;
   &lt;li&gt;如果要是出了bug一定要想一下是不是看的哪个博客过时了，请看回jekyll官网http://jekyll.com.cn/docs/home/ 寻求解答&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;本页为原创内容，转载请注明出处http://localhost:4000//2017/Jekyll-%E5%85%A5%E9%97%A8%E4%B8%8E%E8%BF%9B%E9%98%B6/
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+</description>
+        <pubDate>Fri, 17 Mar 2017 00:00:00 +0800</pubDate>
+        <link>http://localhost:4000/computer/science/2017/03/17/Jekyll-%E5%85%A5%E9%97%A8%E4%B8%8E%E8%BF%9B%E9%98%B6.html</link>
+        <guid isPermaLink="true">http://localhost:4000/computer/science/2017/03/17/Jekyll-%E5%85%A5%E9%97%A8%E4%B8%8E%E8%BF%9B%E9%98%B6.html</guid>
+        
+        <category>Computer</category>
+        
+        <category>Science</category>
+        
+        
+        <category>Computer</category>
+        
+        <category>Science</category>
+        
+      </item>
+    
+      <item>
+        <title>About</title>
+        <description>&lt;h2 id=&quot;about&quot;&gt;About&lt;/h2&gt;
+
+&lt;p&gt;&lt;em&gt;Name：Jiawei&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Location: Guangzhou,China&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Wechat: cjw1369&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Instagram: jiawei7913&lt;/em&gt;&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;全国初中信息学联赛一等奖吉林省第三名&lt;/p&gt;
+
+&lt;p&gt;全国高中信息学联赛一等奖&lt;/p&gt;
+
+&lt;p&gt;全国高中数学联赛、物理竞赛二等奖&lt;/p&gt;
+
+&lt;p&gt;北斗杯全国中学生创新大赛优秀奖&lt;/p&gt;
+
+&lt;p&gt;中山大学ACM新手赛亚军&lt;/p&gt;
+
+&lt;p&gt;我还想写，但是没有拿得出手的了…&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;此Blog纯属无聊创作，欢迎合作交流&lt;/strong&gt;&lt;/p&gt;
 
 </description>
         <pubDate>Fri, 17 Mar 2017 00:00:00 +0800</pubDate>
-        <link>http://localhost:4000//2017/Jekyll-%E5%85%A5%E9%97%A8%E4%B8%8E%E8%BF%9B%E9%98%B6/</link>
-        <guid isPermaLink="true">http://localhost:4000//2017/Jekyll-%E5%85%A5%E9%97%A8%E4%B8%8E%E8%BF%9B%E9%98%B6/</guid>
+        <link>http://localhost:4000/about/2017/03/17/About.html</link>
+        <guid isPermaLink="true">http://localhost:4000/about/2017/03/17/About.html</guid>
         
-        <category>Computer_Science</category>
+        <category>About</category>
         
         
-        <category>Computer_Science</category>
+        <category>About</category>
         
       </item>
     
@@ -170,8 +226,8 @@ gem install jekyll
 
 </description>
         <pubDate>Thu, 16 Mar 2017 00:00:00 +0800</pubDate>
-        <link>http://localhost:4000//2017/new_life/</link>
-        <guid isPermaLink="true">http://localhost:4000//2017/new_life/</guid>
+        <link>http://localhost:4000/blogs/2017/03/16/new_life.html</link>
+        <guid isPermaLink="true">http://localhost:4000/blogs/2017/03/16/new_life.html</guid>
         
         <category>Blogs</category>
         
@@ -648,19 +704,29 @@ comments powered by &lt;span class=&quot;nt&quot;&gt;&amp;lt;span&lt;/span&gt; &
 
 </description>
         <pubDate>Thu, 16 Mar 2017 00:00:00 +0800</pubDate>
-        <link>http://localhost:4000//2017/My-Mind/</link>
-        <guid isPermaLink="true">http://localhost:4000//2017/My-Mind/</guid>
+        <link>http://localhost:4000/computer/science/2017/03/16/My-Mind.html</link>
+        <guid isPermaLink="true">http://localhost:4000/computer/science/2017/03/16/My-Mind.html</guid>
         
-        <category>Computer_Science</category>
+        <category>Computer</category>
+        
+        <category>Science</category>
         
         
-        <category>Computer_Science</category>
+        <category>Computer</category>
+        
+        <category>Science</category>
         
       </item>
     
       <item>
         <title>Learning Advanced Javascript</title>
-        <description>&lt;p&gt;&lt;strong&gt;#2: Goal: To be able to understand this function:&lt;/strong&gt;&lt;/p&gt;
+        <description>&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;本页为原创内容，转载请注明出处http://localhost:4000/computer/science/2017/03/16/Learning-Advanced-Javascript.html
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h2 id=&quot;learning-advanced-javascript&quot;&gt;Learning Advanced Javascript&lt;/h2&gt;
+
+&lt;p&gt;&lt;strong&gt;#2: Goal: To be able to understand this function:&lt;/strong&gt;&lt;/p&gt;
 
 &lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-javascript&quot; data-lang=&quot;javascript&quot;&gt;&lt;table style=&quot;border-spacing: 0&quot;&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td class=&quot;gutter gl&quot; style=&quot;text-align: right&quot;&gt;&lt;pre class=&quot;lineno&quot;&gt;1
 2
@@ -762,10 +828,10 @@ LOG function myNinja(){ assert( ninja == myNinja, &quot;This function is named t
   &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; 
 &lt;span class=&quot;p&quot;&gt;};&lt;/span&gt; 
 &lt;span class=&quot;nx&quot;&gt;assert&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;ninja&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;yell&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;hiyaaaa&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;A single object isn't too bad, either.&quot;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;);&lt;/span&gt; 
-
+ 
 &lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;samurai&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;yell&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;ninja&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;yell&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;};&lt;/span&gt; 
 &lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;ninja&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;null&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; 
-
+ 
 &lt;span class=&quot;k&quot;&gt;try&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; 
   &lt;span class=&quot;nx&quot;&gt;samurai&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;yell&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt; 
 &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;catch&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;){&lt;/span&gt; 
@@ -799,7 +865,7 @@ FAIL Uh, this isn't good! Where'd ninja.yell go?
   &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; 
 &lt;span class=&quot;p&quot;&gt;};&lt;/span&gt; 
 &lt;span class=&quot;nx&quot;&gt;assert&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;ninja&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;yell&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;hiyaaaa&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;Works as we would expect it to!&quot;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;);&lt;/span&gt; 
-
+ 
 &lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;samurai&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;yell&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;ninja&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;yell&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;};&lt;/span&gt; 
 &lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;ninja&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{};&lt;/span&gt; 
 &lt;span class=&quot;nx&quot;&gt;assert&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;samurai&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;yell&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;hiyaaaa&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;The method correctly calls itself.&quot;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
@@ -826,18 +892,18 @@ FAIL Uh, this isn't good! Where'd ninja.yell go?
 15
 16&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;getElements&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;name&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; 
   &lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;results&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; 
-
+ 
   &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;getElements&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;cache&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; 
     &lt;span class=&quot;nx&quot;&gt;results&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;getElements&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;cache&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt; 
   &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; 
     &lt;span class=&quot;nx&quot;&gt;results&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;document&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;getElementsByTagName&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt; 
     &lt;span class=&quot;nx&quot;&gt;getElements&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;cache&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;results&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; 
   &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; 
-
+ 
   &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;results&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; 
 &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; 
 &lt;span class=&quot;nx&quot;&gt;getElements&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;cache&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{};&lt;/span&gt; 
-
+ 
 &lt;span class=&quot;nx&quot;&gt;log&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;Elements found: &quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;getElements&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;pre&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;length&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;);&lt;/span&gt; 
 &lt;span class=&quot;nx&quot;&gt;log&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;Cache found: &quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;getElements&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;cache&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;pre&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;length&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
 &lt;/span&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
@@ -1013,58 +1079,19 @@ a 是有指针的，指向 &lt;code class=&quot;highlighter-rouge&quot;&gt;&lt;s
 &lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
 &lt;/span&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;本页为原创内容，转载请注明出处http://localhost:4000//2017/Learning-Advanced-Javascript/
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
 </description>
         <pubDate>Thu, 16 Mar 2017 00:00:00 +0800</pubDate>
-        <link>http://localhost:4000//2017/Learning-Advanced-Javascript/</link>
-        <guid isPermaLink="true">http://localhost:4000//2017/Learning-Advanced-Javascript/</guid>
+        <link>http://localhost:4000/computer/science/2017/03/16/Learning-Advanced-Javascript.html</link>
+        <guid isPermaLink="true">http://localhost:4000/computer/science/2017/03/16/Learning-Advanced-Javascript.html</guid>
         
-        <category>Computer_Science</category>
+        <category>Computer</category>
         
-        
-        <category>Computer_Science</category>
-        
-      </item>
-    
-      <item>
-        <title>Welcome to My Blog!</title>
-        <description>&lt;p&gt;Name：Jiawei&lt;/p&gt;
-
-&lt;p&gt;Location: Guangzhou,China&lt;/p&gt;
-
-&lt;p&gt;Wechat: cjw1369&lt;/p&gt;
-
-&lt;p&gt;Instagram: jiawei7913&lt;/p&gt;
-
-&lt;p&gt;全国初中信息学联赛一等奖吉林省第三名&lt;/p&gt;
-
-&lt;p&gt;全国高中信息学联赛一等奖&lt;/p&gt;
-
-&lt;p&gt;全国高中数学联赛、物理竞赛二等奖&lt;/p&gt;
-
-&lt;p&gt;北斗杯全国中学生创新大赛优秀奖&lt;/p&gt;
-
-&lt;p&gt;中山大学ACM新手赛亚军&lt;/p&gt;
-
-&lt;p&gt;我还想写，但是没有拿得出手的了…&lt;/p&gt;
-
-&lt;p&gt;国王的演讲中扉页印着乔治六世的那句“人始终要超越的，是自己”&lt;/p&gt;
-
-&lt;p&gt;愿每个在努力着的人都能有所收获，有所超越&lt;/p&gt;
-
-&lt;p&gt;– From: Jiawei&lt;/p&gt;
-</description>
-        <pubDate>Fri, 08 Jan 2016 23:04:23 +0800</pubDate>
-        <link>http://localhost:4000//2016/welcome-to-jekyll/</link>
-        <guid isPermaLink="true">http://localhost:4000//2016/welcome-to-jekyll/</guid>
-        
-        <category>About</category>
+        <category>Science</category>
         
         
-        <category>About</category>
+        <category>Computer</category>
+        
+        <category>Science</category>
         
       </item>
     
