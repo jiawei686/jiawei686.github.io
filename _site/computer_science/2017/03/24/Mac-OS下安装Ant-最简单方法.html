@@ -3,7 +3,7 @@
 	<head>
 		<meta charset="utf-8">
 		<meta name = "author" content = Jiawei>
-		<title>Some Web Problems - Like the ceiling can't hold us</title>
+		<title>Mac OS下安装Ant--最简单方法 - Like the ceiling can't hold us</title>
 		<!-- 新 Bootstrap 核心 CSS 文件 -->
 		<link href="//cdn.static.runoob.com/libs/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
 		 
@@ -37,46 +37,16 @@
 		         <br><br><br><br>
 		    	<div class="col-md-12">
 	<div class="col-md-12">
-		<div class="highlighter-rouge"><pre class="highlight"><code>本页为原创内容，转载请注明出处http://localhost:4000/computer/science/2017/03/17/Some-Web-Problems.html
+		<p>如果你想熟悉一下系统编译的过程，可以到网上找下载安装包手动安装方法。当然，最简单的方法是用homebrew</p>
+
+<div class="language-shell highlighter-rouge"><pre class="highlight"><code>brew install java
+brew install ant
 </code></pre>
 </div>
 
-<h2 id="some-web-problems">Some Web Problems</h2>
+<p>以上两条命令即可</p>
 
-<p><strong>#浏览器禁止跨域请求</strong></p>
-
-<p>有时我们在本地测试前端代码时，可能会出现<code class="highlighter-rouge">No 'Access-Control-Allow-Origin' header is present on the requested resource</code>这样的提示，原因是浏览器出于安全因素，不允许我们的页面使用来自多个页面的资源。此时我们需要开放浏览器的跨域请求。</p>
-
-<h6 id="mac-chrome-safari开放跨域请求">Mac-Chrome-Safari开放跨域请求：</h6>
-
-<ul>
-  <li>
-    <p>chrome49以前版本</p>
-
-    <div class="highlighter-rouge"><pre class="highlight"><code> open -a "Google Chrome" --args --disable-web-security
-</code></pre>
-    </div>
-  </li>
-  <li>
-    <p>chrome49以后版本</p>
-
-    <div class="highlighter-rouge"><pre class="highlight"><code> open -a /Applications/Google\ Chrome.app --args --disable-web-security --user-data-dir
-</code></pre>
-    </div>
-  </li>
-  <li>
-    <p>Safari</p>
-
-    <div class="highlighter-rouge"><pre class="highlight"><code>open -a '/Applications/Safari.app' --args --disable-web-security
-</code></pre>
-    </div>
-  </li>
-</ul>
-
-<p><strong>#https网站禁止调用http资源</strong></p>
-
-<p>有时我们在Git Pages上放前端代码时，可能会遇到引用的外部资源加载不了，有着类似的提示<code class="highlighter-rouge">Mixed Content: The page was loaded over HTTPS, but requested an insecure XMLHttpRequest endpoint HTTP</code> 。这是因为https协议网站的内容不能引用http内容，此时我们可以在引用处省略协议名称，从而可以避免这个问题。如<code class="highlighter-rouge">src="//cdn.static.runoob.com/libs/jquery/2.1.1/jquery.min.js"</code> ，但是要记得//不可以去掉。</p>
-
+<p><img src="https://thumbnail0.baidupcs.com/thumbnail/7343106a04cbe8fb7e0ffd8f8e879359?fid=1126347302-250528-250534322781989&amp;time=1490421600&amp;rt=sh&amp;sign=FDTAER-DCb740ccc5511e5e8fedcff06b081203-x8gsWLP13r9jdb5dlWrhdSZQiu0%3D&amp;expires=8h&amp;chkv=0&amp;chkbd=0&amp;chkpc=&amp;dp-logid=1939028995448949513&amp;dp-callid=0&amp;size=c710_u400&amp;quality=100" alt="屏幕快照 2017-03-25 下午1.46.24" /></p>
 
 	</div>
 </div>

@@ -3,7 +3,22 @@
   
     
     <url>
-      <loc>http://localhost:4000/version/2017/03/17/Version.html</loc>
+      <loc>http://localhost:4000/computer_science/2017/03/24/Mac-OS%E4%B8%8B%E5%AE%89%E8%A3%85Ant-%E6%9C%80%E7%AE%80%E5%8D%95%E6%96%B9%E6%B3%95.html</loc>
+      
+        <lastmod>2017-03-24T00:00:00+08:00</lastmod>
+      
+      
+        <changefreq>monthly</changefreq>
+      
+      
+        <priority>0.5</priority>
+      
+    </url>
+    
+  
+    
+    <url>
+      <loc>http://localhost:4000/computer_science/2017/03/17/Some-Web-Problems.html</loc>
       
         <lastmod>2017-03-17T00:00:00+08:00</lastmod>
       
@@ -18,37 +33,7 @@
   
     
     <url>
-      <loc>http://localhost:4000/computer/science/2017/03/17/Some-Web-Problems.html</loc>
-      
-        <lastmod>2017-03-17T00:00:00+08:00</lastmod>
-      
-      
-        <changefreq>monthly</changefreq>
-      
-      
-        <priority>0.5</priority>
-      
-    </url>
-    
-  
-    
-    <url>
-      <loc>http://localhost:4000/computer/science/2017/03/17/Jekyll-%E5%85%A5%E9%97%A8%E4%B8%8E%E8%BF%9B%E9%98%B6.html</loc>
-      
-        <lastmod>2017-03-17T00:00:00+08:00</lastmod>
-      
-      
-        <changefreq>monthly</changefreq>
-      
-      
-        <priority>0.5</priority>
-      
-    </url>
-    
-  
-    
-    <url>
-      <loc>http://localhost:4000/about/2017/03/17/About.html</loc>
+      <loc>http://localhost:4000/computer_science/2017/03/17/Jekyll-%E5%85%A5%E9%97%A8%E4%B8%8E%E8%BF%9B%E9%98%B6.html</loc>
       
         <lastmod>2017-03-17T00:00:00+08:00</lastmod>
       
@@ -78,7 +63,7 @@
   
     
     <url>
-      <loc>http://localhost:4000/computer/science/2017/03/16/My-Mind.html</loc>
+      <loc>http://localhost:4000/computer_science/2017/03/16/My-Mind.html</loc>
       
         <lastmod>2017-03-16T00:00:00+08:00</lastmod>
       
@@ -93,9 +78,24 @@
   
     
     <url>
-      <loc>http://localhost:4000/computer/science/2017/03/16/Learning-Advanced-Javascript.html</loc>
+      <loc>http://localhost:4000/computer_science/2017/03/16/Learning-Advanced-Javascript.html</loc>
       
         <lastmod>2017-03-16T00:00:00+08:00</lastmod>
+      
+      
+        <changefreq>monthly</changefreq>
+      
+      
+        <priority>0.5</priority>
+      
+    </url>
+    
+  
+    
+    <url>
+      <loc>http://localhost:4000/about/2016/01/08/welcome-to-jekyll.html</loc>
+      
+        <lastmod>2016-01-08T23:04:23+08:00</lastmod>
       
       
         <changefreq>monthly</changefreq>
@@ -111,7 +111,7 @@
     <url>
       <loc>http://localhost:4000/views/blogs.html</loc>
       
-        <lastmod>2017-03-27T20:11:06+08:00</lastmod>
+        <lastmod>2017-03-31T19:58:04+08:00</lastmod>
       
       
         <changefreq>monthly</changefreq>
@@ -126,7 +126,7 @@
     <url>
       <loc>http://localhost:4000/views/computer_science.html</loc>
       
-        <lastmod>2017-03-27T20:11:06+08:00</lastmod>
+        <lastmod>2017-03-31T19:58:04+08:00</lastmod>
       
       
         <changefreq>monthly</changefreq>
@@ -141,7 +141,7 @@
     <url>
       <loc>http://localhost:4000/feed.xml</loc>
       
-        <lastmod>2017-03-27T20:11:06+08:00</lastmod>
+        <lastmod>2017-03-31T19:58:04+08:00</lastmod>
       
       
         <changefreq>monthly</changefreq>
@@ -156,7 +156,7 @@
     <url>
       <loc>http://localhost:4000/</loc>
       
-        <lastmod>2017-03-27T20:11:06+08:00</lastmod>
+        <lastmod>2017-03-31T19:58:04+08:00</lastmod>
       
       
         <changefreq>monthly</changefreq>

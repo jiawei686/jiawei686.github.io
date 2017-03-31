@@ -37,13 +37,7 @@
 		         <br><br><br><br>
 		    	<div class="col-md-12">
 	<div class="col-md-12">
-		<div class="highlighter-rouge"><pre class="highlight"><code>本页为原创内容，转载请注明出处http://localhost:4000/computer/science/2017/03/16/Learning-Advanced-Javascript.html
-</code></pre>
-</div>
-
-<h2 id="learning-advanced-javascript">Learning Advanced Javascript</h2>
-
-<p><strong>#2: Goal: To be able to understand this function:</strong></p>
+		<p><strong>#2: Goal: To be able to understand this function:</strong></p>
 
 <figure class="highlight"><pre><code class="language-javascript" data-lang="javascript"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
 2
@@ -145,10 +139,10 @@ LOG function myNinja(){ assert( ninja == myNinja, "This function is named two th
   <span class="p">}</span> 
 <span class="p">};</span> 
 <span class="nx">assert</span><span class="p">(</span> <span class="nx">ninja</span><span class="p">.</span><span class="nx">yell</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"hiyaaaa"</span><span class="p">,</span> <span class="s2">"A single object isn't too bad, either."</span> <span class="p">);</span> 
- 
+
 <span class="kd">var</span> <span class="nx">samurai</span> <span class="o">=</span> <span class="p">{</span> <span class="na">yell</span><span class="p">:</span> <span class="nx">ninja</span><span class="p">.</span><span class="nx">yell</span> <span class="p">};</span> 
 <span class="kd">var</span> <span class="nx">ninja</span> <span class="o">=</span> <span class="kc">null</span><span class="p">;</span> 
- 
+
 <span class="k">try</span> <span class="p">{</span> 
   <span class="nx">samurai</span><span class="p">.</span><span class="nx">yell</span><span class="p">(</span><span class="mi">4</span><span class="p">);</span> 
 <span class="p">}</span> <span class="k">catch</span><span class="p">(</span><span class="nx">e</span><span class="p">){</span> 
@@ -182,7 +176,7 @@ FAIL Uh, this isn't good! Where'd ninja.yell go?
   <span class="p">}</span> 
 <span class="p">};</span> 
 <span class="nx">assert</span><span class="p">(</span> <span class="nx">ninja</span><span class="p">.</span><span class="nx">yell</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"hiyaaaa"</span><span class="p">,</span> <span class="s2">"Works as we would expect it to!"</span> <span class="p">);</span> 
- 
+
 <span class="kd">var</span> <span class="nx">samurai</span> <span class="o">=</span> <span class="p">{</span> <span class="na">yell</span><span class="p">:</span> <span class="nx">ninja</span><span class="p">.</span><span class="nx">yell</span> <span class="p">};</span> 
 <span class="kd">var</span> <span class="nx">ninja</span> <span class="o">=</span> <span class="p">{};</span> 
 <span class="nx">assert</span><span class="p">(</span> <span class="nx">samurai</span><span class="p">.</span><span class="nx">yell</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"hiyaaaa"</span><span class="p">,</span> <span class="s2">"The method correctly calls itself."</span> <span class="p">);</span><span class="w">
@@ -209,18 +203,18 @@ FAIL Uh, this isn't good! Where'd ninja.yell go?
 15
 16</pre></td><td class="code"><pre><span class="kd">function</span> <span class="nx">getElements</span><span class="p">(</span> <span class="nx">name</span> <span class="p">)</span> <span class="p">{</span> 
   <span class="kd">var</span> <span class="nx">results</span><span class="p">;</span> 
- 
+
   <span class="k">if</span> <span class="p">(</span> <span class="nx">getElements</span><span class="p">.</span><span class="nx">cache</span><span class="p">[</span><span class="nx">name</span><span class="p">]</span> <span class="p">)</span> <span class="p">{</span> 
     <span class="nx">results</span> <span class="o">=</span> <span class="nx">getElements</span><span class="p">.</span><span class="nx">cache</span><span class="p">[</span><span class="nx">name</span><span class="p">];</span> 
   <span class="p">}</span> <span class="k">else</span> <span class="p">{</span> 
     <span class="nx">results</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">getElementsByTagName</span><span class="p">(</span><span class="nx">name</span><span class="p">);</span> 
     <span class="nx">getElements</span><span class="p">.</span><span class="nx">cache</span><span class="p">[</span><span class="nx">name</span><span class="p">]</span> <span class="o">=</span> <span class="nx">results</span><span class="p">;</span> 
   <span class="p">}</span> 
- 
+
   <span class="k">return</span> <span class="nx">results</span><span class="p">;</span> 
 <span class="p">}</span> 
 <span class="nx">getElements</span><span class="p">.</span><span class="nx">cache</span> <span class="o">=</span> <span class="p">{};</span> 
- 
+
 <span class="nx">log</span><span class="p">(</span> <span class="s2">"Elements found: "</span><span class="p">,</span> <span class="nx">getElements</span><span class="p">(</span><span class="s2">"pre"</span><span class="p">).</span><span class="nx">length</span> <span class="p">);</span> 
 <span class="nx">log</span><span class="p">(</span> <span class="s2">"Cache found: "</span><span class="p">,</span> <span class="nx">getElements</span><span class="p">.</span><span class="nx">cache</span><span class="p">.</span><span class="nx">pre</span><span class="p">.</span><span class="nx">length</span> <span class="p">);</span><span class="w">
 </span></pre></td></tr></tbody></table></code></pre></figure>
@@ -395,6 +389,10 @@ a 是有指针的，指向 <code class="highlighter-rouge"><span class="p">{</sp
   <span class="nx">assert</span><span class="p">(</span><span class="k">this</span> <span class="k">instanceof</span> <span class="nb">Array</span><span class="p">,</span> <span class="s2">"The context should be the full array."</span><span class="p">);</span>
 <span class="p">});</span><span class="w">
 </span></pre></td></tr></tbody></table></code></pre></figure>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>本页为原创内容，转载请注明出处http://localhost:4000/computer_science/2017/03/16/Learning-Advanced-Javascript.html
+</code></pre>
+</div>
 
 
 	</div>

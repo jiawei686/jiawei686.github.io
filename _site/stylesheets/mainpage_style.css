@@ -3,16 +3,21 @@
 	text-align: center;
 	font-size: 25px;
 	font-family: "Brush Script MT";
-	height: 30px;
+	height: 50px;
 	color: gray;
+	padding-top: 15px;
+	margin-top: 10px;
 }
 
 
-
+#leftLeft{
+	padding-right: 0px;
+}
 
 #mainpage_singer{
 	margin: 0px;
 	padding: 0px;
+	max-width: 100%;
 }
 
 #leftTotal{
