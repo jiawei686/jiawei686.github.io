@@ -6,9 +6,33 @@
 </description>
     <link>http://localhost:4000/</link>
     <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Fri, 31 Mar 2017 19:58:04 +0800</pubDate>
-    <lastBuildDate>Fri, 31 Mar 2017 19:58:04 +0800</lastBuildDate>
+    <pubDate>Sun, 02 Apr 2017 18:01:42 +0800</pubDate>
+    <lastBuildDate>Sun, 02 Apr 2017 18:01:42 +0800</lastBuildDate>
     <generator>Jekyll v3.4.2</generator>
+    
+      <item>
+        <title>ACM校赛，久违的失败</title>
+        <description>&lt;h4 id=&quot;acm校赛久违的失败&quot;&gt;ACM校赛，久违的失败&lt;/h4&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;一个小时前结束的ACM校赛，我的队伍排名垫底。四个小时里，再此感受到如坐针毡的，却又无可奈何的，久违的感觉。&lt;/li&gt;
+  &lt;li&gt;忽然想起在高中，各种竞赛考试面前，如果心态足够好，再困难的题目也可以顺势解出，我们称之为“进入状态”。如果某一次考试的心态不好，要么是过于重视，要么是过于浮躁。这时面对题目那一张纸，我就会像一个傻逼一样，呆若木鸡，看着别人思考的样子，我却静不下心来分析题目。&lt;/li&gt;
+  &lt;li&gt;在去年的ACM新手赛结束后，拿到了亚军的我，曾经有那么一个瞬间真的以为自己可以重新捡起不完整的OI生涯，代表中山大学打ACM总决赛，现在看来这种不努力的空想太天真了。&lt;/li&gt;
+  &lt;li&gt;Life is like that&lt;/li&gt;
+  &lt;li&gt;只能承认自己的天赋不如别人，还不如别人努力。看起来我所做的一切如同在螳臂当车。&lt;/li&gt;
+  &lt;li&gt;希望还能恢复过来，向前走。&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+        <pubDate>Sun, 02 Apr 2017 00:00:00 +0800</pubDate>
+        <link>http://localhost:4000/blogs/2017/04/02/ACM%E6%A0%A1%E8%B5%9B-%E4%B9%85%E8%BF%9D%E7%9A%84%E5%A4%B1%E8%B4%A5.html</link>
+        <guid isPermaLink="true">http://localhost:4000/blogs/2017/04/02/ACM%E6%A0%A1%E8%B5%9B-%E4%B9%85%E8%BF%9D%E7%9A%84%E5%A4%B1%E8%B4%A5.html</guid>
+        
+        <category>Blogs</category>
+        
+        
+        <category>Blogs</category>
+        
+      </item>
     
       <item>
         <title>Mac OS下安装Ant--最简单方法</title>

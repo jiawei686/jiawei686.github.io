@@ -30,6 +30,11 @@
 	margin: 0px;
 }
 
+#content{
+	padding-left: 30px;
+	padding-right: 30px;
+}
+
 .intro{
 	text-align: left;
 	margin-left: 30px;

@@ -3,6 +3,21 @@
   
     
     <url>
+      <loc>http://localhost:4000/blogs/2017/04/02/ACM%E6%A0%A1%E8%B5%9B-%E4%B9%85%E8%BF%9D%E7%9A%84%E5%A4%B1%E8%B4%A5.html</loc>
+      
+        <lastmod>2017-04-02T00:00:00+08:00</lastmod>
+      
+      
+        <changefreq>monthly</changefreq>
+      
+      
+        <priority>0.5</priority>
+      
+    </url>
+    
+  
+    
+    <url>
       <loc>http://localhost:4000/computer_science/2017/03/24/Mac-OS%E4%B8%8B%E5%AE%89%E8%A3%85Ant-%E6%9C%80%E7%AE%80%E5%8D%95%E6%96%B9%E6%B3%95.html</loc>
       
         <lastmod>2017-03-24T00:00:00+08:00</lastmod>
@@ -111,7 +126,7 @@
     <url>
       <loc>http://localhost:4000/views/blogs.html</loc>
       
-        <lastmod>2017-03-31T19:58:04+08:00</lastmod>
+        <lastmod>2017-04-02T18:01:42+08:00</lastmod>
       
       
         <changefreq>monthly</changefreq>
@@ -126,7 +141,7 @@
     <url>
       <loc>http://localhost:4000/views/computer_science.html</loc>
       
-        <lastmod>2017-03-31T19:58:04+08:00</lastmod>
+        <lastmod>2017-04-02T18:01:42+08:00</lastmod>
       
       
         <changefreq>monthly</changefreq>
@@ -141,7 +156,7 @@
     <url>
       <loc>http://localhost:4000/feed.xml</loc>
       
-        <lastmod>2017-03-31T19:58:04+08:00</lastmod>
+        <lastmod>2017-04-02T18:01:42+08:00</lastmod>
       
       
         <changefreq>monthly</changefreq>
@@ -156,7 +171,7 @@
     <url>
       <loc>http://localhost:4000/</loc>
       
-        <lastmod>2017-03-31T19:58:04+08:00</lastmod>
+        <lastmod>2017-04-02T18:01:42+08:00</lastmod>
       
       
         <changefreq>monthly</changefreq>
