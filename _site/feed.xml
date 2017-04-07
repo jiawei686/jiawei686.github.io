@@ -6,8 +6,8 @@
 </description>
     <link>http://localhost:4000/</link>
     <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Thu, 06 Apr 2017 17:10:33 +0800</pubDate>
-    <lastBuildDate>Thu, 06 Apr 2017 17:10:33 +0800</lastBuildDate>
+    <pubDate>Fri, 07 Apr 2017 17:12:31 +0800</pubDate>
+    <lastBuildDate>Fri, 07 Apr 2017 17:12:31 +0800</lastBuildDate>
     <generator>Jekyll v3.4.2</generator>
     
       <item>
@@ -55,6 +55,33 @@ brew install ant
         
         
         <category>Computer_Science</category>
+        
+      </item>
+    
+      <item>
+        <title>Version</title>
+        <description>&lt;h2 id=&quot;version&quot;&gt;Version&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Version 1.0
+    &lt;ul&gt;
+      &lt;li&gt;尝试使用angularjs，并实现首页与博客页应用SPA技术&lt;/li&gt;
+      &lt;li&gt;应用jekyll提供后端并解析markdown文章&lt;/li&gt;
+      &lt;li&gt;页面采用bootstrap框架动态适配窗口大小&lt;/li&gt;
+      &lt;li&gt;导航按钮的css3创新&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+</description>
+        <pubDate>Fri, 17 Mar 2017 00:00:00 +0800</pubDate>
+        <link>http://localhost:4000/version/2017/03/17/Version.html</link>
+        <guid isPermaLink="true">http://localhost:4000/version/2017/03/17/Version.html</guid>
+        
+        <category>Version</category>
+        
+        
+        <category>Version</category>
         
       </item>
     
@@ -180,6 +207,46 @@ gem install jekyll
         
         
         <category>Computer_Science</category>
+        
+      </item>
+    
+      <item>
+        <title>About</title>
+        <description>&lt;h2 id=&quot;about&quot;&gt;About&lt;/h2&gt;
+
+&lt;p&gt;&lt;em&gt;Name：Jiawei&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Location: Guangzhou,China&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Wechat: cjw1369&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Instagram: jiawei7913&lt;/em&gt;&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;全国初中信息学联赛一等奖吉林省第三名&lt;/p&gt;
+
+&lt;p&gt;全国高中信息学联赛一等奖&lt;/p&gt;
+
+&lt;p&gt;全国高中数学联赛、物理竞赛二等奖&lt;/p&gt;
+
+&lt;p&gt;北斗杯全国中学生创新大赛优秀奖&lt;/p&gt;
+
+&lt;p&gt;中山大学ACM新手赛亚军&lt;/p&gt;
+
+&lt;p&gt;我还想写，但是没有拿得出手的了…&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;此Blog纯属无聊创作，欢迎合作交流&lt;/strong&gt;&lt;/p&gt;
+
+</description>
+        <pubDate>Fri, 17 Mar 2017 00:00:00 +0800</pubDate>
+        <link>http://localhost:4000/about/2017/03/17/About.html</link>
+        <guid isPermaLink="true">http://localhost:4000/about/2017/03/17/About.html</guid>
+        
+        <category>About</category>
+        
+        
+        <category>About</category>
         
       </item>
     
