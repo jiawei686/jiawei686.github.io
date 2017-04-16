@@ -1,0 +1,10 @@
+(function(){
+	alert(1);
+	$("h3").hide();
+	$(".navigation").length;
+	$(".navigation").each(function(index){
+		alert(1);
+		alert(this);
+	});
+	alert(2);
+})();
