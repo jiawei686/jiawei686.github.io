@@ -10,7 +10,7 @@
 				if(index > -1) $("figure").eq(index).fadeTo(600,1);
 				index++;
 				timeout = setTimeout(show_pictures,400);
-				if(index > 4) clearTimeout(timeout);
+				if(index > $("figure").length - 1) clearTimeout(timeout);
 			}		
 		},1000);
 		
