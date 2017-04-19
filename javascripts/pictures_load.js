@@ -1,16 +1,20 @@
 (function(){
-	var index = 0;
+	var index = -1;
 	setTimeout(function(){
-		show_pictures();
-		var timeout;
-		function show_pictures(){
-			$("figure").eq(index).fadeTo(600,1);
-			index++;
-			timeout = setTimeout(show_pictures,400);
-			if(index == 5) $("#mainpage_singer").fadeTo(1000,1);
-			if(index > 4) clearTimeout(timeout);
-		}	
-	},2000);
+
+		setTimeout(function(){
+			$("#mainpage_singer").fadeTo(1000,1);
+			show_pictures();
+			var timeout;
+			function show_pictures(){
+				if(index > -1) $("figure").eq(index).fadeTo(600,1);
+				index++;
+				timeout = setTimeout(show_pictures,400);
+				if(index > 4) clearTimeout(timeout);
+			}		
+		},1000);
+		
+	},1000);
 	
 
 })();
