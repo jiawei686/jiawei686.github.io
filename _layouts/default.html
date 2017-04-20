@@ -1,84 +1,83 @@
 ---
 
 ---
-
-
 <!DOCTYPE html>
 	<html>
 	<head>
 		<meta charset="utf-8">
 		<meta name = "author" content = {{ site.author }}>
 		<title>{% if page.title %}{{ page.title }} - {% endif %}{{ site.title }}</title>
-		<meta name="baidu-site-verification" content="a9NpQH8KEY" />
+		
 		<!-- 新 Bootstrap 核心 CSS 文件 -->
 		<link href="//cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
 		 
-		<!-- 可选的Bootstrap主题文件（一般不使用） -->
-		<script src="//cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap-theme.min.css"></script>
-		 
+		<link rel="stylesheet" type="text/css" href={{"/stylesheets/mainpage_style.css"| absolute_url}}>
+
+
 		<!-- jQuery文件。务必在bootstrap.min.js 之前引入 -->
 		<script src="//cdn.bootcss.com/jquery/1.10.0/jquery.min.js"></script>
 		 
 		<!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
-		<script src="//cdn.bootcss.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js"></script>
+	<!-- 	<script src="//cdn.bootcss.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js"></script>
+		 -->
 
-		<script src="//apps.bdimg.com/libs/angular.js/1.4.6/angular.min.js"></script>
-        <script src="//apps.bdimg.com/libs/angular-route/1.3.13/angular-route.js"></script>
-		<script type="text/javascript" src = {{"/javascripts/app.js"| absolute_url}}></script>
 		
-
-		<link rel="stylesheet" type="text/css" href={{"/stylesheets/background.css"| absolute_url}}>
-		<link rel="stylesheet" type="text/css" href={{"/stylesheets/mainpage_style.css"| absolute_url}}>
-
-		<link rel="stylesheet" type="text/css" href={{"/stylesheets/navigation_component.css"| absolute_url}}>
 
 		<link rel="stylesheet" type="text/css" href={{"/stylesheets/syntax.css"| absolute_url}}>
-		
-		<link rel="stylesheet" type="text/css" href={{"/stylesheets/navigation_load.css"| absolute_url}}>
 
+
+		<meta name="baidu-site-verification" content="a9NpQH8KEY" />
 		
 	</head>
 	<body>
+		<script src="//apps.bdimg.com/libs/angular.js/1.4.6/angular.min.js"></script>
+        <script src="//apps.bdimg.com/libs/angular-route/1.3.13/angular-route.js"></script>
+		<link rel="stylesheet" type="text/css" href={{"/stylesheets/navigation_component.css"| absolute_url}}>
+
 		<div class="container">
 		   
 		      <div  ng-app = "leftPart" class="col-md-9" id = "leftTotal">
 		      	 
 		         <h3 class = "col-md-9" id = "Title">Like the ceiling can't hold us</h3>
 		         <br><br><br><br>
+		         
 		         <div id = "content">
 		         	{{ content }}
 		         </div>
+		         <script type="text/javascript">
+		         	$("#content").fadeTo(1000,1);
+		         </script>
 		    	
 
 		      </div>
 
 				
 		      <div class="col-md-3" id = "rightTotal">
-		      	<figure class="effect-roxy col-md-12 navigation" onclick=" return function(){location.href =  '{{"/#/home" | absolute_url}}'}()">
+		      	<figure class="navi_fadein effect-roxy col-md-12 navigation" onclick=" return function(){location.href =  '{{"/#/home" | absolute_url}}'}()">
 		            <img class = "col-md-12 navigation" src={{"/images/navigation_logos/home.png"| absolute_url}} alt="Home Page"/>
 		            <figcaption>
 		                <h2>Home <span>Page</span></h2>
 		            </figcaption>			
 		        </figure>
-		        <figure class="effect-roxy col-md-12 navigation" onclick=" return function(){location.href =  '{{"/#/blogs" | absolute_url}}'}()">
+		        <figure class="navi_fadein effect-roxy col-md-12 navigation" onclick=" return function(){location.href =  '{{"/#/blogs" | absolute_url}}'}()">
 		            <img class = "col-md-12 navigation" src={{"/images/navigation_logos/blog.jpg"| absolute_url}}  alt="Blogs"/>
 		            <figcaption>
 		                <h2>Blogs</h2>
 		            </figcaption>			
 		        </figure>
-		        <figure class="effect-roxy col-md-12 navigation" onclick=" return function(){location.href =  '{{"/#/computer_science" | absolute_url}}'}()">
+		        <figure class="navi_fadein effect-roxy col-md-12 navigation" onclick=" return function(){location.href =  '{{"/#/computer_science" | absolute_url}}'}()">
 		            <img class = "col-md-12 navigation" src={{"/images/navigation_logos/tech.jpg"| absolute_url}}  alt="computer_science"/>
 		            <figcaption>
 		                <h2>Computer Science</h2>
 		            </figcaption>			
 		        </figure>
-		        <figure class="effect-roxy col-md-12 navigation" onclick=" return function(){location.href =  '{{"/#/about" | absolute_url}}'}()">
+		        <figure class="navi_fadein effect-roxy col-md-12 navigation" onclick=" return function(){location.href =  '{{"/#/about" | absolute_url}}'}()">
 		            <img class = "col-md-12 navigation" src={{"/images/navigation_logos/about.jpeg"| absolute_url}}  alt="about"/>
 		            <figcaption>
 		                <h2>About</h2>
 		            </figcaption>			
 		        </figure>
-		        <figure class="effect-roxy col-md-12 navigation" onclick=" return function(){location.href =  '{{"/#/version" | absolute_url}}'}()">
+		        <figure class="navi_fadein effect-roxy col-md-12 navigation" onclick=" return function(){location.href =  '{{"/#/version" | absolute_url}}'}()">
 		            <img class = "col-md-12 navigation" src={{"/images/navigation_logos/version.jpg"| absolute_url}}  alt="version"/>
 		            <figcaption>
 		                <h2>Version</h2>
@@ -87,10 +86,16 @@
 		      </div>
 
 		 </div>
+
+
 		<script type="text/javascript" src = {{"/javascripts/pictures_load.js"| absolute_url}}></script>
+		<script type="text/javascript" src = {{"/javascripts/app.js"| absolute_url}}></script>
+
+
 
 		 <div id = "analytics" style="display: none;">
-		 	<script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_1261530161'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s11.cnzz.com/z_stat.php%3Fid%3D1261530161' type='text/javascript'%3E%3C/script%3E"));</script>
+		 	<script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_1261530161'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s11.cnzz.com/z_stat.php%3Fid%3D1261530161' type='text/javascript'%3E%3C/script%3E"));
+		 	</script>
 		 	<script>
 			  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
 			  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),

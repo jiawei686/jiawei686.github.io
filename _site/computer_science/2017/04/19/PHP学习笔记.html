@@ -3,7 +3,7 @@
 	<head>
 		<meta charset="utf-8">
 		<meta name = "author" content = Jiawei>
-		<title>Mac OS下安装Ant--最简单方法 - Like the ceiling can't hold us</title>
+		<title>PHP学习笔记 - Like the ceiling can't hold us</title>
 		
 		<!-- 新 Bootstrap 核心 CSS 文件 -->
 		<link href="//cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
@@ -41,16 +41,98 @@
 		         <div id = "content">
 		         	<div class="col-md-12">
 	<div class="col-md-12">
-		<p>如果你想熟悉一下系统编译的过程，可以到网上找下载安装包手动安装方法。当然，最简单的方法是用homebrew</p>
+		<h4 id="php环境">PHP环境</h4>
 
-<div class="language-shell highlighter-rouge"><pre class="highlight"><code>brew install java
-brew install ant
+<ul>
+  <li>
+    <p>mac集成了php开发环境，使用命令行启动</p>
+
+    <div class="language-shell highlighter-rouge"><pre class="highlight"><code>apachectl -v //查看apache 版本
+apachectl start //启动web server
+apachectl graceful-stop //关闭web server （还不清楚graceful-stop 与 stop 有什么区别）
 </code></pre>
-</div>
+    </div>
 
-<p>以上两条命令即可</p>
+    <p>​</p>
+  </li>
+</ul>
 
-<p><img src="https://thumbnail0.baidupcs.com/thumbnail/7343106a04cbe8fb7e0ffd8f8e879359?fid=1126347302-250528-250534322781989&amp;time=1490421600&amp;rt=sh&amp;sign=FDTAER-DCb740ccc5511e5e8fedcff06b081203-x8gsWLP13r9jdb5dlWrhdSZQiu0%3D&amp;expires=8h&amp;chkv=0&amp;chkbd=0&amp;chkpc=&amp;dp-logid=1939028995448949513&amp;dp-callid=0&amp;size=c710_u400&amp;quality=100" alt="屏幕快照 2017-03-25 下午1.46.24" /></p>
+<h4 id="php语法">PHP语法</h4>
+
+<ul>
+  <li>
+    <p>数据</p>
+
+    <ul>
+      <li>
+        <p>常量定义</p>
+
+        <div class="language-php highlighter-rouge"><pre class="highlight"><code>bool define ( string $name , mixed $value [, bool $case_insensitive = false ] )
+</code></pre>
+        </div>
+
+        <p>​</p>
+      </li>
+    </ul>
+  </li>
+  <li>
+    <p>字符串</p>
+
+    <ul>
+      <li>
+        <p>echo与print区别</p>
+
+        <ul>
+          <li>
+            <p>echo 速度快</p>
+          </li>
+          <li>
+            <p>echo 可以输出多字符串，print不可以</p>
+
+            <div class="language-php highlighter-rouge"><pre class="highlight"><code>echo "this","is","my","string";
+</code></pre>
+            </div>
+          </li>
+          <li>
+            <p>echo 无返回值，print 返回值为1</p>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <p>字符串内输出变量</p>
+
+        <div class="language-php highlighter-rouge"><pre class="highlight"><code>echo "hello {$name[0]}";
+</code></pre>
+        </div>
+
+        <p>​</p>
+      </li>
+    </ul>
+  </li>
+  <li>
+    <p>函数</p>
+
+    <ul>
+      <li>
+        <p>函数内部不能直接访问全局变量(外部函数访问内部函数方法？？？)，如果需要访问，要在变量前加global关键字</p>
+
+        <div class="language-php highlighter-rouge"><pre class="highlight"><code>global $x,$y;//$x,$y均为全局变量，此处为函数内部，这样书写后可以再函数内部使用x,y
+</code></pre>
+        </div>
+
+        <p>另一种方法是通过php的$GLOBALS[index]数组</p>
+
+        <div class="language-php highlighter-rouge"><pre class="highlight"><code>//函数内部
+$GLOBALS['y'] = $GLOBALS['x'] + 1;
+</code></pre>
+        </div>
+      </li>
+      <li>
+        <p>static可在函数内部声明静态变量</p>
+      </li>
+    </ul>
+  </li>
+</ul>
 
 	</div>
 </div>

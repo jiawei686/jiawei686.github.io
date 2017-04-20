@@ -3,7 +3,7 @@
 	<head>
 		<meta charset="utf-8">
 		<meta name = "author" content = Jiawei>
-		<title>Mac OS下安装Ant--最简单方法 - Like the ceiling can't hold us</title>
+		<title>MongoDB用法总结 - Like the ceiling can't hold us</title>
 		
 		<!-- 新 Bootstrap 核心 CSS 文件 -->
 		<link href="//cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
@@ -41,16 +41,84 @@
 		         <div id = "content">
 		         	<div class="col-md-12">
 	<div class="col-md-12">
-		<p>如果你想熟悉一下系统编译的过程，可以到网上找下载安装包手动安装方法。当然，最简单的方法是用homebrew</p>
+		<h5 id="mongodb基本操作">MongoDB基本操作</h5>
 
-<div class="language-shell highlighter-rouge"><pre class="highlight"><code>brew install java
-brew install ant
+<ul>
+  <li>
+    <p>开启MongoDB</p>
+
+    <div class="language-shell highlighter-rouge"><pre class="highlight"><code>sudo mongod//开启localhost
+//此时新开一个term窗口
+mongo //开启mongo shell
 </code></pre>
-</div>
+    </div>
 
-<p>以上两条命令即可</p>
+    <p>需要注意的是，第一个term界面卡在如下信息处时，表示mongodb开启成功</p>
 
-<p><img src="https://thumbnail0.baidupcs.com/thumbnail/7343106a04cbe8fb7e0ffd8f8e879359?fid=1126347302-250528-250534322781989&amp;time=1490421600&amp;rt=sh&amp;sign=FDTAER-DCb740ccc5511e5e8fedcff06b081203-x8gsWLP13r9jdb5dlWrhdSZQiu0%3D&amp;expires=8h&amp;chkv=0&amp;chkbd=0&amp;chkpc=&amp;dp-logid=1939028995448949513&amp;dp-callid=0&amp;size=c710_u400&amp;quality=100" alt="屏幕快照 2017-03-25 下午1.46.24" /></p>
+    <div class="language-shell highlighter-rouge"><pre class="highlight"><code>waiting <span class="k">for </span>connections on port 27017
+</code></pre>
+    </div>
+
+    <p>在使用mongo shell 的过程中不能关闭mongod开启的localhost</p>
+  </li>
+  <li>
+    <p>数据库的建立与删除</p>
+
+    <ul>
+      <li>
+        <p>建立数据库(比如建立名为helloworld的数据库)</p>
+
+        <div class="language-shell highlighter-rouge"><pre class="highlight"><code>&gt;use helloworld
+switched to db helloworld
+&gt;db
+helloworld
+</code></pre>
+        </div>
+
+        <p>此时数据库已经建立成功，但是不会被显示出来，因为其中还没有数据插入，因此我们需要向其中插入一条数据。</p>
+
+        <div class="language-shell highlighter-rouge"><pre class="highlight"><code>db.col.insert<span class="o">({</span><span class="s1">'name:test'</span>,<span class="s1">'by'</span>:<span class="s1">'jiawei'</span><span class="o">})</span>//向名为col的集合中插入一条数据
+</code></pre>
+        </div>
+
+        <p>此时，用</p>
+
+        <div class="language-shell highlighter-rouge"><pre class="highlight"><code>&gt;show dbs
+</code></pre>
+        </div>
+
+        <p>已经可以显示出我们建立的helloworld数据库</p>
+
+        <p>​</p>
+      </li>
+      <li>
+        <p>删除数据库</p>
+
+        <ul>
+          <li>
+            <p>删除数据库中的集合</p>
+
+            <div class="language-shell highlighter-rouge"><pre class="highlight"><code>&gt;use helloworld//首先切换到helloworld数据库
+&gt;db.col.drop<span class="o">()</span>//删除名为col的集合
+</code></pre>
+            </div>
+          </li>
+          <li>
+            <p>删除整个数据库</p>
+
+            <div class="language-shell highlighter-rouge"><pre class="highlight"><code>&gt;use helloworld//切换到helloworld数据库
+&gt;db.dropDatabase<span class="o">()</span>//删除整个helloworld数据库
+</code></pre>
+            </div>
+          </li>
+        </ul>
+
+        <p>​</p>
+      </li>
+    </ul>
+  </li>
+</ul>
+
 
 	</div>
 </div>
