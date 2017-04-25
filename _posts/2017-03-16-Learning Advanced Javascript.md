@@ -1,6 +1,6 @@
 ---
 categories: Computer_Science
-tags: Computer_Science
+tags: Javascripts,Javascripts题目,Javascripts练习,Javascripts知识
 layout: post
 title: Learning Advanced Javascript
 ---
