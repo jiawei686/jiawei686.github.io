@@ -5,9 +5,28 @@
 	<html>
 	<head>
 		<meta charset="utf-8">
-		<meta name = "author" content = {{ site.author }}>
-		<title>{% if page.title %}{{ page.title }} - {% endif %}{{ site.title }}</title>
-		
+		  <meta name="viewport" content="width=device-width initial-scale=1" />
+		  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+		  <title>{% if page.title %}{{ page.title }}{% else %}{{ site.title }}{% endif %}</title>
+		  <meta name="description" content="{{ site.description }}">
+		  <meta name = "keywords" content = {% if page.tags %}{{ page.tags }}{% else %}{{ "崔家维,jiawei,博客,崔家维的博客,jiawei's_blog,web" }}{% endif %}>
+		  <meta name="author" content="{{ site.author }}">
+		  <meta name="HandheldFriendly" content="True">
+		  <meta name="MobileOptimized" content="320">
+		  <meta name="apple-mobile-web-app-capable" content="yes">
+		  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+		  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+		  <meta name="twitter:card" content="summary">
+		  <meta name="twitter:title" content="{{ site.title }}">
+		  <meta name="twitter:description" content="{{ site.description }}">
+
+		  <meta name="baidu-site-verification" content="a9NpQH8KEY" />
+
+		  <meta property="og:type" content="article">
+		  <meta property="og:title" content="{{ site.title }}">
+		  <meta property="og:description" content="{{ site.description }}">
 		<!-- 新 Bootstrap 核心 CSS 文件 -->
 		<link href="//cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
 		 

@@ -5,9 +5,9 @@
 		  <meta name="viewport" content="width=device-width initial-scale=1" />
 		  <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
-		  <title>Like the ceiling can't hold us</title>
+		  <title>wget工具的安装及使用</title>
 		  <meta name="description" content="This is my blog , this might be some web or other ideas to share.--jiawei~我的博客，与大家分享一些想法 --崔家维">
-		  <meta name = "keywords" content = 崔家维,jiawei,博客,崔家维的博客,jiawei's_blog,web>
+		  <meta name = "keywords" content = wget,网站爬取,网站模仿,仿站,mac>
 		  <meta name="author" content="Jiawei,崔家维">
 		  <meta name="HandheldFriendly" content="True">
 		  <meta name="MobileOptimized" content="320">
@@ -58,7 +58,57 @@
 		         <br><br><br><br>
 		         
 		         <div id = "content">
-		         	<ng-view id = "view"></ng-view>
+		         	<div class="col-md-12">
+	<div class="col-md-12">
+		<h4 id="mac下wget工具的安装">Mac下wget工具的安装</h4>
+
+<ul>
+  <li>
+    <p>使用homebrew</p>
+
+    <div class="language-shell highlighter-rouge"><pre class="highlight"><code>sudo brew install wget
+</code></pre>
+    </div>
+  </li>
+  <li>
+    <p>使用mac ports</p>
+
+    <div class="language-shell highlighter-rouge"><pre class="highlight"><code>sudo port install wget
+</code></pre>
+    </div>
+
+    <p>​</p>
+  </li>
+</ul>
+
+<h4 id="使用wget爬取全站数据">使用wget爬取全站数据</h4>
+
+<ul>
+  <li>
+    <p>确定需要爬取的网站URL$Route_{remote}$ ，需要放置的本地路径$Route_{local}$</p>
+  </li>
+  <li>
+    <p>输入命令</p>
+
+    <div class="language-shell highlighter-rouge"><pre class="highlight"><code>wget -r -p -np -k -P ~/usr/web/ https://jiawei1996.github.io
+</code></pre>
+    </div>
+  </li>
+  <li>
+    <p>其中</p>
+
+    <ul>
+      <li>-P 表示下载到哪个目录</li>
+      <li>-r 表示递归下载</li>
+      <li>-np 表示不下载旁站连接.</li>
+      <li>-k 表示将下载的网页里的链接修改为本地链接.</li>
+      <li>-p 获得所有显示网页所需的元素</li>
+    </ul>
+  </li>
+</ul>
+
+	</div>
+</div>
 
 		         </div>
 		         <script type="text/javascript">

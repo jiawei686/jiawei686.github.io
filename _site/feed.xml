@@ -2,13 +2,131 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Like the ceiling can't hold us</title>
-    <description>Some web skills &amp; ideas to share
-</description>
+    <description>This is my blog , this might be some web or other ideas to share.--jiawei~我的博客，与大家分享一些想法 --崔家维</description>
     <link>http://localhost:4000/</link>
     <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Thu, 20 Apr 2017 21:29:51 +0800</pubDate>
-    <lastBuildDate>Thu, 20 Apr 2017 21:29:51 +0800</lastBuildDate>
+    <pubDate>Thu, 27 Apr 2017 00:36:17 +0800</pubDate>
+    <lastBuildDate>Thu, 27 Apr 2017 00:36:17 +0800</lastBuildDate>
     <generator>Jekyll v3.4.2</generator>
+    
+      <item>
+        <title>IE浏览器button标签不能嵌套a标签解决办法</title>
+        <description>&lt;h4 id=&quot;ie浏览器button标签不能嵌套a标签解决办法&quot;&gt;IE浏览器button标签不能嵌套a标签解决办法&lt;/h4&gt;
+
+&lt;p&gt;问题是这样的，最近在帮一个留美同学做一个亲子教育网站，在沟通过程中了解到美国那边仍然有不少IE用户，所以那个同学希望可以适配IE浏览器。虽然酬劳不是很多，但是毕竟是同学，对于网站的每一个细节仍然要加以注意。&lt;/p&gt;
+
+&lt;p&gt;在IE中调试时发现，一个button标签下的a标签不起作用了，代码大概长下面这个样子。&lt;/p&gt;
+
+&lt;div class=&quot;language-html highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nt&quot;&gt;&amp;lt;button&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class =&lt;/span&gt;&lt;span class=&quot;err&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;link&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;Health and Safety &lt;span class=&quot;nt&quot;&gt;&amp;lt;a&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;href =&lt;/span&gt;&lt;span class=&quot;err&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Health&amp;amp;Safety.html&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&amp;lt;/a&amp;gt;&amp;lt;/button&amp;gt;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;这个时候点击a标签不能进行跳转，一开始我以为是IE将button渲染在a标签之上了，于是在a的样式表加上了&lt;code class=&quot;highlighter-rouge&quot;&gt;z-index = 1&lt;/code&gt; 然而并没有什么卵用。&lt;/p&gt;
+
+&lt;p&gt;上网查了一下，IE果然存在这个问题，而且据说不仅如此，当a嵌套button标签时，也会发生不能跳转的问题。&lt;/p&gt;
+
+&lt;p&gt;拿来网上一个博客给出的代码，代码是用来解决a标签在button外不能跳转的问题，我拿来尝试一下看看可不可以一起解决。大致代码如下&lt;/p&gt;
+
+&lt;div class=&quot;language-html highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nt&quot;&gt;&amp;lt;a&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;href =&lt;/span&gt;&lt;span class=&quot;err&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;1.html&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;onclick =&lt;/span&gt;&lt;span class=&quot;err&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Javascript:window.location.href='2.html'&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&amp;lt;button&amp;gt;&lt;/span&gt;click me&lt;span class=&quot;nt&quot;&gt;&amp;lt;/button&amp;gt;&amp;lt;/a&amp;gt;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;结果发现仍然不能解决我们的问题。&lt;/p&gt;
+
+&lt;p&gt;看来还得靠自己。想到已经打好的每一个a标签的href，不忍心一个个转移到button上再绑定click事件，于是新建一个js，先循环让每一个button标签都获取其下a标签的href，再给每一个button绑定click就跳转的事件。为了绑定URL的正确性，其中还使用了闭包，传递循环的index变量，不然每次click时都会跳转到最后一个a标签指向的URL。不理解请看javascript闭包相关博客。&lt;/p&gt;
+
+&lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;isIE&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;//ie?&lt;/span&gt;
+     &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;!!&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;window&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;ActiveXObject&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;||&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;ActiveXObject&quot;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;in&lt;/span&gt; 	&lt;span class=&quot;nb&quot;&gt;window&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+     &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;false&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;isIE&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()){&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;index&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;nx&quot;&gt;$&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;.small-link&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;each&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(){&lt;/span&gt;
+        &lt;span class=&quot;nx&quot;&gt;$&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;click&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(){&lt;/span&gt;
+            &lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;index_inner&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;index&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(){&lt;/span&gt;
+                &lt;span class=&quot;nb&quot;&gt;window&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;location&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;href&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;$&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;.small-link a&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;eq&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;index_inner&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;attr&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'href'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+            &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;}(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;index&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;));&lt;/span&gt;
+        &lt;span class=&quot;nx&quot;&gt;index&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;++&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;})&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;//alert($(&quot;.small-link a&quot;).attr('href'));&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;在虚拟机环境下，调试很麻烦，不过还是成功搞定了它。&lt;/p&gt;
+</description>
+        <pubDate>Wed, 26 Apr 2017 00:00:00 +0800</pubDate>
+        <link>http://localhost:4000/computer_science/2017/04/26/IE%E4%B8%8Bbutton%E6%A0%87%E7%AD%BE%E4%B8%8D%E8%83%BD%E5%B5%8C%E5%A5%97a%E6%A0%87%E7%AD%BE%E8%A7%A3%E5%86%B3%E5%8A%9E%E6%B3%95.html</link>
+        <guid isPermaLink="true">http://localhost:4000/computer_science/2017/04/26/IE%E4%B8%8Bbutton%E6%A0%87%E7%AD%BE%E4%B8%8D%E8%83%BD%E5%B5%8C%E5%A5%97a%E6%A0%87%E7%AD%BE%E8%A7%A3%E5%86%B3%E5%8A%9E%E6%B3%95.html</guid>
+        
+        <category>IE,button,a,标签,javascript,闭包</category>
+        
+        
+        <category>Computer_Science</category>
+        
+      </item>
+    
+      <item>
+        <title>wget工具的安装及使用</title>
+        <description>&lt;h4 id=&quot;mac下wget工具的安装&quot;&gt;Mac下wget工具的安装&lt;/h4&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;使用homebrew&lt;/p&gt;
+
+    &lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo brew install wget
+&lt;/code&gt;&lt;/pre&gt;
+    &lt;/div&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;使用mac ports&lt;/p&gt;
+
+    &lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo port install wget
+&lt;/code&gt;&lt;/pre&gt;
+    &lt;/div&gt;
+
+    &lt;p&gt;​&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&quot;使用wget爬取全站数据&quot;&gt;使用wget爬取全站数据&lt;/h4&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;确定需要爬取的网站URL$Route_{remote}$ ，需要放置的本地路径$Route_{local}$&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;输入命令&lt;/p&gt;
+
+    &lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;wget -r -p -np -k -P ~/usr/web/ https://jiawei1996.github.io
+&lt;/code&gt;&lt;/pre&gt;
+    &lt;/div&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;其中&lt;/p&gt;
+
+    &lt;ul&gt;
+      &lt;li&gt;-P 表示下载到哪个目录&lt;/li&gt;
+      &lt;li&gt;-r 表示递归下载&lt;/li&gt;
+      &lt;li&gt;-np 表示不下载旁站连接.&lt;/li&gt;
+      &lt;li&gt;-k 表示将下载的网页里的链接修改为本地链接.&lt;/li&gt;
+      &lt;li&gt;-p 获得所有显示网页所需的元素&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+</description>
+        <pubDate>Mon, 24 Apr 2017 00:00:00 +0800</pubDate>
+        <link>http://localhost:4000/computer_science/2017/04/24/wget%E5%B7%A5%E5%85%B7%E7%9A%84%E5%AE%89%E8%A3%85%E5%8F%8A%E4%BD%BF%E7%94%A8.html</link>
+        <guid isPermaLink="true">http://localhost:4000/computer_science/2017/04/24/wget%E5%B7%A5%E5%85%B7%E7%9A%84%E5%AE%89%E8%A3%85%E5%8F%8A%E4%BD%BF%E7%94%A8.html</guid>
+        
+        <category>wget,网站爬取,网站模仿,仿站,mac</category>
+        
+        
+        <category>Computer_Science</category>
+        
+      </item>
     
       <item>
         <title>PHP学习笔记</title>
@@ -109,7 +227,7 @@ $GLOBALS['y'] = $GLOBALS['x'] + 1;
         <link>http://localhost:4000/computer_science/2017/04/19/PHP%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html</link>
         <guid isPermaLink="true">http://localhost:4000/computer_science/2017/04/19/PHP%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html</guid>
         
-        <category>Computer_Science</category>
+        <category>PHP,php开发,php语法,php环境,mac使用php</category>
         
         
         <category>Computer_Science</category>
@@ -201,7 +319,7 @@ helloworld
         <link>http://localhost:4000/computer_science/2017/04/18/MongoDB%E7%94%A8%E6%B3%95%E6%80%BB%E7%BB%93.html</link>
         <guid isPermaLink="true">http://localhost:4000/computer_science/2017/04/18/MongoDB%E7%94%A8%E6%B3%95%E6%80%BB%E7%BB%93.html</guid>
         
-        <category>Computer_Science</category>
+        <category>数据库,MongoDB,MongoDB配置,MongoDB连接,MongoDB增加与删除</category>
         
         
         <category>Computer_Science</category>
@@ -249,7 +367,7 @@ brew install ant
         <link>http://localhost:4000/computer_science/2017/03/24/Mac-OS%E4%B8%8B%E5%AE%89%E8%A3%85Ant-%E6%9C%80%E7%AE%80%E5%8D%95%E6%96%B9%E6%B3%95.html</link>
         <guid isPermaLink="true">http://localhost:4000/computer_science/2017/03/24/Mac-OS%E4%B8%8B%E5%AE%89%E8%A3%85Ant-%E6%9C%80%E7%AE%80%E5%8D%95%E6%96%B9%E6%B3%95.html</guid>
         
-        <category>Computer_Science</category>
+        <category>Java,Ant安装,Ant环境,mac</category>
         
         
         <category>Computer_Science</category>
@@ -328,7 +446,7 @@ brew install ant
         <link>http://localhost:4000/computer_science/2017/03/17/Some-Web-Problems.html</link>
         <guid isPermaLink="true">http://localhost:4000/computer_science/2017/03/17/Some-Web-Problems.html</guid>
         
-        <category>Computer_Science</category>
+        <category>跨域请求,https,safari,chrome</category>
         
         
         <category>Computer_Science</category>
@@ -445,506 +563,6 @@ gem install jekyll
         
         
         <category>About</category>
-        
-      </item>
-    
-      <item>
-        <title>My New Life</title>
-        <description>&lt;h3 id=&quot;2017-a-new-life&quot;&gt;2017 A NEW LIFE&lt;/h3&gt;
-&lt;ul&gt;
-  &lt;li&gt;​ 2016年就这样匆匆地过去了，新年的时候我的&lt;em&gt;Home Page&lt;/em&gt;还没做好，于是等到大二下的开学返校，也就是今天才完成了这一篇新年blog。&lt;/li&gt;
-  &lt;li&gt;我的2016年，也就三个词汇，工作、friends、恋爱，概括起来就是一点成长。工作，是指在我的生日那一天，拿到了一家上市教育机构的offer，我签了人生的第一份劳动协议，不过后来因为一些原因，使我不得不选择退出，也对职场有了一些了解。friends，在16年越发认识到好朋友的宝贵，很感谢身边帮助过我的、和我一起努力一起玩的朋友们，如果没有你们，我的人生甚至缺少意义。恋爱，更不用多说，找到一个合适的还爱我的人再幸运不过，Baby I will always love you.&lt;/li&gt;
-  &lt;li&gt;今晚走回学校的路上，发现这个学校这个地方可能是太朴素，太包容，以至于容易忘记自己的理想。想来想去也没什么好办法，就写在这里希望2017年自己不会忘记，永远住在三亚WESTIN的理想、刚刚看过的&lt;em&gt;La La Land&lt;/em&gt;男主那种也是我曾经对音乐的理想、像爸爸博士导师那样的生活在一个大平台的理想。这些仅凭2017一年可能没法实现，希望2017年是一个开始，我用一生来完成。&lt;/li&gt;
-  &lt;li&gt;​2017，一切顺利。&lt;/li&gt;
-&lt;/ul&gt;
-
-</description>
-        <pubDate>Thu, 16 Mar 2017 00:00:00 +0800</pubDate>
-        <link>http://localhost:4000/blogs/2017/03/16/new_life.html</link>
-        <guid isPermaLink="true">http://localhost:4000/blogs/2017/03/16/new_life.html</guid>
-        
-        <category>Blogs</category>
-        
-        
-        <category>Blogs</category>
-        
-      </item>
-    
-      <item>
-        <title>My Mind</title>
-        <description>&lt;h1 id=&quot;系统&quot;&gt;系统&lt;/h1&gt;
-
-&lt;h2 id=&quot;linux&quot;&gt;Linux&lt;/h2&gt;
-
-&lt;h4 id=&quot;命令&quot;&gt;命令&lt;/h4&gt;
-
-&lt;h6 id=&quot;文件传输命令scp&quot;&gt;文件传输命令scp&lt;/h6&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;scp
-    &lt;ul&gt;
-      &lt;li&gt;远程到本地  &lt;code class=&quot;highlighter-rouge&quot;&gt;scp pi@172.18.156.240:/mnt/…/… /Users/starlight/Desktop&lt;/code&gt; (文件夹 -r)&lt;/li&gt;
-      &lt;li&gt;本地到远程顺序调换&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h4 id=&quot;位置&quot;&gt;位置&lt;/h4&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;~/.bash_history&lt;/code&gt;存放了history记录&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;/var/log/wtmp&lt;/code&gt;存放了last记录&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h2 id=&quot;zsh&quot;&gt;Zsh&lt;/h2&gt;
-
-&lt;h4 id=&quot;安装方法&quot;&gt;安装方法&lt;/h4&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;
-    &lt;p&gt;sh -c “$(curl -fsSL https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh)”&lt;/p&gt;
-
-    &lt;p&gt;​&lt;/p&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h1 id=&quot;web&quot;&gt;web&lt;/h1&gt;
-
-&lt;h4 id=&quot;css&quot;&gt;css&lt;/h4&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;
-    &lt;p&gt;css3的3D优秀教程http://www.zhangxinxu.com/wordpress/2012/09/css3-3d-transform-perspective-animate-transition/&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;Bootstrap框架&lt;/p&gt;
-
-    &lt;ul&gt;
-      &lt;li&gt;静态资源库的Bootstrap资源(CDN)&lt;/li&gt;
-    &lt;/ul&gt;
-
-    &lt;div class=&quot;language-html highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c&quot;&gt;&amp;lt;!-- 新 Bootstrap 核心 CSS 文件 --&amp;gt;&lt;/span&gt;
-&lt;span class=&quot;nt&quot;&gt;&amp;lt;link&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;href=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;http://cdn.static.runoob.com/libs/bootstrap/3.3.7/css/bootstrap.min.css&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;rel=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;stylesheet&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
-   
-&lt;span class=&quot;c&quot;&gt;&amp;lt;!-- 可选的Bootstrap主题文件（一般不使用） --&amp;gt;&lt;/span&gt;
-&lt;span class=&quot;nt&quot;&gt;&amp;lt;script &lt;/span&gt;&lt;span class=&quot;na&quot;&gt;src=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;http://cdn.static.runoob.com/libs/bootstrap/3.3.7/css/bootstrap-theme.min.css&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&amp;lt;/script&amp;gt;&lt;/span&gt;
-   
-&lt;span class=&quot;c&quot;&gt;&amp;lt;!-- jQuery文件。务必在bootstrap.min.js 之前引入 --&amp;gt;&lt;/span&gt;
-&lt;span class=&quot;nt&quot;&gt;&amp;lt;script &lt;/span&gt;&lt;span class=&quot;na&quot;&gt;src=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;http://cdn.static.runoob.com/libs/jquery/2.1.1/jquery.min.js&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&amp;lt;/script&amp;gt;&lt;/span&gt;
-   
-&lt;span class=&quot;c&quot;&gt;&amp;lt;!-- 最新的 Bootstrap 核心 JavaScript 文件 --&amp;gt;&lt;/span&gt;
-&lt;span class=&quot;nt&quot;&gt;&amp;lt;script &lt;/span&gt;&lt;span class=&quot;na&quot;&gt;src=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;http://cdn.static.runoob.com/libs/bootstrap/3.3.7/js/bootstrap.min.js&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&amp;lt;/script&amp;gt;&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h4 id=&quot;js&quot;&gt;js&lt;/h4&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;prototype优秀教程http://www.jb51.net/article/40964.htm&lt;/li&gt;
-  &lt;li&gt;angularJS资源&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;div class=&quot;language-html highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;  &lt;span class=&quot;nt&quot;&gt;&amp;lt;script &lt;/span&gt;&lt;span class=&quot;na&quot;&gt;src=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;http://ajax.googleapis.com/ajax/libs/angularjs/1.2.16/angular.js&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&amp;lt;/script&amp;gt;&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;h4 id=&quot;jekyll-后端搭建简单教程来自知乎网友&quot;&gt;jekyll 后端搭建简单教程（来自知乎网友）&lt;/h4&gt;
-
-&lt;p&gt;作者：知乎用户链接：https://www.zhihu.com/question/30018945/answer/50507749来源：知乎著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。&lt;/p&gt;
-
-&lt;p&gt;在我动手用jekyll部署我的博客之前，一直使用godaddy上面的wordpress主页来部署我的博客。wordPress当然有很多的优点，在我看来我用WordPress主要是为了方便清晰的文件结构可以随意选用的各种模板和插件相对便宜的部署价格因为这些优点，所以我想我还会在WordPress官网上继续保留我的免费博客。既然这样，看官想必想问为什么要换成jekyll来重新部署博客？我简单的总结了一下：流行又简洁的MarkDown写作语法轻量级的网站结构，不再有动态网站的沉重方便的和github pages结合，不仅免费，而且方便所以对比与WordPress的沉重，jekyll让你回归到创作本身，当然如果你喜欢折腾，jekyll也绝对不会让你失望。推荐下面几个站点亮一下。&lt;a href=&quot;https://link.zhihu.com/?target=http%3A//rsms.me/&quot;&gt;http://foto.lhzhang.com/&lt;strong&gt;](https://link.zhihu.com/?target=http%3A//foto.lhzhang.com/)[Rasmus Andersson&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;
-
-&lt;h5 id=&quot;安装流程&quot;&gt;安装流程&lt;/h5&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;
-    &lt;p&gt;要用github pages，首先要在github中建立一个基于你的用户名的repository: 比如说我，就要建立名为&lt;a href=&quot;https://link.zhihu.com/?target=https%3A//github.com/kresnikwang/kresnikwang.github.io&quot;&gt;kresnikwang.github.io**&lt;/a&gt;的repo。在以前的github版本中还需要在后台开启pages的功能，现在系统检测到这样的repo名称之后，会在setting中自动开启GitHub Pages的功能，如下图： 这样之后你就可以把这个repo克隆到本地随意进行修改了，在这个里面上传的网页就是你的网站的内容了，可以上传一个index.html试一试，这就是你的网站主页了。 关于GiuHub的使用，可以看几个比较好的入门教程：&lt;a href=&quot;http://www.zhihu.com/question/20070065&quot;&gt;GitHub&lt;/a&gt;&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;之后我们就要在本地部署jekyll，jekyll的原理很简单。这是一个已经合成好的静态html网站结构，你用这个结构在username,&lt;a href=&quot;https://link.zhihu.com/?target=https%3A//www.ruby-lang.org/en/&quot;&gt;http://github.io&lt;strong&gt;](https://link.zhihu.com/?target=http%3A//github.io)文件夹里面粘帖好所有文件。再把更新完的本地repo推送到GitHub的master branch里面，你的网站就更新建设完毕了。 首先你需要[ruby&lt;/strong&gt;&lt;/a&gt;来使用本地jekyll。Mac和Linux可以用Terminal配合&lt;a href=&quot;https://link.zhihu.com/?target=http%3A//brew.sh/&quot;&gt;yum&lt;strong&gt;](https://link.zhihu.com/?target=http%3A//yum.baseurl.org/)或者[brew&lt;/strong&gt;&lt;/a&gt;这样的包管理器很方便的安装ruby。Windows下更是方便，可以直接中集成好的&lt;a href=&quot;https://link.zhihu.com/?target=https%3A//rubygems.org/pages/download&quot;&gt;Ruby installer&lt;strong&gt;](https://link.zhihu.com/?target=http%3A//rubyinstaller.org/)来进行安装，文章里的就是传送门。安装完ruby，之后就是要安装[RubyGems&lt;/strong&gt;&lt;/a&gt;，gem是一个ruby的包管理系统，可以用gem很方便的在本地安装ruby应用。安装方法&lt;/p&gt;
-
-    &lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;//在RubyGems官网上下载压缩包，解压到你的本地任意位置
-
-//在Terminal中
-
-&lt;span class=&quot;nb&quot;&gt;cd &lt;/span&gt;yourpath to RubyGems //你解压的位置
-
-ruby setup.rb
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;有了gem之后安装jekyll就很容易了，其实用过nodejs和npm的同学应该很熟悉这样的包安装，真是这个世界手残脑残们的救星。。。。。（楼主不自觉的摸了摸自己快残了的手） 安装jekyll，有了gem，直接在Terminal里面输入以下代码：&lt;/p&gt;
-
-    &lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;  &lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;gem install jekyll 
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
-
-    &lt;p&gt;​&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;好了，现在你的电脑已经准备完毕了。如果你是想自己捣鼓，可以根据这样的目录结构在你的&lt;a href=&quot;https://link.zhihu.com/?target=http%3A//username.github.io&quot;&gt;http://username.github.io**&lt;/a&gt;文件夹下建立以下目录结构：&lt;/p&gt;
-
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;  ├── _config.yml├── _drafts
-
-  `|   ├── begin-with-the-crazy-ideas.textile
-
-  |   └── on-simplicity-in-technology.markdown
-
-  `├── _includes
-
-  `|   ├── footer.html
-
-  |   └── header.html
-
-  `├── _layouts
-
-  `|   ├── default.html
-
-  |   └── post.html
-
-  `├── _posts
-
-  `|   ├── 2007-10-29-why-every-programmer-should-play-nethack.textile
-
-  |   └── 2009-04-26-barcamp-boston-4-roundup.textile
-
-  `├── _site└── index.html
-
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
-
-    &lt;p&gt;​&lt;/p&gt;
-
-    &lt;p&gt;你可以一个个依次建立起来，然后在自己编写一个你想要的博客。&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;如果你只是个普通用户，只是想要一个模板然后开始写自己的博客。那就很容易了，有几个可以简单开始的模板。&lt;/p&gt;
-
-    &lt;ol&gt;
-      &lt;li&gt;&lt;a href=&quot;https://link.zhihu.com/?target=https%3A//github.com/poole/poole&quot;&gt;poole/poole · GitHub**&lt;/a&gt;极简风格的模板&lt;/li&gt;
-      &lt;li&gt;&lt;a href=&quot;https://link.zhihu.com/?target=http%3A//jekyllthemes.org/&quot;&gt;Jekyll Themes**&lt;/a&gt; jekyll的模板网站，可以找到各式各样你喜欢的模板。&lt;/li&gt;
-    &lt;/ol&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;下载完了模板，可以吧里面的内容解压到你自己的网站目录底下。这时候你可以测试一下：&lt;/p&gt;
-
-    &lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;  &lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;cd &lt;/span&gt;you website path //cd到你的网站目录下
-  &lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;jekyll serve
-    //一个开发服务器将会运行在 http://localhost:4000/
-    //你就能在本地服务器看到你用模板搭建的网站了
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;这时候可以看一下jekyll的设置，让你把模板变成你自己个性化的内容。在网站根目录下面找到&lt;strong&gt;_config.yml&lt;/strong&gt;,这里会有几个比较关键的设置： 里面的permalink 就是你博客文章的目录结构，可以用pretty来简单的设置成日期+文章标题.html，也可以用自己喜欢的结构来设置。 记得把encoding 设置成utf-8，这样有利于中英文双语的写作和阅读。&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;到这里你就可以开始写博客了，所有的文章直接放在&lt;strong&gt;_posts&lt;/strong&gt;文件夹下面，格式就是我们之前提到的markdown文件，默认的格式是.md和.markdown文件。每篇文章的开始处需要使用yml格式来写明这篇文章的简单介绍，格式如下：&lt;/p&gt;
-
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;      author: kresnikwang
-
-      comments: true
-
-      date: 2015-04-28 17:42:32+00:00
-
-      layout: post
-
-      title: PHP, Angular JS Development|My Export Quote|农产品出口工具开发
-
-      categories:
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
-  &lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;Works
-    &lt;ul&gt;
-      &lt;li&gt;Tech
-tags:&lt;/li&gt;
-      &lt;li&gt;bootstrap&lt;/li&gt;
-      &lt;li&gt;javascript&lt;/li&gt;
-      &lt;li&gt;php&lt;/li&gt;
-      &lt;li&gt;AngularJS&lt;/li&gt;
-    &lt;/ul&gt;
-
-    &lt;p&gt;​```&lt;/p&gt;
-
-    &lt;p&gt;layout就是post，让jekyll知道你这是一篇post，很直观。需要注意的是里面的&lt;strong&gt;date&lt;/strong&gt;，必须按照yml的语法来写，否则就会出现编译错误。可以只用&lt;strong&gt;YYYY-MM-DD&lt;/strong&gt;来显示日期，也可以像我一样在后面加上 &lt;strong&gt;HH:MM:SS+00:00&lt;/strong&gt; 来表示更具体的时间。&lt;/p&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;
-    &lt;p&gt;到此为止可以开始尽情的写博客了，用GitHub软件同步到你的repository里面，网站上面就可以进行正常的显示了。如果说要添加一下有用的extra功能的话，评论和相关文章这两个功能比较多人会关注。 评论我们可以用&lt;a href=&quot;https://link.zhihu.com/?target=https%3A//disqus.com/&quot;&gt;Disqus**&lt;/a&gt;国内应该也有类似的网站，到Disqus注册一个账号，选择添加评论区域到自己的网页，你将会的得到类似的代码：&lt;/p&gt;
-
-    &lt;div class=&quot;language-html highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;- &lt;span class=&quot;c&quot;&gt;&amp;lt;!-- Add Disqus comments. --&amp;gt;&lt;/span&gt;
-  &lt;span class=&quot;nt&quot;&gt;&amp;lt;div&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;id=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;disqus_thread&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&amp;lt;/div&amp;gt;&lt;/span&gt;
-  &lt;span class=&quot;nt&quot;&gt;&amp;lt;script &lt;/span&gt;&lt;span class=&quot;na&quot;&gt;type=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;text/javascript&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
-  &lt;span class=&quot;cm&quot;&gt;/* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */&lt;/span&gt;
-  &lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;disqus_shortname&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'&amp;lt;USERNAME&amp;gt;'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// required: replace example with your forum shortname&lt;/span&gt;
-  &lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;disqus_identifier&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;/works/tech/2016/06/07/%E5%9C%A8github%20pages%E7%BD%91%E7%AB%99%E4%B8%8B%E7%94%A8jekyll%E5%88%B6%E4%BD%9C%E5%8D%9A%E5%AE%A2%E6%95%99%E7%A8%8B.html&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-
-  &lt;span class=&quot;cm&quot;&gt;/* * * DON'T EDIT BELOW THIS LINE * * */&lt;/span&gt;
-
-  &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-
-    &lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;dsq&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;document&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;createElement&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'script'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;dsq&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;type&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'text/javascript'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;dsq&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;async&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-
-    &lt;span class=&quot;nx&quot;&gt;dsq&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;src&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'//'&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;disqus_shortname&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'.disqus.com/embed.js'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-
-    &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;document&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;getElementsByTagName&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'head'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;||&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;document&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;getElementsByTagName&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'body'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]).&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;appendChild&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;dsq&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-      &lt;span class=&quot;p&quot;&gt;})();&lt;/span&gt;
-
-&lt;span class=&quot;nt&quot;&gt;&amp;lt;/script&amp;gt;&lt;/span&gt;
-
-&lt;span class=&quot;nt&quot;&gt;&amp;lt;noscript&amp;gt;&lt;/span&gt;Please enable JavaScript to view the comments powered by Disqus.&lt;span class=&quot;nt&quot;&gt;&amp;lt;/noscript&amp;gt;&lt;/span&gt;
-
-comments powered by &lt;span class=&quot;nt&quot;&gt;&amp;lt;span&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;logo-disqus&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;Disqus&lt;span class=&quot;nt&quot;&gt;&amp;lt;/span&amp;gt;&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
-
-    &lt;p&gt;根据不同的模板，把代码添加到&lt;strong&gt;_post/post.html&lt;/strong&gt;或者&lt;strong&gt;_include/post.html&lt;/strong&gt;里你的文章底下，那当这篇文章被访问时，下方就会有评论区了相关文章的功能也比较好做，jekyll本来就集成了&lt;strong&gt;site.related_posts&lt;/strong&gt;的功能，自动会寻找相关内容的文章，在你的post代码下面融入以下代码：&lt;/p&gt;
-
-    &lt;div class=&quot;language-html highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nt&quot;&gt;&amp;lt;aside&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;related&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
-
-  &lt;span class=&quot;nt&quot;&gt;&amp;lt;h2&amp;gt;&lt;/span&gt;Related Posts&lt;span class=&quot;nt&quot;&gt;&amp;lt;/h2&amp;gt;&lt;/span&gt;
-
-  &lt;span class=&quot;nt&quot;&gt;&amp;lt;ul&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;related-posts&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
-
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;li&amp;gt;&lt;/span&gt;
-
-      &lt;span class=&quot;nt&quot;&gt;&amp;lt;h3&amp;gt;&lt;/span&gt;
-
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;a&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;href=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;http://kresnikwang.github.io///journey/2015/06/05/kresnik.co-%E5%8D%9A%E5%AE%A2%E6%90%AC%E5%AE%B6%E5%91%8A%E7%A4%BA.html&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
-
-          kresnik.co博客搬家告示
-
-          &lt;span class=&quot;nt&quot;&gt;&amp;lt;small&amp;gt;&amp;lt;time&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;datetime=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;2015-06-05T00:00:00+00:00&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;05 Jun 2015&lt;span class=&quot;nt&quot;&gt;&amp;lt;/time&amp;gt;&amp;lt;/small&amp;gt;&lt;/span&gt;
-
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;/a&amp;gt;&lt;/span&gt;
-
-      &lt;span class=&quot;nt&quot;&gt;&amp;lt;/h3&amp;gt;&lt;/span&gt;
-
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;/li&amp;gt;&lt;/span&gt;
-
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;li&amp;gt;&lt;/span&gt;
-
-      &lt;span class=&quot;nt&quot;&gt;&amp;lt;h3&amp;gt;&lt;/span&gt;
-
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;a&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;href=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;http://kresnikwang.github.io///tech/2015/06/02/javascript-include-html-page-by-jquery.html&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
-
-          Javascript Include Html Page By Jquery
-
-          &lt;span class=&quot;nt&quot;&gt;&amp;lt;small&amp;gt;&amp;lt;time&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;datetime=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;2015-06-02T18:45:42+00:00&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;02 Jun 2015&lt;span class=&quot;nt&quot;&gt;&amp;lt;/time&amp;gt;&amp;lt;/small&amp;gt;&lt;/span&gt;
-
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;/a&amp;gt;&lt;/span&gt;
-
-      &lt;span class=&quot;nt&quot;&gt;&amp;lt;/h3&amp;gt;&lt;/span&gt;
-
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;/li&amp;gt;&lt;/span&gt;
-
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;li&amp;gt;&lt;/span&gt;
-
-      &lt;span class=&quot;nt&quot;&gt;&amp;lt;h3&amp;gt;&lt;/span&gt;
-
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;a&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;href=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;http://kresnikwang.github.io///tech/2015/05/31/Github-use-http-instead-of-git.html&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
-
-          Github设置，强制使用&quot;https://&quot; 来代替 &quot;git://&quot;
-
-          &lt;span class=&quot;nt&quot;&gt;&amp;lt;small&amp;gt;&amp;lt;time&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;datetime=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;2015-05-31T05:03:36+00:00&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;31 May 2015&lt;span class=&quot;nt&quot;&gt;&amp;lt;/time&amp;gt;&amp;lt;/small&amp;gt;&lt;/span&gt;
-
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;/a&amp;gt;&lt;/span&gt;
-
-      &lt;span class=&quot;nt&quot;&gt;&amp;lt;/h3&amp;gt;&lt;/span&gt;
-
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;/li&amp;gt;&lt;/span&gt;
-
-  &lt;span class=&quot;nt&quot;&gt;&amp;lt;/ul&amp;gt;&lt;/span&gt;
-
-&lt;span class=&quot;nt&quot;&gt;&amp;lt;/aside&amp;gt;&lt;/span&gt;
-
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
-
-    &lt;p&gt;​
-你每篇文章下面就会有三个相关文章的链接了。这篇教程就到这里，有机会我想再写写liquid语法制作jekyll模板的内容和从wordpress导入文章到jekyll来的方法。喜欢能有些用处，感谢。&lt;/p&gt;
-  &lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h4 id=&quot;调试&quot;&gt;调试&lt;/h4&gt;
-
-&lt;h6 id=&quot;mac-chrome-safari开放跨域请求&quot;&gt;Mac-Chrome-Safari开放跨域请求：&lt;/h6&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;
-    &lt;p&gt;chrome49以前版本&lt;/p&gt;
-
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; open -a &quot;Google Chrome&quot; --args --disable-web-security
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;chrome49以后版本&lt;/p&gt;
-
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; open -a /Applications/Google\ Chrome.app --args --disable-web-security --user-data-dir
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;Safari&lt;/p&gt;
-
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;open -a '/Applications/Safari.app' --args --disable-web-security
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h1 id=&quot;网络渗透&quot;&gt;网络渗透&lt;/h1&gt;
-
-&lt;h2 id=&quot;nmap&quot;&gt;Nmap&lt;/h2&gt;
-
-&lt;h4 id=&quot;快捷键&quot;&gt;快捷键&lt;/h4&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;[Enter] 扫描进度&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h4 id=&quot;命令-1&quot;&gt;命令&lt;/h4&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;sudo nmap -O + ip&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h2 id=&quot;ettercap&quot;&gt;Ettercap&lt;/h2&gt;
-
-&lt;h4 id=&quot;快捷键-1&quot;&gt;快捷键&lt;/h4&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;[Ctrl + S] 扫描同host下机器&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h4 id=&quot;命令-2&quot;&gt;命令&lt;/h4&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;sudo ettercap -G 开启图形界面&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h4 id=&quot;cookie注入&quot;&gt;cookie注入&lt;/h4&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;工具 Chrome Cookie Hacker&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h2 id=&quot;ssh&quot;&gt;SSH&lt;/h2&gt;
-
-&lt;h4 id=&quot;命令-3&quot;&gt;命令&lt;/h4&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;ssh pi@172.18.156.240&lt;/li&gt;
-  &lt;li&gt;ssh pi@172.18.156.136&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h4 id=&quot;端口&quot;&gt;端口&lt;/h4&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;22&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h4 id=&quot;ssh免密码登录&quot;&gt;ssh免密码登录&lt;/h4&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;
-    &lt;p&gt;在本地机器执行&lt;code class=&quot;highlighter-rouge&quot;&gt;ssh-keygen -t rsa&lt;/code&gt;会在根目录&lt;code class=&quot;highlighter-rouge&quot;&gt;~/.ssh/&lt;/code&gt;目录下生成&lt;code class=&quot;highlighter-rouge&quot;&gt;id_rsa&lt;/code&gt;和&lt;code class=&quot;highlighter-rouge&quot;&gt;id_rsa.pub&lt;/code&gt;，将&lt;code class=&quot;highlighter-rouge&quot;&gt;id_rsa.pub&lt;/code&gt;上传至目标机器的&lt;code class=&quot;highlighter-rouge&quot;&gt;~/.ssh/&lt;/code&gt;目录改名为&lt;code class=&quot;highlighter-rouge&quot;&gt;authorized_keys&lt;/code&gt;即可&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;此时linux可以免密码登录，如果目标机器是mac OS，需要在&lt;code class=&quot;highlighter-rouge&quot;&gt;/etc/ssh_config&lt;/code&gt;尾行添加&lt;code class=&quot;highlighter-rouge&quot;&gt;PubkeyAuthentication yes&lt;/code&gt;开启免密码登录&lt;/p&gt;
-
-    &lt;p&gt;​&lt;/p&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h1 id=&quot;语言编译器&quot;&gt;语言&amp;amp;编译器&lt;/h1&gt;
-
-&lt;h2 id=&quot;vim&quot;&gt;Vim&lt;/h2&gt;
-
-&lt;h4 id=&quot;快捷键-2&quot;&gt;快捷键&lt;/h4&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;
-    &lt;p&gt;[Z+i] 展开折叠&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;[$F_2$] ggvG”+y (all paste)&lt;/li&gt;
-  &lt;li&gt;[$F_3$] ggvGdd (all clear)&lt;/li&gt;
-  &lt;li&gt;[$F_5$] compile&lt;/li&gt;
-  &lt;li&gt;[$F_6$] run&lt;/li&gt;
-  &lt;li&gt;[$F_7$] NERDTreeToggle&lt;/li&gt;
-  &lt;li&gt;[$F_9$] pastetoggle&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h4 id=&quot;设置方法&quot;&gt;设置方法&lt;/h4&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;set clipboard=unnamed 复制入系统剪切板&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h4 id=&quot;插件管理&quot;&gt;插件管理&lt;/h4&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;BundleInstall 安装列表插件&lt;/li&gt;
-  &lt;li&gt;BundleInstall! 更新列表插件&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h2 id=&quot;sublime-text&quot;&gt;sublime text&lt;/h2&gt;
-
-&lt;h4 id=&quot;选择快捷键&quot;&gt;选择快捷键&lt;/h4&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;[command + D]选取下一相同文本&lt;/li&gt;
-  &lt;li&gt;[command + L]选取当前行&lt;/li&gt;
-  &lt;li&gt;​&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h2 id=&quot;c&quot;&gt;C++&lt;/h2&gt;
-
-&lt;h4 id=&quot;mle解决办法&quot;&gt;MLE解决办法&lt;/h4&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;
-    &lt;p&gt;动态数组&lt;/p&gt;
-
-    &lt;div class=&quot;language-c++ highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;pak&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;p&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;p&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pak&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;k&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
-
-    &lt;p&gt;​&lt;/p&gt;
-
-    &lt;p&gt;​&lt;/p&gt;
-
-    &lt;p&gt;​&lt;/p&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h2 id=&quot;raspberry&quot;&gt;Raspberry&lt;/h2&gt;
-
-&lt;h4 id=&quot;风扇接法&quot;&gt;风扇接法&lt;/h4&gt;
-
-&lt;p&gt;&lt;img src=&quot;http://bbs.shumeipaiba.com/data/attachment/forum/201603/09/130631bd8t7gww7ipetepd.png&quot; alt=&quot;image&quot; /&gt;&lt;/p&gt;
-
-</description>
-        <pubDate>Thu, 16 Mar 2017 00:00:00 +0800</pubDate>
-        <link>http://localhost:4000/computer_science/2017/03/16/My-Mind.html</link>
-        <guid isPermaLink="true">http://localhost:4000/computer_science/2017/03/16/My-Mind.html</guid>
-        
-        <category>Computer_Science</category>
-        
-        
-        <category>Computer_Science</category>
         
       </item>
     

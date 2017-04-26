@@ -1,19 +1,18 @@
 # User Settings | Edit there as per required
 
 title: Like the ceiling can't hold us
-# url: "http://ankitsultana.me"
+url: "https://jiawei1996.github.io"
 # baseurl: "/accent"
 
 # This will show up at the top of index page
-# site_heading: >
-    # foo <span class="faded">'s blog</span>
+site_heading: >
+    foo <span class="faded">Jiawei's blog</span>
 
 email: cuijiawei.cn@gmail.com
-author: Jiawei
+author: Jiawei,崔家维
 # This description will show up in google search results
 # (for index page) etc.
-description: >
-    Some web skills & ideas to share
+description: This is my blog , this might be some web or other ideas to share.--jiawei~我的博客，与大家分享一些想法 --崔家维
 
 # This will what will show against &copy; in the footer
 copyright: jiawei
@@ -23,7 +22,7 @@ copyright: jiawei
 # Tip: Remove the span from site_heading if intro is set to true
 # This will be displayed in your intro
 short_bio: >
-    Welcome! This is <span>Jiawei's Blog</span>, a place where I have some web skills & ideas to share.
+    Welcome! This is <span>Jiawei's Blog</span>, a place where there are some web skills & ideas to share.
 
 # permalink: /:title.html
 
@@ -37,7 +36,7 @@ short_bio: >
 # about_stub: >
 #     Keep this sentence less than 13 words or it won't look good.
 
-# about_footer: true
+about_footer: true
 
 # twitter_username: AnkitSultana
 github_username: jiawei1996
