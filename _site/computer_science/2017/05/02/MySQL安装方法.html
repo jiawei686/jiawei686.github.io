@@ -5,9 +5,9 @@
 		  <meta name="viewport" content="width=device-width initial-scale=1" />
 		  <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
-		  <title>PHP学习笔记</title>
+		  <title>Mac OS下MySQL安装方法</title>
 		  <meta name="description" content="我的博客,一个分享交流的平台 --崔家维~Glad to see you ,this is my blog and there might be some web or other ideas to share.--jiawei">
-		  <meta name = "keywords" content = PHP,php开发,php语法,php环境,mac使用php>
+		  <meta name = "keywords" content = MySQL,SQL,数据库,安装,MAC>
 		  <meta name="author" content="Jiawei,崔家维">
 		  <meta name="HandheldFriendly" content="True">
 		  <meta name="MobileOptimized" content="320">
@@ -60,94 +60,41 @@
 		         <div id = "content">
 		         	<div class="col-md-12">
 	<div class="col-md-12">
-		<h4 id="php环境">PHP环境</h4>
+		<h5 id="mysql-for-mac">MySQL for MAC</h5>
 
 <ul>
   <li>
-    <p>mac集成了php开发环境，使用命令行启动</p>
+    <p>从 https://dev.mysql.com/downloads/ 也就是官方地址，选择MySQL Community Server 一项来下载MySQL。可以下载不同方式安装的版本，我则选择的是.dmg（最方便）。</p>
+  </li>
+  <li>
+    <p>下载安装后，不能使用mysql命令，或是mysqladmin。在命令行里面用where、which、whereis都找不到。但是在偏好设置里面明明看到了可以开启MySQL Server。于是寻找教程，发现要手动配置环境变量。在命令行里输入</p>
 
-    <div class="language-shell highlighter-rouge"><pre class="highlight"><code>apachectl -v //查看apache 版本
-apachectl start //启动web server
-apachectl graceful-stop //关闭web server （还不清楚graceful-stop 与 stop 有什么区别）
+    <div class="language-shell highlighter-rouge"><pre class="highlight"><code><span class="nb">alias </span><span class="nv">mysql</span><span class="o">=</span>/usr/local/mysql/bin/mysql
+<span class="nb">alias </span><span class="nv">mysqladmin</span><span class="o">=</span>/usr/local/mysql/bin/mysqladmin
 </code></pre>
     </div>
 
-    <p>​</p>
+    <p>于是就可以通过命令启动mysql了，然而每次重启命令行还是要设置。所以下面我们想办法设置环境变量使得每一次重启命令行不用再配置alias。</p>
   </li>
-</ul>
-
-<h4 id="php语法">PHP语法</h4>
-
-<ul>
   <li>
-    <p>数据</p>
+    <p>环境变量</p>
 
     <ul>
       <li>
-        <p>常量定义</p>
+        <p>修改etc/paths 无效</p>
+      </li>
+      <li>
+        <p>有效方法</p>
 
-        <div class="language-php highlighter-rouge"><pre class="highlight"><code>bool define ( string $name , mixed $value [, bool $case_insensitive = false ] )
+        <div class="language-shell highlighter-rouge"><pre class="highlight"><code>vim ~/.zshrc //打开zsh配置文件
+
+在其中添加
+<span class="nb">alias </span><span class="nv">mysql</span><span class="o">=</span>/usr/local/mysql/bin/mysql
+<span class="nb">alias </span><span class="nv">mysqladmin</span><span class="o">=</span>/usr/local/mysql/bin/mysqladmin
 </code></pre>
         </div>
 
         <p>​</p>
-      </li>
-    </ul>
-  </li>
-  <li>
-    <p>字符串</p>
-
-    <ul>
-      <li>
-        <p>echo与print区别</p>
-
-        <ul>
-          <li>
-            <p>echo 速度快</p>
-          </li>
-          <li>
-            <p>echo 可以输出多字符串，print不可以</p>
-
-            <div class="language-php highlighter-rouge"><pre class="highlight"><code>echo "this","is","my","string";
-</code></pre>
-            </div>
-          </li>
-          <li>
-            <p>echo 无返回值，print 返回值为1</p>
-          </li>
-        </ul>
-      </li>
-      <li>
-        <p>字符串内输出变量</p>
-
-        <div class="language-php highlighter-rouge"><pre class="highlight"><code>echo "hello {$name[0]}";
-</code></pre>
-        </div>
-
-        <p>​</p>
-      </li>
-    </ul>
-  </li>
-  <li>
-    <p>函数</p>
-
-    <ul>
-      <li>
-        <p>函数内部不能直接访问全局变量(外部函数访问内部函数方法？？？)，如果需要访问，要在变量前加global关键字</p>
-
-        <div class="language-php highlighter-rouge"><pre class="highlight"><code>global $x,$y;//$x,$y均为全局变量，此处为函数内部，这样书写后可以再函数内部使用x,y
-</code></pre>
-        </div>
-
-        <p>另一种方法是通过php的$GLOBALS[index]数组</p>
-
-        <div class="language-php highlighter-rouge"><pre class="highlight"><code>//函数内部
-$GLOBALS['y'] = $GLOBALS['x'] + 1;
-</code></pre>
-        </div>
-      </li>
-      <li>
-        <p>static可在函数内部声明静态变量</p>
       </li>
     </ul>
   </li>

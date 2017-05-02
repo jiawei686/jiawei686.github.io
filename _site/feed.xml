@@ -2,12 +2,65 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Like the ceiling can't hold us</title>
-    <description>This is my blog , this might be some web or other ideas to share.--jiawei~我的博客，与大家分享一些想法 --崔家维</description>
+    <description>我的博客,一个分享交流的平台 --崔家维~Glad to see you ,this is my blog and there might be some web or other ideas to share.--jiawei</description>
     <link>http://localhost:4000/</link>
     <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Thu, 27 Apr 2017 00:36:17 +0800</pubDate>
-    <lastBuildDate>Thu, 27 Apr 2017 00:36:17 +0800</lastBuildDate>
+    <pubDate>Tue, 02 May 2017 18:21:57 +0800</pubDate>
+    <lastBuildDate>Tue, 02 May 2017 18:21:57 +0800</lastBuildDate>
     <generator>Jekyll v3.4.2</generator>
+    
+      <item>
+        <title>Mac OS下MySQL安装方法</title>
+        <description>&lt;h5 id=&quot;mysql-for-mac&quot;&gt;MySQL for MAC&lt;/h5&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;从 https://dev.mysql.com/downloads/ 也就是官方地址，选择MySQL Community Server 一项来下载MySQL。可以下载不同方式安装的版本，我则选择的是.dmg（最方便）。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;下载安装后，不能使用mysql命令，或是mysqladmin。在命令行里面用where、which、whereis都找不到。但是在偏好设置里面明明看到了可以开启MySQL Server。于是寻找教程，发现要手动配置环境变量。在命令行里输入&lt;/p&gt;
+
+    &lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;alias &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;mysql&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;/usr/local/mysql/bin/mysql
+&lt;span class=&quot;nb&quot;&gt;alias &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;mysqladmin&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;/usr/local/mysql/bin/mysqladmin
+&lt;/code&gt;&lt;/pre&gt;
+    &lt;/div&gt;
+
+    &lt;p&gt;于是就可以通过命令启动mysql了，然而每次重启命令行还是要设置。所以下面我们想办法设置环境变量使得每一次重启命令行不用再配置alias。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;环境变量&lt;/p&gt;
+
+    &lt;ul&gt;
+      &lt;li&gt;
+        &lt;p&gt;修改etc/paths 无效&lt;/p&gt;
+      &lt;/li&gt;
+      &lt;li&gt;
+        &lt;p&gt;有效方法&lt;/p&gt;
+
+        &lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;vim ~/.zshrc //打开zsh配置文件
+
+在其中添加
+&lt;span class=&quot;nb&quot;&gt;alias &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;mysql&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;/usr/local/mysql/bin/mysql
+&lt;span class=&quot;nb&quot;&gt;alias &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;mysqladmin&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;/usr/local/mysql/bin/mysqladmin
+&lt;/code&gt;&lt;/pre&gt;
+        &lt;/div&gt;
+
+        &lt;p&gt;​&lt;/p&gt;
+      &lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+</description>
+        <pubDate>Tue, 02 May 2017 00:00:00 +0800</pubDate>
+        <link>http://localhost:4000/computer_science/2017/05/02/MySQL%E5%AE%89%E8%A3%85%E6%96%B9%E6%B3%95.html</link>
+        <guid isPermaLink="true">http://localhost:4000/computer_science/2017/05/02/MySQL%E5%AE%89%E8%A3%85%E6%96%B9%E6%B3%95.html</guid>
+        
+        <category>MySQL,SQL,数据库,安装,MAC</category>
+        
+        
+        <category>Computer_Science</category>
+        
+      </item>
     
       <item>
         <title>IE浏览器button标签不能嵌套a标签解决办法</title>
@@ -523,46 +576,6 @@ gem install jekyll
         
         
         <category>Computer_Science</category>
-        
-      </item>
-    
-      <item>
-        <title>About</title>
-        <description>&lt;h2 id=&quot;about&quot;&gt;About&lt;/h2&gt;
-
-&lt;p&gt;&lt;em&gt;Name：Jiawei&lt;/em&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;em&gt;Location: Guangzhou,China&lt;/em&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;em&gt;Wechat: cjw1369&lt;/em&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;em&gt;Instagram: jiawei7913&lt;/em&gt;&lt;/p&gt;
-
-&lt;hr /&gt;
-
-&lt;p&gt;全国初中信息学联赛一等奖吉林省第三名&lt;/p&gt;
-
-&lt;p&gt;全国高中信息学联赛一等奖&lt;/p&gt;
-
-&lt;p&gt;全国高中数学联赛、物理竞赛二等奖&lt;/p&gt;
-
-&lt;p&gt;北斗杯全国中学生创新大赛优秀奖&lt;/p&gt;
-
-&lt;p&gt;中山大学ACM新手赛亚军&lt;/p&gt;
-
-&lt;p&gt;我还想写，但是没有拿得出手的了…&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;此Blog纯属无聊创作，欢迎合作交流&lt;/strong&gt;&lt;/p&gt;
-
-</description>
-        <pubDate>Fri, 17 Mar 2017 00:00:00 +0800</pubDate>
-        <link>http://localhost:4000/about/2017/03/17/About.html</link>
-        <guid isPermaLink="true">http://localhost:4000/about/2017/03/17/About.html</guid>
-        
-        <category>About</category>
-        
-        
-        <category>About</category>
         
       </item>
     
