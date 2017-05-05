@@ -9,7 +9,9 @@
 		  <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
 		  <title>{% if page.title %}{{ page.title }}{% else %}{{ site.title }}{% endif %}</title>
-		  <meta name="description" content={% if page.title %} {{}} {% else %} {{ site.description }} {% endif %}>
+		  {% if page.title %}{{}}{% else %}
+		  <meta name="description" content=   {{ site.description }} >{% endif %}
+
 		  <meta name = "keywords" content = {% if page.tags %}{{ page.tags }}{% else %}{{ "崔家维,jiawei,博客,崔家维的博客,jiawei's_blog,web" }}{% endif %}>
 		  <meta name="author" content="{{ site.author }}">
 		  <meta name="HandheldFriendly" content="True">
@@ -20,13 +22,17 @@
 
 		  <meta name="twitter:card" content="summary">
 		  <meta name="twitter:title" content="{{ site.title }}">
-		  <meta name="twitter:description" content="{{ site.description }}">
+
+		  {% if page.title %}{{}}{% else %}
+		  <meta name="twitter:description" content="{{ site.description }}">{% endif %}
 
 		  <meta name="baidu-site-verification" content="a9NpQH8KEY" />
 
 		  <meta property="og:type" content="article">
 		  <meta property="og:title" content="{{ site.title }}">
-		  <meta property="og:description" content="{{ site.description }}">
+
+		  {% if page.title %}{{}}{% else %}
+		  <meta property="og:description" content="{{ site.description }}">{% endif %}
 		<!-- 新 Bootstrap 核心 CSS 文件 -->
 		<link href="//cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
 		 
