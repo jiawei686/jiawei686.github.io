@@ -1,6 +1,6 @@
 ---
 categories: Computer_Science
-tags: 跨域请求,https,safari,chrome
+tags: 跨域请求 https safari chrome
 layout: post
 title: Some Web Problems
 ---

@@ -1,11 +1,10 @@
 ---
 categories: Computer_Science
-tags: IE,button,a,标签,javascript,闭包
+tags: IE button a标签 javascript 闭包
 layout: post
 title: IE浏览器button标签不能嵌套a标签解决办法
 ---
 
-#### IE浏览器button标签不能嵌套a标签解决办法
 
 问题是这样的，最近在帮一个留美同学做一个亲子教育网站，在沟通过程中了解到美国那边仍然有不少IE用户，所以那个同学希望可以适配IE浏览器。虽然酬劳不是很多，但是毕竟是同学，对于网站的每一个细节仍然要加以注意。
 
