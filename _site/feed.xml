@@ -5,8 +5,8 @@
     <description>我的博客,一个分享交流的平台 --崔家维~Glad to see you ,this is my blog and there might be some web or other ideas to share.--jiawei</description>
     <link>http://localhost:4000/</link>
     <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Fri, 05 May 2017 14:31:20 +0800</pubDate>
-    <lastBuildDate>Fri, 05 May 2017 14:31:20 +0800</lastBuildDate>
+    <pubDate>Tue, 09 May 2017 18:08:16 +0800</pubDate>
+    <lastBuildDate>Tue, 09 May 2017 18:08:16 +0800</lastBuildDate>
     <generator>Jekyll v3.4.2</generator>
     
       <item>
@@ -55,7 +55,15 @@
         <link>http://localhost:4000/computer_science/2017/05/02/MySQL%E5%AE%89%E8%A3%85%E6%96%B9%E6%B3%95.html</link>
         <guid isPermaLink="true">http://localhost:4000/computer_science/2017/05/02/MySQL%E5%AE%89%E8%A3%85%E6%96%B9%E6%B3%95.html</guid>
         
-        <category>MySQL,SQL,数据库,安装,MAC</category>
+        <category>MySQL</category>
+        
+        <category>SQL</category>
+        
+        <category>数据库</category>
+        
+        <category>安装</category>
+        
+        <category>MAC</category>
         
         
         <category>Computer_Science</category>
@@ -64,9 +72,7 @@
     
       <item>
         <title>IE浏览器button标签不能嵌套a标签解决办法</title>
-        <description>&lt;h4 id=&quot;ie浏览器button标签不能嵌套a标签解决办法&quot;&gt;IE浏览器button标签不能嵌套a标签解决办法&lt;/h4&gt;
-
-&lt;p&gt;问题是这样的，最近在帮一个留美同学做一个亲子教育网站，在沟通过程中了解到美国那边仍然有不少IE用户，所以那个同学希望可以适配IE浏览器。虽然酬劳不是很多，但是毕竟是同学，对于网站的每一个细节仍然要加以注意。&lt;/p&gt;
+        <description>&lt;p&gt;问题是这样的，最近在帮一个留美同学做一个亲子教育网站，在沟通过程中了解到美国那边仍然有不少IE用户，所以那个同学希望可以适配IE浏览器。虽然酬劳不是很多，但是毕竟是同学，对于网站的每一个细节仍然要加以注意。&lt;/p&gt;
 
 &lt;p&gt;在IE中调试时发现，一个button标签下的a标签不起作用了，代码大概长下面这个样子。&lt;/p&gt;
 
@@ -114,7 +120,15 @@
         <link>http://localhost:4000/computer_science/2017/04/26/IE%E4%B8%8Bbutton%E6%A0%87%E7%AD%BE%E4%B8%8D%E8%83%BD%E5%B5%8C%E5%A5%97a%E6%A0%87%E7%AD%BE%E8%A7%A3%E5%86%B3%E5%8A%9E%E6%B3%95.html</link>
         <guid isPermaLink="true">http://localhost:4000/computer_science/2017/04/26/IE%E4%B8%8Bbutton%E6%A0%87%E7%AD%BE%E4%B8%8D%E8%83%BD%E5%B5%8C%E5%A5%97a%E6%A0%87%E7%AD%BE%E8%A7%A3%E5%86%B3%E5%8A%9E%E6%B3%95.html</guid>
         
-        <category>IE,button,a,标签,javascript,闭包</category>
+        <category>IE</category>
+        
+        <category>button</category>
+        
+        <category>a标签</category>
+        
+        <category>javascript</category>
+        
+        <category>闭包</category>
         
         
         <category>Computer_Science</category>
@@ -174,7 +188,15 @@
         <link>http://localhost:4000/computer_science/2017/04/24/wget%E5%B7%A5%E5%85%B7%E7%9A%84%E5%AE%89%E8%A3%85%E5%8F%8A%E4%BD%BF%E7%94%A8.html</link>
         <guid isPermaLink="true">http://localhost:4000/computer_science/2017/04/24/wget%E5%B7%A5%E5%85%B7%E7%9A%84%E5%AE%89%E8%A3%85%E5%8F%8A%E4%BD%BF%E7%94%A8.html</guid>
         
-        <category>wget,网站爬取,网站模仿,仿站,mac</category>
+        <category>wget</category>
+        
+        <category>网站爬取</category>
+        
+        <category>网站模仿</category>
+        
+        <category>仿站</category>
+        
+        <category>mac</category>
         
         
         <category>Computer_Science</category>
@@ -280,7 +302,15 @@ $GLOBALS['y'] = $GLOBALS['x'] + 1;
         <link>http://localhost:4000/computer_science/2017/04/19/PHP%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html</link>
         <guid isPermaLink="true">http://localhost:4000/computer_science/2017/04/19/PHP%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.html</guid>
         
-        <category>PHP,php开发,php语法,php环境,mac使用php</category>
+        <category>PHP</category>
+        
+        <category>php开发</category>
+        
+        <category>php语法</category>
+        
+        <category>php环境</category>
+        
+        <category>mac使用php</category>
         
         
         <category>Computer_Science</category>
@@ -289,9 +319,7 @@ $GLOBALS['y'] = $GLOBALS['x'] + 1;
     
       <item>
         <title>MongoDB用法总结</title>
-        <description>&lt;h5 id=&quot;mongodb基本操作&quot;&gt;MongoDB基本操作&lt;/h5&gt;
-
-&lt;ul&gt;
+        <description>&lt;ul&gt;
   &lt;li&gt;
     &lt;p&gt;开启MongoDB&lt;/p&gt;
 
@@ -372,7 +400,15 @@ helloworld
         <link>http://localhost:4000/computer_science/2017/04/18/MongoDB%E7%94%A8%E6%B3%95%E6%80%BB%E7%BB%93.html</link>
         <guid isPermaLink="true">http://localhost:4000/computer_science/2017/04/18/MongoDB%E7%94%A8%E6%B3%95%E6%80%BB%E7%BB%93.html</guid>
         
-        <category>数据库,MongoDB,MongoDB配置,MongoDB连接,MongoDB增加与删除</category>
+        <category>数据库</category>
+        
+        <category>MongoDB</category>
+        
+        <category>MongoDB配置</category>
+        
+        <category>MongoDB连接</category>
+        
+        <category>MongoDB增加与删除</category>
         
         
         <category>Computer_Science</category>
@@ -381,9 +417,7 @@ helloworld
     
       <item>
         <title>ACM校赛，久违的失败</title>
-        <description>&lt;h4 id=&quot;acm校赛久违的失败&quot;&gt;ACM校赛，久违的失败&lt;/h4&gt;
-
-&lt;ul&gt;
+        <description>&lt;ul&gt;
   &lt;li&gt;一个小时前结束的ACM校赛，我的队伍排名垫底。四个小时里，再此感受到如坐针毡的，却又无可奈何的，久违的感觉。&lt;/li&gt;
   &lt;li&gt;忽然想起在高中，各种竞赛考试面前，如果心态足够好，再困难的题目也可以顺势解出，我们称之为“进入状态”。如果某一次考试的心态不好，要么是过于重视，要么是过于浮躁。这时面对题目那一张纸，我就会像一个傻逼一样，呆若木鸡，看着别人思考的样子，我却静不下心来分析题目。&lt;/li&gt;
   &lt;li&gt;在去年的ACM新手赛结束后，拿到了亚军的我，曾经有那么一个瞬间真的以为自己可以重新捡起不完整的OI生涯，代表中山大学打ACM总决赛，现在看来这种不努力的空想太天真了。&lt;/li&gt;
@@ -397,6 +431,8 @@ helloworld
         <guid isPermaLink="true">http://localhost:4000/blogs/2017/04/02/ACM%E6%A0%A1%E8%B5%9B-%E4%B9%85%E8%BF%9D%E7%9A%84%E5%A4%B1%E8%B4%A5.html</guid>
         
         <category>Blogs</category>
+        
+        <category>ACM</category>
         
         
         <category>Blogs</category>
@@ -420,7 +456,13 @@ brew install ant
         <link>http://localhost:4000/computer_science/2017/03/24/Mac-OS%E4%B8%8B%E5%AE%89%E8%A3%85Ant-%E6%9C%80%E7%AE%80%E5%8D%95%E6%96%B9%E6%B3%95.html</link>
         <guid isPermaLink="true">http://localhost:4000/computer_science/2017/03/24/Mac-OS%E4%B8%8B%E5%AE%89%E8%A3%85Ant-%E6%9C%80%E7%AE%80%E5%8D%95%E6%96%B9%E6%B3%95.html</guid>
         
-        <category>Java,Ant安装,Ant环境,mac</category>
+        <category>Java</category>
+        
+        <category>Ant安装</category>
+        
+        <category>Ant环境</category>
+        
+        <category>mac</category>
         
         
         <category>Computer_Science</category>
@@ -499,7 +541,13 @@ brew install ant
         <link>http://localhost:4000/computer_science/2017/03/17/Some-Web-Problems.html</link>
         <guid isPermaLink="true">http://localhost:4000/computer_science/2017/03/17/Some-Web-Problems.html</guid>
         
-        <category>跨域请求,https,safari,chrome</category>
+        <category>跨域请求</category>
+        
+        <category>https</category>
+        
+        <category>safari</category>
+        
+        <category>chrome</category>
         
         
         <category>Computer_Science</category>
@@ -572,7 +620,13 @@ gem install jekyll
         <link>http://localhost:4000/computer_science/2017/03/17/Jekyll-%E5%85%A5%E9%97%A8%E4%B8%8E%E8%BF%9B%E9%98%B6.html</link>
         <guid isPermaLink="true">http://localhost:4000/computer_science/2017/03/17/Jekyll-%E5%85%A5%E9%97%A8%E4%B8%8E%E8%BF%9B%E9%98%B6.html</guid>
         
-        <category>Computer_Science</category>
+        <category>jekyll</category>
+        
+        <category>jekyll安装</category>
+        
+        <category>博客</category>
+        
+        <category>搭建</category>
         
         
         <category>Computer_Science</category>

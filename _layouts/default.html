@@ -12,7 +12,7 @@
 		  {% if page.title %}{{}}{% else %}
 		  <meta name="description" content=   {{ site.description }} >{% endif %}
 
-		  <meta name = "keywords" content = {% if page.tags %}{{ page.tags }}{% else %}{{ "崔家维,jiawei,博客,崔家维的博客,jiawei's_blog,web" }}{% endif %}>
+		  <meta name = "keywords" content = {% if page.tags %}{% for tagitem in page.tags  %}{{tagitem}},{% endfor %}崔家维的博客{% else %}{{ "崔家维,jiawei,博客,崔家维的博客,jiawei's_blog,web" }}{% endif %}>
 		  <meta name="author" content="{{ site.author }}">
 		  <meta name="HandheldFriendly" content="True">
 		  <meta name="MobileOptimized" content="320">
