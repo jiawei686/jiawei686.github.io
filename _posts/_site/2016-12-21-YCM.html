@@ -1,0 +1,10 @@
+<p>使用 mac 自带 vim 安装 YCM 会报错，试了很多其他版本也不行.. 最近终于找到一种可以用的。
+使用 brew 安装 vim：</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>brew install vim --with-lua --with-override-system-vi
+</code></pre>
+</div>
+
+<p>注意 brew 安装路径和原版的不同，建议先把原版 vim 卸载掉，或者将 brew 安装的 vim 设置为 default。</p>
+
+<p>然后 YCM 工作正常。</p>

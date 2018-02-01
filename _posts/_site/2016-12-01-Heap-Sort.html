@@ -1,0 +1,86 @@
+<p>几个要点：</p>
+
+<ul>
+  <li>初始化堆的方法：从最后一个非叶节点开始调整，每次调整都是从父节点、左孩子节点、右孩子节点三者中选择最大者跟父节点进行交换(交换之后可能造成被交换的孩子节点不满足堆的性质，因此每次交换之后要重新对被交换的孩子节点进行调整)。有了初始堆之后就可以进行排序了。</li>
+  <li>排序时，将根节点元素抽出并与最后一个元素进行交换，对剩余部分的数重新构造初始化堆。</li>
+</ul>
+
+<p>代码如下：</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>#include&lt;cstdio&gt;
+int heap[9999999];
+int len;
+int N;
+
+void print()
+{
+    for(int i=1;i&lt;=N;i++)
+    {
+        printf("%d",heap[i]);
+        if(i==N)
+            printf("\n");
+        else
+            printf(" ");
+    }
+}
+
+void swap(int &amp; a,int &amp; b)
+{
+    int tmp = a;
+    a = b;
+    b = tmp;
+}
+
+void adjust_root(int father)
+{
+    int left_child = father*2;
+    int right_child = father*2+1;
+    int max_pos;
+    if(left_child &gt; len) //没有儿子
+        return;
+    if(right_child &lt;= len) //两个儿子
+        max_pos = heap[left_child] &gt;= heap[right_child] ? left_child : right_child; //大于不行，只能大于等于,太坑了...
+    else //只有一个儿子
+        max_pos = left_child;
+    if(heap[father] &lt; heap[max_pos])
+    {
+        swap(heap[father],heap[max_pos]);
+        adjust_root(max_pos);
+    }
+}
+
+void init_heap()
+{
+    for(int father = N/2;father&gt;0;father--)
+        adjust_root(father);
+}
+
+
+void sort_heap()
+{
+    len = N;
+    while(len-1)
+    {
+        swap(heap[1],heap[len]);
+        len--;
+        adjust_root(1);
+        print();
+    }
+}
+
+
+int main()
+{
+    while(scanf("%d",&amp;N) != EOF)
+    {
+        len = N;
+        for(int i=0;i&lt;N;i++)
+            scanf("%d",&amp;heap[i+1]);
+        init_heap();
+        print();
+        sort_heap();
+    }
+}
+</code></pre>
+</div>
+

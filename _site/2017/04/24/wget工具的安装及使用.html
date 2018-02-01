@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+  <head>
+  <meta name="baidu-site-verification" content="5GAItV9OXY" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>
+    
+       wget工具的安装及使用  &middot; Jiawei
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Slab:700|PT+Serif:400,400italic,700,700italic" type="text/css">
+  <link rel="stylesheet" href="/public/css/poole.css">
+  <link rel="stylesheet" href="/public/css/hyde.css">
+  <!--  <link rel="stylesheet" href="/public/css/jekyll-github.css">-->
+  <link rel="stylesheet" href="/public/css/rouge.css">
+
+  
+
+  
+
+  
+
+  <style>
+    .content a,
+    .related-posts li a:hover {
+      color: #656565;
+    }
+    ::selection {
+      color: #fff;
+      background: #656565;
+    }
+    ::-moz-selection {
+      color: #fff;
+      background: #656565;
+    }
+  </style>
+
+  <!-- Icons -->
+  <!-- <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/public/apple-touch-icon-144-precomposed.png"> -->
+  <!-- <link rel="shortcut icon" href="/public/favicon.ico"> -->
+
+  <!-- RSS -->
+  <link rel="alternate" type="application/atom+xml" title="Jiawei" href="/atom.xml">
+	<!-- 父层 -->  
+</head>
+
+  <body>
+
+    <main class="content container">
+      
+
+
+<article class="post">
+  <h1 class="post-title">wget工具的安装及使用</h1>
+  <div class="post-date">
+    <time datetime="2017-04-24T00:00:00+08:00">04/24/17</time>
+    <span>on <a href="/tag/Software/">Software</a></span>
+  </div>
+  <hr/>
+  <h4 id="mac下wget工具的安装">Mac下wget工具的安装</h4>
+
+<ul>
+  <li>
+    <p>使用homebrew</p>
+
+    <div class="language-shell highlighter-rouge"><pre class="highlight"><code>sudo brew install wget
+</code></pre>
+    </div>
+  </li>
+  <li>
+    <p>使用mac ports</p>
+
+    <div class="language-shell highlighter-rouge"><pre class="highlight"><code>sudo port install wget
+</code></pre>
+    </div>
+
+    <p>​</p>
+  </li>
+</ul>
+
+<h4 id="使用wget爬取全站数据">使用wget爬取全站数据</h4>
+
+<ul>
+  <li>
+    <p>确定需要爬取的网站URL$Route_{remote}$ ，需要放置的本地路径$Route_{local}$</p>
+  </li>
+  <li>
+    <p>输入命令</p>
+
+    <div class="language-shell highlighter-rouge"><pre class="highlight"><code>wget -r -p -np -k -P ~/usr/web/ https://jiawei1996.github.io
+</code></pre>
+    </div>
+  </li>
+  <li>
+    <p>其中</p>
+
+    <ul>
+      <li>-P 表示下载到哪个目录</li>
+      <li>-r 表示递归下载</li>
+      <li>-np 表示不下载旁站连接.</li>
+      <li>-k 表示将下载的网页里的链接修改为本地链接.</li>
+      <li>-p 获得所有显示网页所需的元素</li>
+    </ul>
+  </li>
+</ul>
+
+</article>
+
+
+<aside class="author">
+  <h2 class="aside-title">About</h2>
+
+  
+  <img class="me" src="/public/img/head.jpg" alt="Jiawei Cui"/>
+  
+
+  <p>Name : 崔家维</p>
+
+<p>Wechat : cjw1369</p>
+
+<p>Email : cuijiawei.cn@gmail.com</p>
+
+<p><em>没见过世面，请不要嘲笑我。</em></p>
+
+</aside>
+
+
+
+<aside class="related">
+  <h2 class="aside-title">Related Posts</h2>
+  <ul class="related-posts">
+    
+    
+    
+      
+      
+        <li>
+          <h4>
+            <a href="/2017/12/01/%E9%82%AE%E4%BB%B6%E6%9C%8D%E5%8A%A1.html">
+              <span>linux邮件服务</span>
+              <small>12/01/17</small>
+            </a>
+          </h4>
+        </li>
+      
+    
+      
+      
+        <li>
+          <h4>
+            <a href="/2017/11/25/iptables-%E5%88%9D%E6%8E%A2.html">
+              <span>iptables初探</span>
+              <small>11/25/17</small>
+            </a>
+          </h4>
+        </li>
+      
+    
+      
+      
+        <li>
+          <h4>
+            <a href="/2017/10/11/pm2-node%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86.html">
+              <span>pm2管理node进程</span>
+              <small>10/11/17</small>
+            </a>
+          </h4>
+        </li>
+      
+    
+      
+      
+    
+  </ul>
+</aside>
+
+<!-- 友言 -->
+<!-- UY BEGIN -->
+<!-- UY END -->
+
+
+<!-- 多说评论框 start -->
+<div class="ds-thread" data-thread-key="/2017/04/24/wget工具的安装及使用" data-title="wget工具的安装及使用" data-url="/2017/04/24/wget%E5%B7%A5%E5%85%B7%E7%9A%84%E5%AE%89%E8%A3%85%E5%8F%8A%E4%BD%BF%E7%94%A8.html"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"xiaomi388"};
+    (function() {
+            var ds = document.createElement('script');
+            ds.type = 'text/javascript';ds.async = true;
+            ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+            ds.charset = 'UTF-8';
+            (document.getElementsByTagName('head')[0] 
+                 || document.getElementsByTagName('body')[0]).appendChild(ds);
+            })();
+            </script>
+<!-- 多说公共JS代码 end -->
+
+
+    </main>
+      <div class="love content container">
+        © 2018 JIAWEI
+      </div>
+    
+
+
+
+
+
+<div id="_backdrop"></div>
+<a   id="_menu" href="#_sidebar">☰</a>
+
+<aside id="_sidebar" class="sidebar" style="background-image:url('/public/img/mrrobot.jpg')">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <h1><a href="/">Jiawei</a></h1>
+      <p>A Real Internet Splider.</p>
+
+    </div>
+
+    <nav class="sidebar-nav">
+      
+        
+        <a class="sidebar-nav-item" href="/tag/Life/">Life</a>
+      
+        
+        <a class="sidebar-nav-item" href="/tag/Code/">Code</a>
+      
+        
+        <a class="sidebar-nav-item" href="/tag/Software/">Software</a>
+      
+        
+        <a class="sidebar-nav-item" href="/tag/Learning/">Learning</a>
+      
+
+      
+
+      
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          
+            <a class="sidebar-nav-item" href="/about.html">About</a>
+          
+        
+      
+        
+      
+        
+      
+        
+          
+        
+      
+        
+      
+    </nav>
+
+    <div class="sidebar-social">
+      
+        <a href="https://github.com/jiawei686"><span class="icon-icon-github"></span></a>
+
+      
+    </div>
+  </div>
+</div>
+
+    <<!-- script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_1261413697'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s11.cnzz.com/z_stat.php%3Fid%3D1261413697' type='text/javascript'%3E%3C/script%3E"));</script>
+    <script src="/public/js/drawer.js"></script> -->
+
+
+  </body>
+</html>

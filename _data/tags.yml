@@ -1,0 +1,61 @@
+# Add an entry, where the key represents a slug.
+# Provide at least a `name` value and optionally `image`, `color` and `description`.
+# Markdown is enabled for `description`, however don't use more than one paragraph (enforced by `>`)
+#
+# Example:
+#
+# ~~~
+# mytag:
+#   name: My Tag
+#   description: >
+#     *My Tag* is an example of how to define a custom tag.
+# ~~~
+
+hyde:
+  name: hyde 
+  image: /public/img/hyde.jpg
+  #  color: '#949667'
+  color: '#656565'
+  description: >
+    Hyde is a brazen two-column Jekyll theme that pairs a prominent sidebar with uncomplicated content.
+    It’s based on Poole, the Jekyll butler.
+
+jekyll:
+  name: jekyll
+  image: /public/img/jekyll.jpg
+  color: '#656565'
+  #color: '#949667'
+  description: >
+    Jekyll is a static site generator, an open-source tool for creating simple yet powerful websites of all shapes and sizes.
+
+Life:
+  name: Life
+  #color: '#949667'
+  color: '#656565'
+  description: >
+    记录下认知世界的过程
+
+Code:
+  name: Code
+  image: /public/img/mrrobot.jpg
+  #color: '#949667'
+  color: '#656565'
+  description: >
+    Talk is cheap, show me the code.
+
+Software:
+    name: Software
+    image: /public/img/mrrobot.jpg
+    # color: '#949667'
+    color: '#656565'
+    description: >
+        记录下认知Computer的过程
+
+Learning:
+    name: Learning
+    image: /public/img/mrrobot.jpg
+    # color: '#949667'
+    color: '#656565'
+    description: >
+        多读书，少犯傻
+

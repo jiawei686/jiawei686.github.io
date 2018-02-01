@@ -1,0 +1,53 @@
+<h2 id="section">拓扑排序</h2>
+
+<p>作用：将有向图中的顶点以线性方式进行排序。即对于任何连接自顶点u到顶点v的有向边uv，在最后的排序结果中，顶点u总是在顶点v的前面。</p>
+
+<p>形象例子:选课——再选某些课之前必须先选另外的某些基础课，确定选课顺序。</p>
+
+<p>伪代码实现如下：</p>
+
+<p>Kahn算法实现：</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>L← Empty list that will contain the sorted elements
+S ← Set of all nodes with no incoming edges
+
+while S is non-empty do
+    remove a node n from S
+    insert n into L
+    foreach node m with an edge e from n to m do
+        remove edge e from the graph
+        if m has no other incoming edges then
+            insert m into S
+if graph has edges then
+    return error (graph has at least onecycle)
+else 
+    return L (a topologically sortedorder)
+</code></pre>
+</div>
+
+<p>DFS实现：</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>L ← Empty list that will contain the sorted nodes
+S ← Set of all nodes with no outgoing edges
+for each node n in S do
+    visit(n) 
+function visit(node n)
+    if n has not been visited yet then
+        mark n as visited
+        for each node m with an edge from m to n do
+            visit(m)
+        add n to L
+</code></pre>
+</div>
+
+<h2 id="floyd">Floyd算法</h2>
+<p>作用：算出所有顶点到其余各顶点的最短路径算法。
+很好的一篇教程<a href="http://developer.51cto.com/art/201403/433874.htm">坐在马桶上看算法：只有五行的Floyd最短路径算法</a></p>
+
+<h2 id="section-1">迪杰斯特拉算法</h2>
+<p>原理图如下：
+<img src="/public/img/Dijkstra.gif" alt="" /></p>
+
+<h2 id="avl">AVL树的旋转</h2>
+<p><a href="http://blog.csdn.net/lemon_tree12138/article/details/50393548" title="数据结构：关于AVL树的平衡旋转详解">数据结构：关于AVL树的平衡旋转详解</a></p>
+

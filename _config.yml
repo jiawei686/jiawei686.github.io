@@ -1,0 +1,45 @@
+# Permalinks
+#permalink:        pretty
+
+#syntax highlight
+markdown: kramdown
+kramdown:
+    input: GFM
+    syntax_highlighter: rouge
+
+# Setup
+url:              http://qwtel.com
+
+# Set to '' in case of hosting on `http://<your-github-name>.github.io`
+baseurl:          ''
+
+title:           Jiawei 
+
+# Markdown enabled, however don't use more than one paragraph (enforced by `>`)
+description:      >
+    A Real Internet Splider.
+# The tags listed as entries in the sidebar
+sidebar_tags:     [Life, Code, Software, Learning]
+
+# Fallback image and color if not overwritten for tag or post
+image:            /public/img/nap.jpg
+#color:            '#A85641'
+color:            '#656565'
+
+author:
+  name:           'Jiawei Cui'
+  # twitter:        xiaomi388
+  github:         jiawei686
+  photo:          /public/img/head.jpg
+ 
+
+  # Markdown enabled, can use multiple paragraphs (enabled by `|`)
+  about: |          
+    Name : 崔家维
+
+    Wechat : cjw1369
+
+    Email : cuijiawei.cn@gmail.com
+
+    *没见过世面，请不要嘲笑我。*
+

@@ -1,0 +1,144 @@
+<p>宿舍里有闲置的树莓派3一块，移动硬盘一块，于是突发奇想，想做一个网盘。刚开始的时候以为很简单，直到以来一坑接着一坑不断向我袭来… 幸好最后都被一一解决了。其中各种心酸各种查资料各种摸索…</p>
+
+<p>好吧进入正题！</p>
+
+<h2 id="section">硬件方面的配置</h2>
+<ul>
+  <li>树莓派3（系统 Raspbian）</li>
+  <li>Toshiba 的移动硬盘 1T（ntfs格式）</li>
+  <li>有源HUB - ORICO 7926-U3（树莓派接移动硬盘必须要用有源HUB，否则电压不够）</li>
+</ul>
+
+<h2 id="section-1">软件方面的安装与配置</h2>
+<ul>
+  <li>web服务器：tornado</li>
+  <li>web反向代理:nginx（附带文件上传模块 nginx upload module）</li>
+  <li>数据库：mysql</li>
+</ul>
+
+<h3 id="nginx-">用 nginx 作反向代理的原因</h3>
+<p>tornado 在处理文件上传时，会将文件储存在内存中，因此并不适合直接用于大文件上传，只好用 nginx 作代理，借助其 upload module 先将文件暂时存到某个地方而后再让 tornado 处理之。</p>
+
+<h3 id="section-2">挂载移动硬盘</h3>
+<p>插入移动硬盘后，查看系统的硬盘和硬盘分区情况</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>#sudo fdisk -l
+</code></pre>
+</div>
+
+<p>然后通过观察 size 大小确定自己移动硬盘的 Device 是什么。我的是 /dev/sda1 ，因此以下以 /dev/sda1 为例。</p>
+
+<p>下载 ntfs-3g</p>
+
+<blockquote>
+  <p>NTFS-3G 是一个开源的软件，可以实现 Linux、Free BSD、Mac OSX、NetBSD 和 Haiku 等操作系统中的 NTFS 读写支持。它可以安全且快速地读写 Windows 系统的 NTFS 分区，而不用担心数据丢失。</p>
+</blockquote>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>#sudo apt-get install ntfs-3g
+</code></pre>
+</div>
+
+<p>建立目录用来作挂接点(mount point)</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>#mkdir -p /mnt/sda1
+#mount -t ntfs-3g /dev/sda1 /mnt/sda1
+</code></pre>
+</div>
+
+<p>挂载成功。现在可以在挂载点上对移动硬盘进行读写操作了。</p>
+
+<h3 id="nginxnginx-upload-module">Nginx安装及配置（附带nginx upload module）</h3>
+
+<h4 id="nginx">Nginx安装</h4>
+
+<p>nginx 依赖以下模块：</p>
+
+<ul>
+  <li>gzip 模块需要 zlib 库</li>
+  <li>rewrite 模块需要 pcre 库</li>
+  <li>ssl 功能需要 openssl 库</li>
+</ul>
+
+<p>因此，在安装 nginx 之前，需先下载以上三个库的源代码（博主正是忽略了这一点，导致连续编译了好几次… 多次麻烦折腾）</p>
+
+<p>而要编译安装 nginx upload module ，则需先下载其源码，<strong>建议下载 <a href="https://github.com/vkholodkov/nginx-upload-module/tree/2.2">github上2.2分支的源码</a> ，在官网上下的源码编译会出错，以及下载 github 主分支的也会出错</strong>。</p>
+
+<p>回到 nginx 源码目录，然后 ./configure 编译 nginx ，附带参数</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>--with-openssl=&lt;openssl_dir&gt; --with-pcre=&lt;pcre_dir&gt; --with-zlib=&lt;zlib_dir&gt; --add-module=&lt;uplpad_module_dir&gt;
+</code></pre>
+</div>
+
+<p>指定依赖的模块目录。</p>
+
+<p>然后执行 make &amp;&amp; make install 完成安装</p>
+
+<h4 id="nginx--upload-module-">Nginx  upload module 配置</h4>
+
+<p>在nginx配置文件的server节点增加如下配置，假设http://hostname/upload地址用户文件上传。</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>location /upload {
+    upload_pass /api/upload;
+    upload_cleanup 400 404 499 500-505;
+    upload_store /mnt/sda1/upload_tmp;
+    upload_store_access user:r;
+    upload_limit_rate 0;
+    upload_set_form_field "file_name" $upload_file_name;
+    upload_set_form_field "content_type" $upload_content_type;
+    upload_set_form_field "tmp_path" $upload_tmp_path;
+    upload_aggregate_form_field "md5" $upload_file_md5;
+    upload_aggregate_form_field "size" $upload_file_size;
+    upload_pass_form_field "^.*$";
+}
+</code></pre>
+</div>
+
+<p>各参数说明如下：</p>
+
+<blockquote>
+  <p>upload_pass 指明了需要后续处理的php/tornado地址</p>
+
+  <p>upload_cleanup 如果php出现400 404 499 500-505之类的错误，则删除上传的文件</p>
+
+  <p>upload_store 上传文件存放地址</p>
+
+  <p>upload_store_access 上传文件的访问权限，user:r是指用户可读_</p>
+
+  <p>upload_limit_rate 上传限速，如果设置为0则表示不限制_</p>
+
+  <p>upload_set_form_field 设定额外的表单字段。这里有几个可用的变量：</p>
+
+  <ul>
+    <li>$upload_file_name 文件原始名字</li>
+    <li>$upload_field_name 表单的name值</li>
+    <li>$upload_content_type 文件的类型</li>
+    <li>$upload_tmp_path 文件上传后的地址</li>
+    <li>upload_aggregate_form_field 额外的变量，在上传成功后生成</li>
+    <li>$upload_file_md5 文件的MD5校验值</li>
+    <li>$upload_file_size 文件大小</li>
+    <li>upload_pass_form_field 从表单原样转到后端的参数，可以正则表达式表示。官方的例子是upload_pass_form_field "\^submit$|^description$";意思是把submit，description这两个字段也原样通过upload_pass传递到后端php处理。如果希望把所有的表单字段都传给后端可以用upload_pass_form_field "^.*$";</li>
+  </ul>
+</blockquote>
+
+<p>我们上传文件存储到临时目录后nginx立即会向后面的tornado服务的/api/upload发起一个表单请求,其中有五个表单项：</p>
+
+<ul>
+  <li>file_name 上传的文件名</li>
+  <li>content_type 文件的MIME类型</li>
+  <li>tmp_path 临时文件目录</li>
+  <li>md5 文件的md5值</li>
+  <li>size 文件大小</li>
+</ul>
+
+<p>这时就已经可以在 tornado 中对文件进行处理了。</p>
+
+<p>另：启动、停止、重启 Nginx 命令如下 ：</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>sudo /usr/local/nginx/sbin/nginx
+sudo /usr/local/nginx/sbin/nginx -s stop
+sudo /usr/local/nginx/sbin/nginx -s restart
+</code></pre>
+</div>
+
+<p>以上两个是我在配置过程中比较坑的点（特别是 nginx 的 upload module ，由于作者五年前就停更了，因此官网上的源码似乎不能兼容新版 nginx，这个真的是非常非常的坑……），至于其他的安装 Mysql 、tornado 等等的在此就忽略不谈了 :)</p>
+

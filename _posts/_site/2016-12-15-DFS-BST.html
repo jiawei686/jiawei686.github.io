@@ -1,0 +1,109 @@
+<h2 id="section">深度优先搜索</h2>
+
+<h4 id="section-1">递归实现：</h4>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>var 访问记录变量
+DFS(v)
+        访问v
+        for 与v邻接的每个节点w
+            if 没有访问过w
+                修改 访问记录变量
+                DFS（w）
+                还原 访问记录变量
+</code></pre>
+</div>
+
+<h4 id="section-2">栈迭代实现：</h4>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>DFS(v)
+        stack.push(v)
+        while not stack.empty():
+            cur = stack.top()
+            stack.pop()
+            visit(cur)
+            stack.push(all cur's next available and unreached nodes)
+</code></pre>
+</div>
+
+<h2 id="section-3">广度优先搜索</h2>
+<div class="highlighter-rouge"><pre class="highlight"><code>BFS(v)
+    queue.push(v)
+    while not queue.empty():
+        cur = queue.front()
+        queue.pop()
+        visit(cur)
+        que.push(all cur's next available and unreached nodes)
+</code></pre>
+</div>
+
+<h2 id="section-4">注意点</h2>
+<p>需要利用某些数据结构去记录已经搜索过的节点。</p>
+
+<h2 id="nvcpc2016">附：nvcpc2016网络赛第五题</h2>
+
+<h4 id="descriction">Descriction</h4>
+
+<p>Gensokyo is a peaceful world, where humans live in harmony with monsters. In Gensokyo there are N villages connected by M bidirectional roads. But one day there is an earthquake, destroying some villages. If a village is destroyed, all roads connected to it will be cut off. Hakurei Reimu, the host of the Hakurei shrine, is very kind-hearted and she decides to help those affected villages. Now there are K villages sending mail to Hakurei Reimu, telling her that though the village isn’t destroyed, but it can’t reach Hakurei shrine due to the unserviceable roads. Can you help Hakurei Reimu to find the minimum number of villages that can’t reach Hakurei shrine? (including those destroyed villages) The village 1 is the Hakurei shrine, and it won’t be destroyed. It’s guaranteed that all villages are connected before the earthquake.</p>
+
+<h4 id="input">Input</h4>
+
+<p>The first line contains three integers N, M, K (1&lt;=N&lt;=30000, 1&lt;=M&lt;=100000, 0&lt;=K&lt;=N) The following M lines each contain two integers x, y (1 &lt;= x, y &lt;= N), denoting that there is a road connecting village x and village y before earthquake happened. Then the following K lines, each line contains an integer x, denoted that village x can’t reach Hakurei shrine but not destroyed.</p>
+
+<h4 id="output">Output</h4>
+
+<p>Output the possible minimum number of villages that can’t reach Hakurei shrine in a line.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>#include&lt;cstdio&gt;
+#include&lt;vector&gt;
+#include&lt;queue&gt;
+#include&lt;iostream&gt;
+using namespace std;
+
+vector&lt;int&gt; path[30010];
+bool can_not_reach[30010];
+bool have_visited[30010];
+queue&lt;int&gt; que;
+
+int main()
+{
+    int N,M,K;
+    int x,y;
+    scanf("%d%d%d",&amp;N,&amp;M,&amp;K);
+    for(int i=0;i&lt;M;i++)
+    {
+        scanf("%d%d",&amp;x,&amp;y);
+        path[x].push_back(y);
+        path[y].push_back(x);
+    }
+    for(int i=0;i&lt;K;i++)
+    {
+        scanf("%d",&amp;y);
+        for(int q=0;q&lt;path[y].size();q++)
+            can_not_reach[path[y][q]] = 1;
+    }
+    //初始化主城
+    int left_town = 1;
+    have_visited[1] = 1;
+    //BFS
+    que.push(1);
+    while(!que.empty())
+    {
+        int now_town = que.front();
+        for(int i=0;i&lt;path[now_town].size();i++)
+        {
+            int next_town = path[now_town][i];
+            if(!have_visited[next_town] &amp;&amp; !can_not_reach[next_town])
+            {
+                have_visited[next_town] = 1;
+                left_town++;
+                que.push(next_town);
+            }
+        }
+        que.pop();
+    }
+    //输出
+    printf("%d\n",N-left_town);
+}                                 
+</code></pre>
+</div>
+

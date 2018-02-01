@@ -1,0 +1,598 @@
+<h4 id="section">服务器代码如下</h4>
+
+<figure class="highlight"><pre><code class="language-c--" data-lang="c++"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176</pre></td><td class="code"><pre><span class="cp"># include&lt;cstdio&gt;
+# include&lt;sstream&gt;
+# include&lt;iostream&gt;
+# include&lt;cstdlib&gt;
+# include&lt;pthread.h&gt;
+# include&lt;iostream&gt;
+# include&lt;sys/socket.h&gt;
+# include&lt;netinet/in.h&gt;
+# include&lt;arpa/inet.h&gt;
+# include&lt;string.h&gt;
+# include&lt;unistd.h&gt;
+# include&lt;cstring&gt;
+# include&lt;vector&gt;
+# include&lt;map&gt;
+</span>
+<span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+
+<span class="cp"># define SERVER_IP "0.0.0.0"
+# define BUFF_LEN 1024
+# define SERVER_PORT 50520
+</span>
+<span class="n">vector</span><span class="o">&lt;</span><span class="k">struct</span> <span class="n">socket_files</span><span class="o">&gt;</span> <span class="n">sockets</span><span class="p">;</span>
+<span class="kt">int</span> <span class="n">sockets_num</span><span class="p">;</span>
+
+<span class="n">string</span> <span class="nf">get_time</span><span class="p">()</span>
+<span class="p">{</span>
+	<span class="kt">time_t</span> <span class="n">rawtime</span><span class="p">;</span>
+	<span class="k">struct</span> <span class="n">tm</span> <span class="o">*</span> <span class="n">timeinfo</span><span class="p">;</span>
+	<span class="n">time</span> <span class="p">(</span><span class="o">&amp;</span><span class="n">rawtime</span><span class="p">);</span>
+	<span class="n">timeinfo</span> <span class="o">=</span> <span class="n">localtime</span> <span class="p">(</span><span class="o">&amp;</span><span class="n">rawtime</span><span class="p">);</span>
+	<span class="n">string</span> <span class="n">ret</span> <span class="o">=</span> <span class="n">asctime</span><span class="p">(</span><span class="n">timeinfo</span><span class="p">);</span>
+	<span class="n">ret</span><span class="p">.</span><span class="n">erase</span><span class="p">(</span><span class="n">ret</span><span class="p">.</span><span class="n">length</span><span class="p">()</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">);</span>
+	<span class="k">return</span> <span class="n">ret</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="n">string</span> <span class="nf">short_to_string</span><span class="p">(</span><span class="n">u_short</span> <span class="n">a</span><span class="p">)</span>
+<span class="p">{</span>
+	<span class="n">string</span> <span class="n">b</span><span class="p">;</span>
+	<span class="n">stringstream</span> <span class="n">c</span><span class="p">;</span>
+	<span class="n">c</span> <span class="o">&lt;&lt;</span> <span class="n">a</span><span class="p">;</span>
+	<span class="n">c</span> <span class="o">&gt;&gt;</span> <span class="n">b</span><span class="p">;</span>
+	<span class="k">return</span> <span class="n">b</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">struct</span> <span class="n">socket_files</span>
+<span class="p">{</span>
+	<span class="kt">int</span> <span class="n">socket_fd</span><span class="p">;</span>
+	<span class="n">sockaddr_in</span> <span class="n">client_addr</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="kt">void</span> <span class="nf">send_to_all</span><span class="p">(</span><span class="n">string</span> <span class="n">message</span><span class="p">)</span>
+<span class="p">{</span>
+	<span class="k">for</span><span class="p">(</span><span class="k">struct</span> <span class="n">socket_files</span> <span class="n">a</span> <span class="o">:</span> <span class="n">sockets</span><span class="p">)</span>
+	<span class="p">{</span>
+	    <span class="k">if</span><span class="p">(</span><span class="n">send</span><span class="p">(</span><span class="n">a</span><span class="p">.</span><span class="n">socket_fd</span><span class="p">,</span><span class="n">message</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span><span class="n">BUFF_LEN</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+	        <span class="n">perror</span><span class="p">(</span><span class="s">"send error!"</span><span class="p">);</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="o">*</span><span class="nf">tcp_thread</span><span class="p">(</span><span class="kt">void</span> <span class="o">*</span> <span class="n">tmp</span><span class="p">)</span>
+<span class="p">{</span>
+	<span class="k">struct</span> <span class="n">socket_files</span> <span class="o">*</span> <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="k">struct</span> <span class="n">socket_files</span><span class="o">*</span><span class="p">)</span><span class="n">tmp</span><span class="p">;</span>
+	<span class="kt">int</span> <span class="n">socket_fd</span> <span class="o">=</span> <span class="n">p</span><span class="o">-&gt;</span><span class="n">socket_fd</span><span class="p">;</span>
+	<span class="n">sockaddr_in</span> <span class="n">client_addr</span> <span class="o">=</span> <span class="n">p</span><span class="o">-&gt;</span><span class="n">client_addr</span><span class="p">;</span>
+	<span class="kt">char</span> <span class="n">recv_msg</span><span class="p">[</span><span class="mi">1024</span><span class="p">];</span>
+	<span class="n">bzero</span><span class="p">(</span><span class="n">recv_msg</span><span class="p">,</span><span class="mi">1024</span><span class="p">);</span>
+	<span class="n">string</span> <span class="n">message</span> <span class="o">=</span> <span class="s">""</span><span class="p">;</span>
+	<span class="k">while</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+	<span class="p">{</span>
+	    <span class="kt">long</span> <span class="n">byte_num</span> <span class="o">=</span> <span class="n">recv</span><span class="p">(</span><span class="n">socket_fd</span><span class="p">,</span><span class="n">recv_msg</span><span class="p">,</span><span class="mi">1024</span><span class="p">,</span><span class="mi">0</span><span class="p">);</span>
+	    <span class="k">if</span><span class="p">(</span><span class="n">byte_num</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+	    <span class="p">{</span>
+	        <span class="c1">//删除socket并结束进程
+</span>	        <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="n">i</span><span class="o">&lt;</span><span class="n">sockets</span><span class="p">.</span><span class="n">size</span><span class="p">();</span><span class="n">i</span><span class="o">++</span><span class="p">)</span>
+	        <span class="p">{</span>
+	            <span class="k">if</span><span class="p">(</span><span class="n">sockets</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">socket_fd</span> <span class="o">==</span> <span class="n">socket_fd</span><span class="p">)</span>
+	            <span class="p">{</span>
+	               <span class="c1">// cout &lt;&lt; socket_fd &lt;&lt; " quit this room" &lt;&lt; endl;
+</span>	<span class="c1">//                printf("%dquit this room",socket_fd);
+</span>	                <span class="n">sockets</span><span class="p">.</span><span class="n">erase</span><span class="p">(</span><span class="n">sockets</span><span class="p">.</span><span class="n">begin</span><span class="p">()</span><span class="o">+</span><span class="n">i</span><span class="p">);</span>
+	                <span class="n">sockets_num</span><span class="o">--</span><span class="p">;</span>
+	              <span class="c1">//  cout &lt;&lt; "Persons we have now: "  &lt;&lt; sockets_num &lt;&lt; endl;
+</span>	                <span class="n">string</span> <span class="n">left_msg</span><span class="p">;</span>
+	                <span class="n">left_msg</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
+	                <span class="n">left_msg</span> <span class="o">+=</span><span class="s">"</span><span class="se">\033</span><span class="s">[31m"</span><span class="p">;</span>
+	                <span class="n">left_msg</span> <span class="o">+=</span> <span class="n">inet_ntoa</span><span class="p">(</span><span class="n">client_addr</span><span class="p">.</span><span class="n">sin_addr</span><span class="p">);</span>
+	                <span class="n">left_msg</span> <span class="o">+=</span> <span class="s">":"</span><span class="p">;</span>
+	                <span class="n">left_msg</span> <span class="o">+=</span> <span class="n">short_to_string</span><span class="p">(</span><span class="n">client_addr</span><span class="p">.</span><span class="n">sin_port</span><span class="p">);</span>
+	                <span class="n">left_msg</span> <span class="o">+=</span> <span class="s">" Left This Room</span><span class="se">\n</span><span class="s">Persons We Have Now:"</span><span class="p">;</span>
+	                <span class="n">left_msg</span> <span class="o">+=</span> <span class="n">short_to_string</span><span class="p">(</span><span class="kt">short</span><span class="p">(</span><span class="n">sockets_num</span><span class="p">));</span>
+	                <span class="n">left_msg</span> <span class="o">+=</span> <span class="s">"</span><span class="se">\033</span><span class="s">[0m</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+	                <span class="n">send_to_all</span><span class="p">(</span><span class="n">left_msg</span><span class="p">);</span>
+	                <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">left_msg</span><span class="p">;</span>
+	                <span class="k">break</span><span class="p">;</span>
+	            <span class="p">}</span>
+	        <span class="p">}</span>
+	        <span class="n">close</span><span class="p">(</span><span class="n">socket_fd</span><span class="p">);</span>
+	        <span class="n">pthread_exit</span><span class="p">(</span><span class="nb">NULL</span><span class="p">);</span>
+	    <span class="p">}</span>
+	    <span class="n">recv_msg</span><span class="p">[</span><span class="n">byte_num</span><span class="p">]</span> <span class="o">=</span> <span class="sc">'\0'</span><span class="p">;</span>
+	    <span class="n">message</span> <span class="o">+=</span> <span class="n">get_time</span><span class="p">();</span>
+	    <span class="n">message</span> <span class="o">+=</span> <span class="s">" "</span><span class="p">;</span>
+	    <span class="n">message</span> <span class="o">+=</span> <span class="n">inet_ntoa</span><span class="p">(</span><span class="n">client_addr</span><span class="p">.</span><span class="n">sin_addr</span><span class="p">);</span>
+	    <span class="n">message</span> <span class="o">+=</span> <span class="s">":"</span><span class="p">;</span>
+	    <span class="n">message</span> <span class="o">+=</span> <span class="n">short_to_string</span><span class="p">(</span><span class="n">client_addr</span><span class="p">.</span><span class="n">sin_port</span><span class="p">);</span>
+	    <span class="n">message</span> <span class="o">+=</span> <span class="s">" :"</span><span class="p">;</span>
+	    <span class="n">message</span> <span class="o">+=</span> <span class="n">recv_msg</span><span class="p">;</span>
+	    <span class="n">message</span> <span class="o">+=</span> <span class="sc">'\n'</span><span class="p">;</span>
+	    <span class="n">send_to_all</span><span class="p">(</span><span class="n">message</span><span class="p">);</span>
+	    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">message</span><span class="p">;</span>
+	
+	    <span class="n">message</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+<span class="p">{</span>
+	<span class="n">sockets_num</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+	<span class="k">struct</span> <span class="n">sockaddr_in</span> <span class="n">server_addr</span><span class="p">;</span>
+	<span class="n">server_addr</span><span class="p">.</span><span class="n">sin_family</span> <span class="o">=</span> <span class="n">AF_INET</span><span class="p">;</span>
+	<span class="n">server_addr</span><span class="p">.</span><span class="n">sin_port</span> <span class="o">=</span> <span class="n">htons</span><span class="p">(</span><span class="n">SERVER_PORT</span><span class="p">);</span>
+	<span class="n">server_addr</span><span class="p">.</span><span class="n">sin_addr</span><span class="p">.</span><span class="n">s_addr</span> <span class="o">=</span> <span class="n">inet_addr</span><span class="p">(</span><span class="n">SERVER_IP</span><span class="p">);</span>
+	
+	<span class="kt">int</span> <span class="n">listen_fd</span> <span class="o">=</span> <span class="n">socket</span><span class="p">(</span><span class="n">AF_INET</span><span class="p">,</span><span class="n">SOCK_STREAM</span><span class="p">,</span><span class="mi">0</span><span class="p">);</span>
+	<span class="k">if</span><span class="p">(</span><span class="n">listen_fd</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+	<span class="p">{</span>
+	    <span class="n">perror</span><span class="p">(</span><span class="s">"socket error!"</span><span class="p">);</span>
+	    <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
+	<span class="p">}</span>
+	
+	<span class="kt">int</span> <span class="n">bind_result</span> <span class="o">=</span> <span class="n">bind</span><span class="p">(</span><span class="n">listen_fd</span><span class="p">,(</span><span class="k">struct</span> <span class="n">sockaddr</span> <span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">server_addr</span><span class="p">,</span><span class="k">sizeof</span><span class="p">(</span><span class="n">server_addr</span><span class="p">));</span>
+	<span class="k">if</span><span class="p">(</span><span class="n">listen</span><span class="p">(</span><span class="n">listen_fd</span><span class="p">,</span><span class="mi">5</span><span class="p">)</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+	<span class="p">{</span>
+	    <span class="n">perror</span><span class="p">(</span><span class="s">"listen error!"</span><span class="p">);</span>
+	    <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
+	<span class="p">}</span>
+	
+	<span class="k">while</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+	<span class="p">{</span>
+	    <span class="k">struct</span> <span class="n">sockaddr_in</span> <span class="n">client_addr</span><span class="p">;</span>
+	    <span class="n">socklen_t</span> <span class="n">address_len</span><span class="p">;</span>
+	    <span class="n">address_len</span> <span class="o">=</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">client_addr</span><span class="p">);</span>
+	    <span class="k">struct</span> <span class="n">socket_files</span>  <span class="n">tmp</span><span class="p">;</span>
+	    <span class="kt">int</span> <span class="n">connect_fd</span> <span class="o">=</span> <span class="n">accept</span><span class="p">(</span><span class="n">listen_fd</span><span class="p">,(</span><span class="k">struct</span> <span class="n">sockaddr</span> <span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">client_addr</span><span class="p">,</span><span class="o">&amp;</span><span class="n">address_len</span><span class="p">);</span>
+	    <span class="k">if</span><span class="p">(</span><span class="n">connect_fd</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+	    <span class="p">{</span>
+	        <span class="n">perror</span><span class="p">(</span><span class="s">"accept perror!"</span><span class="p">);</span>
+	        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+	    <span class="p">}</span>
+	    <span class="n">tmp</span><span class="p">.</span><span class="n">socket_fd</span> <span class="o">=</span> <span class="n">connect_fd</span><span class="p">;</span>
+	    <span class="n">tmp</span><span class="p">.</span><span class="n">client_addr</span> <span class="o">=</span> <span class="n">client_addr</span><span class="p">;</span>
+	    <span class="n">sockets</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">tmp</span><span class="p">);</span>
+	    <span class="n">sockets_num</span><span class="o">++</span><span class="p">;</span>
+	    <span class="c1">//创建新线程
+</span>	    <span class="n">pthread_t</span> <span class="n">id</span><span class="p">;</span>
+	    <span class="kt">int</span> <span class="n">ret</span> <span class="o">=</span> <span class="n">pthread_create</span><span class="p">(</span><span class="o">&amp;</span><span class="n">id</span><span class="p">,</span><span class="nb">NULL</span><span class="p">,</span><span class="n">tcp_thread</span><span class="p">,</span><span class="o">&amp;</span><span class="n">tmp</span><span class="p">);</span>
+	    <span class="k">if</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span>
+	    <span class="p">{</span>
+	        <span class="n">perror</span><span class="p">(</span><span class="s">"Create pthread error!"</span><span class="p">);</span>
+	        <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
+	    <span class="p">}</span>
+	    <span class="c1">//cout &lt;&lt; "Welcome " &lt;&lt; connect_fd &lt;&lt; endl;
+</span>	    <span class="n">string</span> <span class="n">welcome_msg</span> <span class="o">=</span> <span class="s">"</span><span class="se">\033</span><span class="s">[31m"</span><span class="p">;</span>
+	    <span class="n">welcome_msg</span> <span class="o">+=</span> <span class="n">inet_ntoa</span><span class="p">(</span><span class="n">client_addr</span><span class="p">.</span><span class="n">sin_addr</span><span class="p">);</span>
+	    <span class="n">welcome_msg</span> <span class="o">+=</span> <span class="s">":"</span><span class="p">;</span>
+	    <span class="n">welcome_msg</span> <span class="o">+=</span> <span class="n">short_to_string</span><span class="p">(</span><span class="n">client_addr</span><span class="p">.</span><span class="n">sin_port</span><span class="p">);</span>
+	    <span class="n">welcome_msg</span> <span class="o">+=</span> <span class="s">" "</span><span class="p">;</span>
+	    <span class="n">welcome_msg</span> <span class="o">+=</span> <span class="s">"Joins This Room,Welcome!"</span><span class="p">;</span>
+	    <span class="n">welcome_msg</span> <span class="o">+=</span> <span class="s">"</span><span class="se">\n</span><span class="s">Persons We have Now:"</span><span class="p">;</span>
+	    <span class="n">welcome_msg</span> <span class="o">+=</span> <span class="n">short_to_string</span><span class="p">((</span><span class="kt">short</span><span class="p">)</span><span class="n">sockets_num</span><span class="p">);</span>
+	    <span class="n">welcome_msg</span> <span class="o">+=</span> <span class="s">"</span><span class="se">\n\033</span><span class="s">[0m"</span><span class="p">;</span>
+	    <span class="n">send_to_all</span><span class="p">(</span><span class="n">welcome_msg</span><span class="p">);</span>
+	    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">welcome_msg</span><span class="p">;</span>
+	<span class="p">}</span>
+<span class="p">}</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure>
+
+<h4 id="section-1">客户端代码如下</h4>
+
+<figure class="highlight"><pre><code class="language-c--" data-lang="c++"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120</pre></td><td class="code"><pre><span class="cp"># include&lt;pthread.h&gt;
+# include&lt;unistd.h&gt;
+# include&lt;ctime&gt;
+# include&lt;iostream&gt;
+# include&lt;netinet/in.h&gt;
+# include&lt;sys/socket.h&gt;
+# include&lt;arpa/inet.h&gt;
+# include&lt;string&gt;
+# include&lt;string.h&gt;
+</span>
+<span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+
+<span class="cp"># define SERVER_IP "127.0.0.1"
+# define SERVER_PORT 50520
+# define BUFF_LEN 1024
+</span>
+<span class="n">string</span> <span class="n">ori_mes</span><span class="p">;</span>
+
+<span class="kt">void</span> <span class="nf">initial</span><span class="p">()</span>
+<span class="p">{</span>
+	<span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"</span><span class="se">\033</span><span class="s">c"</span> <span class="o">&lt;&lt;</span> <span class="n">flush</span><span class="p">;</span>
+	<span class="n">ori_mes</span> <span class="o">+=</span> <span class="s">"*****************CHATTING ROOM*******************</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+	<span class="n">ori_mes</span> <span class="o">+=</span> <span class="s">"*                 version:0.1                   *</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+	<span class="n">ori_mes</span> <span class="o">+=</span> <span class="s">"*                power by Eden                  *</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+	<span class="n">ori_mes</span> <span class="o">+=</span> <span class="s">"*                                               *</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+	<span class="n">ori_mes</span> <span class="o">+=</span> <span class="s">"*************************************************</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+	<span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">ori_mes</span> <span class="p">;</span>
+	<span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"say:"</span> <span class="o">&lt;&lt;</span> <span class="n">flush</span><span class="p">;</span> <span class="c1">//flush: 刷新不换行
+</span><span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">refresh</span><span class="p">(</span><span class="kt">char</span><span class="o">*</span> <span class="n">message</span><span class="p">)</span>
+<span class="p">{</span>
+	<span class="n">ori_mes</span> <span class="o">+=</span> <span class="n">message</span><span class="p">;</span>
+	<span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"</span><span class="se">\033</span><span class="s">c"</span> <span class="o">&lt;&lt;</span> <span class="n">flush</span><span class="p">;</span>
+	<span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">ori_mes</span><span class="p">;</span>
+	<span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"-----------------------"</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+	<span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"say:"</span> <span class="o">&lt;&lt;</span> <span class="n">flush</span><span class="p">;</span> <span class="c1">//flush: 刷新不换行
+</span><span class="p">}</span>
+
+<span class="kt">void</span> <span class="o">*</span> <span class="nf">recv_thread</span><span class="p">(</span><span class="kt">void</span><span class="o">*</span> <span class="n">tmp</span><span class="p">)</span>
+<span class="p">{</span>
+	<span class="kt">int</span> <span class="o">*</span> <span class="n">connect_fd</span> <span class="o">=</span> <span class="p">(</span><span class="kt">int</span><span class="o">*</span><span class="p">)</span><span class="n">tmp</span><span class="p">;</span>
+	<span class="kt">char</span> <span class="n">recv_msg</span><span class="p">[</span><span class="mi">1024</span><span class="p">];</span>
+	<span class="n">bzero</span><span class="p">(</span><span class="n">recv_msg</span><span class="p">,</span><span class="mi">1024</span><span class="p">);</span>
+	<span class="c1">//receive echo
+</span>	<span class="k">while</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+	<span class="p">{</span>
+	    <span class="kt">long</span> <span class="n">byte_num</span> <span class="o">=</span> <span class="n">recv</span><span class="p">(</span><span class="o">*</span><span class="n">connect_fd</span><span class="p">,</span><span class="n">recv_msg</span><span class="p">,</span><span class="mi">1024</span><span class="p">,</span><span class="mi">0</span><span class="p">);</span>
+	    <span class="k">if</span><span class="p">(</span><span class="n">byte_num</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+	    <span class="p">{</span>
+	        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"The server has been shut down</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+	        <span class="n">close</span><span class="p">(</span><span class="o">*</span><span class="n">connect_fd</span><span class="p">);</span>
+	        <span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+	    <span class="p">}</span>
+	    <span class="n">recv_msg</span><span class="p">[</span><span class="n">byte_num</span><span class="p">]</span> <span class="o">=</span> <span class="sc">'\0'</span><span class="p">;</span>
+	    <span class="n">refresh</span><span class="p">(</span><span class="n">recv_msg</span><span class="p">);</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span> <span class="n">argv</span><span class="p">[])</span>
+<span class="p">{</span>
+	<span class="n">initial</span><span class="p">();</span>
+	<span class="k">struct</span> <span class="n">sockaddr_in</span> <span class="n">server_addr</span><span class="p">;</span>
+	<span class="n">server_addr</span><span class="p">.</span><span class="n">sin_len</span> <span class="o">=</span> <span class="k">sizeof</span><span class="p">(</span> <span class="n">sockaddr_in</span><span class="p">);</span>
+	<span class="n">server_addr</span><span class="p">.</span><span class="n">sin_family</span> <span class="o">=</span> <span class="n">AF_INET</span><span class="p">;</span>
+	<span class="n">server_addr</span><span class="p">.</span><span class="n">sin_port</span> <span class="o">=</span> <span class="n">htons</span><span class="p">(</span><span class="n">SERVER_PORT</span><span class="p">);</span>
+	<span class="n">server_addr</span><span class="p">.</span><span class="n">sin_addr</span><span class="p">.</span><span class="n">s_addr</span> <span class="o">=</span> <span class="n">inet_addr</span><span class="p">(</span><span class="n">SERVER_IP</span><span class="p">);</span>
+	
+	
+	<span class="n">bzero</span><span class="p">(</span><span class="o">&amp;</span><span class="p">(</span><span class="n">server_addr</span><span class="p">.</span><span class="n">sin_zero</span><span class="p">),</span><span class="mi">8</span><span class="p">);</span>
+	
+	<span class="c1">//创建server socket
+</span>	<span class="c1">//若无错误发生，socket()返回引用新套接口的描述字。否则的话，返回INVALID_SOCKET错误，
+</span>	
+	<span class="c1">//int connect(int s, const struct sockaddr * name, int namelen);
+</span>	<span class="kt">int</span> <span class="n">connect_fd</span> <span class="o">=</span> <span class="n">socket</span><span class="p">(</span><span class="n">AF_INET</span><span class="p">,</span><span class="n">SOCK_STREAM</span><span class="p">,</span><span class="mi">0</span><span class="p">);</span>
+	<span class="k">if</span><span class="p">(</span><span class="n">connect_fd</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+	<span class="p">{</span>
+	    <span class="n">perror</span><span class="p">(</span><span class="s">"socket error!"</span><span class="p">);</span>
+	    <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
+	<span class="p">}</span>
+	
+	<span class="n">string</span> <span class="n">send_msg</span><span class="p">;</span>
+	<span class="k">if</span><span class="p">(</span><span class="n">connect</span><span class="p">(</span><span class="n">connect_fd</span><span class="p">,(</span><span class="k">struct</span> <span class="n">sockaddr</span> <span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">server_addr</span><span class="p">,</span><span class="k">sizeof</span><span class="p">(</span><span class="k">struct</span> <span class="n">sockaddr_in</span><span class="p">))</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+	<span class="p">{</span>
+	    <span class="n">pthread_t</span> <span class="n">id</span><span class="p">;</span>
+	    <span class="kt">int</span> <span class="n">ret</span> <span class="o">=</span> <span class="n">pthread_create</span><span class="p">(</span><span class="o">&amp;</span><span class="n">id</span><span class="p">,</span><span class="nb">NULL</span><span class="p">,</span><span class="n">recv_thread</span><span class="p">,</span><span class="o">&amp;</span><span class="n">connect_fd</span><span class="p">);</span>
+	    <span class="k">if</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span>
+	    <span class="p">{</span>
+	        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"Create pthread error!"</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+	        <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
+	    <span class="p">}</span>
+	    <span class="k">while</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+	    <span class="p">{</span>
+	        <span class="n">send_msg</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
+	        <span class="c1">//send
+</span>	        <span class="n">getline</span><span class="p">(</span><span class="n">cin</span><span class="p">,</span><span class="n">send_msg</span><span class="p">);</span>
+	        <span class="k">if</span><span class="p">(</span><span class="n">send_msg</span> <span class="o">==</span> <span class="s">"exit"</span><span class="p">)</span>
+	        <span class="p">{</span>
+	            <span class="n">pthread_cancel</span><span class="p">(</span><span class="n">id</span><span class="p">);</span>
+	            <span class="n">pthread_join</span><span class="p">(</span><span class="n">id</span><span class="p">,</span><span class="nb">NULL</span><span class="p">);</span>
+	            <span class="n">close</span><span class="p">(</span><span class="n">connect_fd</span><span class="p">);</span>
+	            <span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+	        <span class="p">}</span>
+	        <span class="k">if</span><span class="p">(</span><span class="n">send</span><span class="p">(</span><span class="n">connect_fd</span><span class="p">,</span><span class="n">send_msg</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span><span class="mi">1024</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+	        <span class="p">{</span>
+	            <span class="n">perror</span><span class="p">(</span><span class="s">"send error!"</span><span class="p">);</span>
+	        <span class="p">}</span>
+	    <span class="p">}</span>
+	
+	<span class="p">}</span>
+	<span class="k">else</span>
+	<span class="p">{</span>
+	    <span class="n">perror</span><span class="p">(</span><span class="s">"connect error!"</span><span class="p">);</span>
+	    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+	<span class="p">}</span>
+	<span class="n">printf</span><span class="p">(</span><span class="s">"end</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
+	<span class="n">close</span><span class="p">(</span><span class="n">connect_fd</span><span class="p">);</span>
+	<span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure>
+

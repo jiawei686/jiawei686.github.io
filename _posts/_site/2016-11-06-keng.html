@@ -1,0 +1,52 @@
+<p>感觉这周打的码比上半个学期的都多.. 趁着周末还是整理一下踩过的坑吧未免之后忘了..</p>
+
+<h3 id="python-fileread--write-">Python file.read() 与 write() 之原理分析</h3>
+<p>在 Python 中的 file.read() ，其原理是先读取文件的二进制码，然后根据当前 Python 设置的文字编码对该文件二进制编码进行读取。比方说若 Python 编码为 ascii 码，那么在 Python 读取了一个二进制编码为 01000001 的文件后，read() 函数将会返回字符串”A”。对于 write(string) ，则会根据当前设置的编码，将 string 的二进制编码存入文件中。</p>
+
+<p>那么，对于 open() ，’r’ 方式读文件和 ‘rb’ 又有什么不同呢？进行读文件操作时，直到读到文档结束符（EOF）才算读取到文件最后，Python会认为字节\x1A(26)转换成的字符为文档结束符（EOF），故使用’r’进行读取二进制文件时，可能会出现文档读取不全的现象。用’rb’则可以避免这个问题。而对于 ‘wb’ ，举个例子：</p>
+
+<blockquote>
+  <p>对于字符串x=’abc\ndef’,我们可用len(x)得到它的长度为7，\n我们称之为换行符，实际上是0x0A。当我们用’w’即文本方式写的时候，在windows平台上会自动将’0x0A’变成两个字符’0x0D’,’0x0A’，即文件长度实际上变成8。当用’r’文本方式读取时，又自动的转换成原来的换行符。</p>
+
+  <p>如果换成’wb’二进制方式来写的话，则会保持一个字符不变，读取的时候也是原样读取。</p>
+
+  <p>所以如果用文本方式写入，用二进制方式读取的话，就要考虑这多出的一个字节了。’0x0D’也称回车符。</p>
+
+  <p>Linux下不会变，因为linux只使用’0X0A’来表示换行。</p>
+</blockquote>
+
+<h3 id="section">读取文件的二进制编码到字符串中以及将二进制字符串写入到文件中。</h3>
+
+<p>有了第一点，我们就不难实现这一点，下面是代码。</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>#转载来源:https://segmentfault.com/q/1010000000182052
+# path参数：要转换的文件的路径
+def convertFileToOneAndZero(path):
+    f = open(path,'rb')
+    src = f.read()
+    print len(src)
+
+    result = []
+    for i in src:
+        temp = bin(ord(i))[2:]
+        temp = '0' * (8-len(temp)) + temp
+        result.append(temp)
+
+    return ''.join(result)
+
+# src参数：1010字符串
+# path参数：输出文件的路径
+def convertOneAndZeroToFile(src, path):
+    result = []
+    for i in range(0, len(src), 8):
+        result.append(chr(int(src[i:i+8], 2)))
+
+    f = open(path, 'wb')
+    f.write(''.join(result))
+    f.close()
+</code></pre>
+</div>
+
+<p>方法：就是把这个字符串里的每个字符用ord()转换数字，再转成二进制表现形式的字符串就可以了。要注意的是python的bin()函数不会自己补足8位。</p>
+
+<h3 id="socket-">socket 的应用</h3>

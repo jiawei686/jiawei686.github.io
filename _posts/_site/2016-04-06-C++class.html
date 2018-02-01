@@ -1,0 +1,38 @@
+<h2 id="section">动态数组的定义：</h2>
+
+<blockquote>
+  <p>动态数组也叫数组的动态联编，有动态联编自然也有静态联编，静态联编就是数组的长度在编译时设置，而动态联编是在运行时才为数组分配空间，其长度在运行时设置，使用完这种动态数组后，应该释放内存。</p>
+</blockquote>
+
+<p><br />
+<br /></p>
+
+<h2 id="c-">动态数组在 C++ 中的声明方法</h2>
+<hr />
+<p>例如,若是之前已经声明了</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>cin &gt;&gt; n;
+double * values;
+</code></pre>
+</div>
+
+<p>则若要声明其为数组，只需在后面添加：</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>values = new double [n];
+</code></pre>
+</div>
+
+<p>注意，在使用过后必须将该数组占用的空间释放掉，需在程序末端添加：</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>delete [] values;
+</code></pre>
+</div>
+
+<p>或者，可以直接这样声明动态数组：</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>cin &gt;&gt; n;
+double * values = new double[n];
+......
+delete [] values;
+</code></pre>
+</div>

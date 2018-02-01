@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+  <head>
+  <meta name="baidu-site-verification" content="5GAItV9OXY" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>
+    
+       jekyll linux 安装方法  &middot; Jiawei
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Slab:700|PT+Serif:400,400italic,700,700italic" type="text/css">
+  <link rel="stylesheet" href="/public/css/poole.css">
+  <link rel="stylesheet" href="/public/css/hyde.css">
+  <!--  <link rel="stylesheet" href="/public/css/jekyll-github.css">-->
+  <link rel="stylesheet" href="/public/css/rouge.css">
+
+  
+
+  
+
+  
+
+  <style>
+    .content a,
+    .related-posts li a:hover {
+      color: #656565;
+    }
+    ::selection {
+      color: #fff;
+      background: #656565;
+    }
+    ::-moz-selection {
+      color: #fff;
+      background: #656565;
+    }
+  </style>
+
+  <!-- Icons -->
+  <!-- <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/public/apple-touch-icon-144-precomposed.png"> -->
+  <!-- <link rel="shortcut icon" href="/public/favicon.ico"> -->
+
+  <!-- RSS -->
+  <link rel="alternate" type="application/atom+xml" title="Jiawei" href="/atom.xml">
+	<!-- 父层 -->  
+</head>
+
+  <body>
+
+    <main class="content container">
+      
+
+
+<article class="post">
+  <h1 class="post-title">jekyll linux 安装方法</h1>
+  <div class="post-date">
+    <time datetime="2017-09-25T00:00:00+08:00">09/25/17</time>
+    <span>on <a href="/tag/Software/">Software</a></span>
+  </div>
+  <hr/>
+  <h4 id="jekyll-linux-安装方法">jekyll linux 安装方法</h4>
+
+<h5 id="安装gcc">安装gcc</h5>
+
+<p><code class="highlighter-rouge">sudo apt-get install gcc</code></p>
+
+<h5 id="安装ruby">安装ruby</h5>
+
+<p>把大象装进冰箱需要三步</p>
+
+<ol>
+  <li>
+    <p>类似node的安装需要nvm，经测试ruby安装最方便的方法是安装rvm</p>
+
+    <div class="language-shell highlighter-rouge"><pre class="highlight"><code>gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3
+curl -sSL https://get.rvm.io | bash -s stable
+<span class="c"># 如果上面的连接失败，可以尝试: </span>
+curl -L https://raw.githubusercontent.com/wayneeseguin/rvm/master/binscripts/rvm-installer | bash -s stable
+</code></pre>
+    </div>
+  </li>
+  <li>
+    <p>接下来安装ruby</p>
+
+    <div class="language-shell highlighter-rouge"><pre class="highlight"><code>rvm requirements
+<span class="c"># 环境准备</span>
+rvm install 2.3.0
+rvm use 2.3.0 --default
+<span class="c"># 目测有一些版本不行，需要指定2.3.0版本</span>
+</code></pre>
+    </div>
+  </li>
+  <li>
+    <p>安装jekyll</p>
+
+    <div class="language-shell highlighter-rouge"><pre class="highlight"><code>gem install bundler
+gem install jekyll
+</code></pre>
+    </div>
+  </li>
+</ol>
+
+<p>最后，有人说需要nodejs环境，那么就可以安装一下nvm，装一个node上去，到此为止，一切准备就绪。</p>
+
+
+</article>
+
+
+<aside class="author">
+  <h2 class="aside-title">About</h2>
+
+  
+  <img class="me" src="/public/img/head.jpg" alt="Jiawei Cui"/>
+  
+
+  <p>Name : 崔家维</p>
+
+<p>Wechat : cjw1369</p>
+
+<p>Email : cuijiawei.cn@gmail.com</p>
+
+<p><em>没见过世面，请不要嘲笑我。</em></p>
+
+</aside>
+
+
+
+<aside class="related">
+  <h2 class="aside-title">Related Posts</h2>
+  <ul class="related-posts">
+    
+    
+    
+      
+      
+        <li>
+          <h4>
+            <a href="/2017/12/01/%E9%82%AE%E4%BB%B6%E6%9C%8D%E5%8A%A1.html">
+              <span>linux邮件服务</span>
+              <small>12/01/17</small>
+            </a>
+          </h4>
+        </li>
+      
+    
+      
+      
+        <li>
+          <h4>
+            <a href="/2017/11/25/iptables-%E5%88%9D%E6%8E%A2.html">
+              <span>iptables初探</span>
+              <small>11/25/17</small>
+            </a>
+          </h4>
+        </li>
+      
+    
+      
+      
+        <li>
+          <h4>
+            <a href="/2017/10/11/pm2-node%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86.html">
+              <span>pm2管理node进程</span>
+              <small>10/11/17</small>
+            </a>
+          </h4>
+        </li>
+      
+    
+      
+        
+        
+  </ul>
+</aside>
+
+<!-- 友言 -->
+<!-- UY BEGIN -->
+<!-- UY END -->
+
+
+<!-- 多说评论框 start -->
+<div class="ds-thread" data-thread-key="/2017/09/25/jekyll linux 安装方法" data-title="jekyll linux 安装方法" data-url="/2017/09/25/jekyll-linux-%E5%AE%89%E8%A3%85%E6%96%B9%E6%B3%95.html"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"xiaomi388"};
+    (function() {
+            var ds = document.createElement('script');
+            ds.type = 'text/javascript';ds.async = true;
+            ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+            ds.charset = 'UTF-8';
+            (document.getElementsByTagName('head')[0] 
+                 || document.getElementsByTagName('body')[0]).appendChild(ds);
+            })();
+            </script>
+<!-- 多说公共JS代码 end -->
+
+
+    </main>
+      <div class="love content container">
+        © 2018 JIAWEI
+      </div>
+    
+
+
+
+
+
+<div id="_backdrop"></div>
+<a   id="_menu" href="#_sidebar">☰</a>
+
+<aside id="_sidebar" class="sidebar" style="background-image:url('/public/img/mrrobot.jpg')">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <h1><a href="/">Jiawei</a></h1>
+      <p>A Real Internet Splider.</p>
+
+    </div>
+
+    <nav class="sidebar-nav">
+      
+        
+        <a class="sidebar-nav-item" href="/tag/Life/">Life</a>
+      
+        
+        <a class="sidebar-nav-item" href="/tag/Code/">Code</a>
+      
+        
+        <a class="sidebar-nav-item" href="/tag/Software/">Software</a>
+      
+        
+        <a class="sidebar-nav-item" href="/tag/Learning/">Learning</a>
+      
+
+      
+
+      
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          
+            <a class="sidebar-nav-item" href="/about.html">About</a>
+          
+        
+      
+        
+      
+        
+      
+        
+          
+        
+      
+        
+      
+    </nav>
+
+    <div class="sidebar-social">
+      
+        <a href="https://github.com/jiawei686"><span class="icon-icon-github"></span></a>
+
+      
+    </div>
+  </div>
+</div>
+
+    <<!-- script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_1261413697'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s11.cnzz.com/z_stat.php%3Fid%3D1261413697' type='text/javascript'%3E%3C/script%3E"));</script>
+    <script src="/public/js/drawer.js"></script> -->
+
+
+  </body>
+</html>

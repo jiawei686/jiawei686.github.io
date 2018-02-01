@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+  <head>
+  <meta name="baidu-site-verification" content="5GAItV9OXY" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>
+    
+       IPv6技术  &middot; Jiawei
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Slab:700|PT+Serif:400,400italic,700,700italic" type="text/css">
+  <link rel="stylesheet" href="/public/css/poole.css">
+  <link rel="stylesheet" href="/public/css/hyde.css">
+  <!--  <link rel="stylesheet" href="/public/css/jekyll-github.css">-->
+  <link rel="stylesheet" href="/public/css/rouge.css">
+
+  
+
+  
+
+  
+
+  <style>
+    .content a,
+    .related-posts li a:hover {
+      color: #656565;
+    }
+    ::selection {
+      color: #fff;
+      background: #656565;
+    }
+    ::-moz-selection {
+      color: #fff;
+      background: #656565;
+    }
+  </style>
+
+  <!-- Icons -->
+  <!-- <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/public/apple-touch-icon-144-precomposed.png"> -->
+  <!-- <link rel="shortcut icon" href="/public/favicon.ico"> -->
+
+  <!-- RSS -->
+  <link rel="alternate" type="application/atom+xml" title="Jiawei" href="/atom.xml">
+	<!-- 父层 -->  
+</head>
+
+  <body>
+
+    <main class="content container">
+      
+
+
+<article class="post">
+  <h1 class="post-title">IPv6技术</h1>
+  <div class="post-date">
+    <time datetime="2016-12-20T00:00:00+08:00">12/20/16</time>
+    <span>on <a href="/tag/Learning/">Learning</a></span>
+  </div>
+  <hr/>
+  <h5 id="ipv6报头结构">IPv6报头结构</h5>
+
+<h5 id="ipv6地址技术">IPv6地址技术</h5>
+
+<p>IPv6地址长度是128位，所以理论上IPv6地址一共有$2^{128}$个。</p>
+
+<ul>
+  <li>
+    <p><strong>首选格式</strong></p>
+
+    <p>把128位分成8段，每段16位，用4个十六进制数（一个占4位）表示，并用冒号等间距分隔。</p>
+  </li>
+  <li>
+    <p><strong>压缩格式</strong></p>
+
+    <p>如果地址包含了长串的“0”，则可以用冒号来取代。</p>
+
+    <p>比如<code class="highlighter-rouge">1623:0:0:0:6330:20BC:411A</code>可以用<code class="highlighter-rouge">1623::8:6330:20BC:411A</code>来代替。但是为了避免出现地址表示不清晰，一个地址中只能出现一次冒号压缩。</p>
+  </li>
+  <li>
+    <p>内嵌IPv4的IPv6地址</p>
+
+    <p>在当下网络还没有全部从IPv4过渡到IPv6，就可能出现某些设备既连接了IPv4网络，又连接了IPv6网络。对于这样的情况，就需要一个地址即可以表示IPv4地址，又可以表示IPv6地址。</p>
+
+    <p>IPv4地址分为四段，每段0-255是8位，总共32位。而IPv6地址总共128位，所以将IPv4地址扩展成IPv6地址要在前面加上96个0。比如<code class="highlighter-rouge">0:0:0:0:0:0:172.18.1.1</code>或者压缩为<code class="highlighter-rouge">::172.18.1.1</code></p>
+  </li>
+  <li>
+    <p>“地址／前缀长度”表示法</p>
+
+    <p>例如<code class="highlighter-rouge">2001:A304:6101:1::E0:F726:4E58/64</code>表示一个子网前缀，64位也就是前4段用来表示结点所在的单个子网。</p>
+
+    <p>​</p>
+  </li>
+</ul>
+
+
+</article>
+
+
+<aside class="author">
+  <h2 class="aside-title">About</h2>
+
+  
+  <img class="me" src="/public/img/head.jpg" alt="Jiawei Cui"/>
+  
+
+  <p>Name : 崔家维</p>
+
+<p>Wechat : cjw1369</p>
+
+<p>Email : cuijiawei.cn@gmail.com</p>
+
+<p><em>没见过世面，请不要嘲笑我。</em></p>
+
+</aside>
+
+
+
+<aside class="related">
+  <h2 class="aside-title">Related Posts</h2>
+  <ul class="related-posts">
+    
+    
+    
+      
+      
+        <li>
+          <h4>
+            <a href="/2017/12/25/MPI%E7%BC%96%E7%A8%8B.html">
+              <span>MPI编程学习</span>
+              <small>12/25/17</small>
+            </a>
+          </h4>
+        </li>
+      
+    
+      
+      
+        <li>
+          <h4>
+            <a href="/2017/06/26/%E6%9B%BC%E6%98%86-%E7%BB%8F%E6%B5%8E%E5%AD%A6%E5%8E%9F%E7%90%86.html">
+              <span>经济学原理</span>
+              <small>06/26/17</small>
+            </a>
+          </h4>
+        </li>
+      
+    
+      
+      
+        <li>
+          <h4>
+            <a href="/2017/06/14/%E7%BD%97%E6%9C%97%E5%B1%95%E5%BC%8F%E5%8F%8A%E5%AD%A4%E7%AB%8B%E5%A5%87%E7%82%B9.html">
+              <span>罗朗展式及孤立奇点</span>
+              <small>06/14/17</small>
+            </a>
+          </h4>
+        </li>
+      
+    
+      
+      
+    
+  </ul>
+</aside>
+
+<!-- 友言 -->
+<!-- UY BEGIN -->
+<!-- UY END -->
+
+
+<!-- 多说评论框 start -->
+<div class="ds-thread" data-thread-key="/2016/12/20/IPv6技术" data-title="IPv6技术" data-url="/2016/12/20/IPv6%E6%8A%80%E6%9C%AF.html"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"xiaomi388"};
+    (function() {
+            var ds = document.createElement('script');
+            ds.type = 'text/javascript';ds.async = true;
+            ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+            ds.charset = 'UTF-8';
+            (document.getElementsByTagName('head')[0] 
+                 || document.getElementsByTagName('body')[0]).appendChild(ds);
+            })();
+            </script>
+<!-- 多说公共JS代码 end -->
+
+
+    </main>
+      <div class="love content container">
+        © 2018 JIAWEI
+      </div>
+    
+
+
+
+
+
+<div id="_backdrop"></div>
+<a   id="_menu" href="#_sidebar">☰</a>
+
+<aside id="_sidebar" class="sidebar" style="background-image:url('/public/img/mrrobot.jpg')">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <h1><a href="/">Jiawei</a></h1>
+      <p>A Real Internet Splider.</p>
+
+    </div>
+
+    <nav class="sidebar-nav">
+      
+        
+        <a class="sidebar-nav-item" href="/tag/Life/">Life</a>
+      
+        
+        <a class="sidebar-nav-item" href="/tag/Code/">Code</a>
+      
+        
+        <a class="sidebar-nav-item" href="/tag/Software/">Software</a>
+      
+        
+        <a class="sidebar-nav-item" href="/tag/Learning/">Learning</a>
+      
+
+      
+
+      
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          
+            <a class="sidebar-nav-item" href="/about.html">About</a>
+          
+        
+      
+        
+      
+        
+      
+        
+          
+        
+      
+        
+      
+    </nav>
+
+    <div class="sidebar-social">
+      
+        <a href="https://github.com/jiawei686"><span class="icon-icon-github"></span></a>
+
+      
+    </div>
+  </div>
+</div>
+
+    <<!-- script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_1261413697'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s11.cnzz.com/z_stat.php%3Fid%3D1261413697' type='text/javascript'%3E%3C/script%3E"));</script>
+    <script src="/public/js/drawer.js"></script> -->
+
+
+  </body>
+</html>
