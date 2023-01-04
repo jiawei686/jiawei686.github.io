@@ -13,7 +13,7 @@ url:              http://qwtel.com
 # Set to '' in case of hosting on `http://<your-github-name>.github.io`
 baseurl:          ''
 
-title:           Jiawei 
+title:           我的Blog 
 
 # Markdown enabled, however don't use more than one paragraph (enforced by `>`)
 description:      >
@@ -27,18 +27,14 @@ image:            /public/img/nap.jpg
 color:            '#656565'
 
 author:
-  name:           'Jiawei Cui'
+  name:           'jiawei'
   github:         jiawei686
   photo:          /public/img/head.jpg
  
 
   # Markdown enabled, can use multiple paragraphs (enabled by `|`)
   about: |          
-    Name : 崔家维
+    Name : jiawei 
 
-    Wechat : cjw1369
-
-    Email : cuijiawei.cn@gmail.com
-
-    *珍惜你浪费在我身上的时间，愿我不负你希望*
+    *Don't you close your eyes*
 

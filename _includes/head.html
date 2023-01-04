@@ -5,9 +5,9 @@
 
   <title>
     {% if page.title == "Home" %}
-      {{ site.title }} &middot; {{ site.tagline }}
+      {{ site.title }}
     {% else %}
-      {% if page.tag %} {{ site.data.tags[page.tag].name }} {% else %} {{ page.title }} {% endif %} &middot; {{ site.title }}
+      {% if page.tag %} {{ site.data.tags[page.tag].name }} {% else %} {{ page.title }} {% endif %}
     {% endif %}
   </title>
 
