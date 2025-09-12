@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Kaggle Notes: Data Visualization
+title: Kaggle Notes -- Data Visualization
 tags: [Learning]
 ---
 
