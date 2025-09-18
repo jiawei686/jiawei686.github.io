@@ -4,8 +4,6 @@ title: Kaggle Notes -- Time Series as Features
 tags: [Learning]
 ---
 
-# Notes on Kaggle’s *Time Series as Features*
-
 **Core Idea**: Skip complex time-series models. Extract temporal features from time data and use standard ML models (Random Forest, XGBoost) for predictions — practical and easy to implement.
 
 ## 1. Key Feature Engineering
