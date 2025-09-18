@@ -66,4 +66,3 @@ df = df.dropna()  # Remove shift-generated NaNs
 - **Golden Rules**: Sort by time; split by time; no future data leakage
 
 - Great for: Demand forecasting, energy prediction, sales trends
-> （注：文档部分内容可能由 AI 生成）
