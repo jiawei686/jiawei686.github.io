@@ -55,4 +55,3 @@ daily_df.columns = ["daily_avg", "daily_peak", "weekly_trend"]  # Rename columns
 ```
 
 A crucial lesson: Time series data relies on order—always sort the index first. Also, choose interpolation and feature methods based on the data’s nature (e.g., linear for continuous values, categorical encoding for holidays). This training gave me a solid foundation for Kaggle time series competitions, where clean temporal features often make the difference in model performance.
-> （注：文档部分内容可能由 AI 生成）

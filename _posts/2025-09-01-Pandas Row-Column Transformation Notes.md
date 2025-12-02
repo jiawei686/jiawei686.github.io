@@ -124,4 +124,3 @@ print(stack_df.head())
 Basic cleaning ensures data quality, while row-column transformation adapts data to analysis scenarios—in many top Kaggle solutions, the first step is using `pivot_table()` or `melt()` to restructure raw data for modeling or visualization.
 
 These techniques solved the dimension adjustment challenges in this Kaggle practice and provide a clear framework for handling multi-dimensional public datasets. Next, I plan to practice combining `crosstab()` with row-column transformation and explore efficient transformation techniques for large datasets to improve preprocessing efficiency.
-> （注：文档部分内容可能由 AI 生成）
