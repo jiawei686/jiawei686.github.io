@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "树莓派部署OpenClaw完整指南：从树莓派4B到树莓派2的全兼容方案"
-date: 2025-02-07 17:00:00 +0800
+date: 2026-02-03 17:00:00 +0800
 categories: [AI, Raspberry Pi, OpenClaw, Tutorial]
 tags: [ai, raspberry-pi, openclaw, tutorial, deployment, iot, low-resource]
 author: J.W.
