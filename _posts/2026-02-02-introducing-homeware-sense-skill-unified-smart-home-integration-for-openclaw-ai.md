@@ -191,7 +191,7 @@ config = {
             'accessory_id': 'com.living-room.thermometer',
             'pin_code': '123-45-678',
             'sensor_type': 'temperature',
-            'location': '客厅'
+            'location': 'living_room'
         },
         'bedroom_humidity': {
             'enabled': True,
@@ -199,7 +199,7 @@ config = {
             'device_ip': '192.168.1.101',
             'device_token': 'your_mihome_token',
             'sensor_type': 'air_monitor',
-            'location': '卧室'
+            'location': 'bedroom'
         },
         'kitchen_light': {
             'enabled': True,
@@ -207,7 +207,7 @@ config = {
             'host': 'localhost',
             'port': 1883,
             'topic': 'sensors/kitchen/light',
-            'location': '厨房'
+            'location': 'kitchen'
         }
     }
 }
