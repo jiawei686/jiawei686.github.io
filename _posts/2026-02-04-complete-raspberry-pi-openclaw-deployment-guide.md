@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Complete Guide to Deploying OpenClaw on Raspberry Pi: Full Compatibility from Pi 4B to Pi 2"
+title: "Deploy OpenClaw AI on Raspberry Pi: Our Open Source Guide"
 date: 2026-02-04 17:00:00 +0800
 categories: [AI, Raspberry Pi, OpenClaw, Tutorial]
 tags: [ai, raspberry-pi, openclaw, tutorial, deployment, iot, low-resource]
