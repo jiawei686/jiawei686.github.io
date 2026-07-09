@@ -18,8 +18,7 @@ title:            Jiawei's Blog
 
 # Markdown enabled, however don't use more than one paragraph (enforced by `>`)
 description:      >
-    From software engineering to AI & machine learning. Notes on LLMs,
-    deep learning, and building things that work.
+    Notes on LLMs, deep learning, and building things that work.
 
 # The tags listed as entries in the sidebar
 sidebar_tags:     [llm, ai, data, projects, engineering]
