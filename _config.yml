@@ -34,7 +34,7 @@ author:
 
   # Markdown enabled, can use multiple paragraphs (enabled by `|`)
   about: |
-    I'm Jiawei — a developer who spent years shipping software (PHP, networking,
+    I'm Jiawei — a developer who spent years shipping software (networking,
     distributed systems) and is now going all-in on AI and machine learning.
 
     This blog is where I think in public: deep dives into LLMs and the papers
