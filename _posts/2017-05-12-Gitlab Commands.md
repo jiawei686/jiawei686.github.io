@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Git初始化操作
-tags: [Software]
+tags: [engineering]
 ---
 
 |总是忘记，写在这里没事看一看

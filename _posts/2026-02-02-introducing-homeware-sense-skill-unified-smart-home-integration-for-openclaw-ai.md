@@ -2,8 +2,7 @@
 layout: post
 title: "Homeware Sense: Open Source Smart Home Integration for OpenClaw AI"
 date: 2026-02-02 14:00:00 +0800
-categories: [AI, Smart Home, OpenClaw, IoT, Home Automation]
-tags: [ai, smart-home, opencalw-skill, iot, home-automation, homekit, mihome, mqtt, gpio, environmental-monitoring]
+tags: [projects]
 author: J.W.
 ---
 

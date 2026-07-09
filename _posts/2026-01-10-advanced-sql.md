@@ -2,7 +2,7 @@
 layout: post
 title: "Advanced SQL"
 date: 2026-01-10
-categories: [Learning]
+tags: [data]
 ---
 
 **Core Idea**: Go beyond basic `SELECT-FROM-WHERE` queries and master the advanced SQL techniques needed to analyze complex datasets. This course focuses on window functions, common table expressions (CTEs), and performance optimization.

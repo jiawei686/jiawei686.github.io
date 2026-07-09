@@ -2,7 +2,7 @@
 layout: post
 title: "wechat-dev-mcp: Bridging AI and WeChat Mini-Program Development"
 date: 2026-01-31
-categories: [Learning]
+tags: [projects]
 ---
 
 **Core Idea**: The `wechat-dev-mcp` project is a specialized Model Context Protocol (MCP) server that connects AI agents directly to the WeChat Developer Tools. It transforms the mini-program development experience from manual coding and clicking to an AI-orchestrated workflow. I published it at [https://github.com/jiawei686/wechat-dev-mcp](https://github.com/jiawei686/wechat-dev-mcp).

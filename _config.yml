@@ -1,40 +1,45 @@
 # Permalinks
-#permalink:        pretty
+permalink: /:year/:month/:day/:title/
 
-#syntax highlight
+# syntax highlight
 markdown: kramdown
 kramdown:
     input: GFM
     syntax_highlighter: rouge
+    math_engine: mathjax
 
 # Setup
-url:              http://qwtel.com
+url:              https://cuijiawei.cn
 
-# Set to '' in case of hosting on `http://<your-github-name>.github.io`
-baseurl:          ''
+# Set to "" in case of hosting on `http://<your-github-name>.github.io`
+baseurl:          ""
 
-title:           我的Blog 
+title:            Jiawei's Blog
 
 # Markdown enabled, however don't use more than one paragraph (enforced by `>`)
 description:      >
-    An Internet Walker.
+    From software engineering to AI & machine learning. Notes on LLMs,
+    deep learning, and building things that work.
+
 # The tags listed as entries in the sidebar
-sidebar_tags:     [Life, Code, Software, Learning]
+sidebar_tags:     [llm, ai, data, projects, engineering]
 
 # Fallback image and color if not overwritten for tag or post
 image:            /public/img/nap.jpg
-#color:            '#A85641'
-color:            '#656565'
+color:            "#656565"
 
 author:
-  name:           'jiawei'
+  name:           "Jiawei"
   github:         jiawei686
   photo:          /public/img/head.jpg
- 
 
   # Markdown enabled, can use multiple paragraphs (enabled by `|`)
-  about: |          
-    Name : jiawei 
+  about: |
+    I'm Jiawei — a developer who spent years shipping software (PHP, networking,
+    distributed systems) and is now going all-in on AI and machine learning.
 
-    *Don't you close your eyes*
+    This blog is where I think in public: deep dives into LLMs and the papers
+    behind them, practical ML, and the occasional build. Formerly writing code
+    for a living; now training and shipping models.
 
+    *Don't you close your eyes.*

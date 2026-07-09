@@ -2,7 +2,7 @@
 layout: post
 title: "Deep Learning"
 date: 2025-10-22
-categories: [Learning]
+tags: [ai]
 ---
 
 **Core Idea**: Deep learning, a subfield of machine learning, utilizes neural networks with many layers (hence "deep") to model and understand complex patterns in data. This course introduces the fundamentals of building and training neural networks for structured data using TensorFlow and Keras.

@@ -2,8 +2,7 @@
 layout: post
 title: Kaggle与数据科学：实战技巧与最佳实践
 date: 2025-09-15 10:00:00 +0800
-categories: [Kaggle, Data Science, Python]
-tags: [kaggle, data-science, python, pandas, data-cleaning, data-visualization, time-series]
+tags: [data]
 author: J.W.
 ---
 

@@ -1,7 +1,14 @@
 ---
 layout: default
-title: 技术学习经验分享
+title: Notes on AI, ML & Engineering
 ---
+
+<p class="lead">
+  I'm Jiawei. I used to write software; now I train and ship models.
+  This is where I think out loud about LLMs, deep learning, and the
+  systems that make them run. Start with the
+  <a href="/tag/llm/">LLM Papers</a> series.
+</p>
 
 {% for post in site.posts %}
   {% assign currentdate = post.date | date: "%Y" %}
@@ -21,38 +28,3 @@ title: 技术学习经验分享
   </li>
   {% if forloop.last %}</ul><hr/>{% endif %}
 {% endfor %}
-
-{% if false %}
-<!-- <div class="posts">
-  {% for post in paginator.posts %}
-  <div class="post">
-    <h1 class="post-title">
-      <a href="{{ post.url }}">
-        {{ post.title }}
-      </a>
-    </h1>
-
-    <span class="post-date">{{ post.date | date_to_string }}</span>
-
-    {{ post.content }}
-  </div>
-  {% endfor %}
-</div>
-
-<div class="pagination">
-  {% if paginator.next_page %}
-    <a class="pagination-item older" href="{{ site.baseurl }}page{{paginator.next_page}}">Older</a>
-  {% else %}
-    <span class="pagination-item older">Older</span>
-  {% endif %}
-  {% if paginator.previous_page %}
-    {% if paginator.page == 2 %}
-      <a class="pagination-item newer" href="{{ site.baseurl }}">Newer</a>
-    {% else %}
-      <a class="pagination-item newer" href="{{ site.baseurl }}page{{paginator.previous_page}}">Newer</a>
-    {% endif %}
-  {% else %}
-    <span class="pagination-item newer">Newer</span>
-  {% endif %}
-</div> -->
-{% endif %}

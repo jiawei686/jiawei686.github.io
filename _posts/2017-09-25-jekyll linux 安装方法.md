@@ -1,7 +1,7 @@
 ---
 layout: post
 title: jekyll linux 安装方法
-tags: [Software]
+tags: [engineering]
 ---
 
 #### jekyll linux 安装方法

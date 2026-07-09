@@ -2,7 +2,7 @@
 layout: post
 title: "Geospatial Analysis"
 date: 2026-01-02
-categories: [Learning]
+tags: [data]
 ---
 
 **Core Idea**: Geospatial analysis unlocks insights from data that has a location component. This course introduces the tools and techniques for working with geospatial data, creating interactive maps, and uncovering spatial patterns using libraries like GeoPandas.

@@ -1,14 +1,17 @@
-## My Blog
+# Jiawei's Blog
 
+AI, machine learning, and the engineering behind them — written by a developer
+who pivoted from shipping software to training and shipping models.
 
+* **Live:** https://cuijiawei.cn  (mirror: https://jiawei686.github.io)
+* **Built with:** Jekyll (Hyde theme)
+* **LLM Papers:** deep dives into the research behind modern language models —
+  see the `LLM Papers` section of the site.
 
-#### To my readers
+## Local development
 
-Hi, it's really nice to meet you. This is my blog. Now it's available by typing `jiawei686.github.io` || `cuijiawei.cn` in browser.
+```bash
+bundle exec jekyll serve   # or: jekyll serve --detach
+```
 
-
-
-#### Technical basis
-
-This blog uses a jekyll frame and it uses a jekyll theme. For more infomation you can reach `https://jekyllrb.com`
-
+The site is served on port 4000 behind nginx.

@@ -2,7 +2,7 @@
 layout: post
 title: "Machine Learning Explainability"
 date: 2025-12-28
-categories: [Learning]
+tags: [ai]
 ---
 
 **Core Idea**: As machine learning models become more complex (i.e., "black boxes"), understanding *why* they make certain predictions is increasingly important. Machine learning explainability (or interpretability) provides tools to dissect and understand model behavior, building trust and enabling better debugging.

@@ -1,61 +1,37 @@
-# Add an entry, where the key represents a slug.
-# Provide at least a `name` value and optionally `image`, `color` and `description`.
-# Markdown is enabled for `description`, however don't use more than one paragraph (enforced by `>`)
-#
-# Example:
-#
-# ~~~
-# mytag:
-#   name: My Tag
-#   description: >
-#     *My Tag* is an example of how to define a custom tag.
-# ~~~
-
-hyde:
-  name: hyde 
-  image: /public/img/hyde.jpg
-  #  color: '#949667'
-  color: '#656565'
-  description: >
-    Hyde is a brazen two-column Jekyll theme that pairs a prominent sidebar with uncomplicated content.
-    It’s based on Poole, the Jekyll butler.
-
-jekyll:
-  name: jekyll
-  image: /public/img/jekyll.jpg
-  color: '#656565'
-  #color: '#949667'
-  description: >
-    Jekyll is a static site generator, an open-source tool for creating simple yet powerful websites of all shapes and sizes.
-
-Life:
-  name: Life
-  #color: '#949667'
-  color: '#656565'
-  description: >
-    记录下认知世界的过程
-
-Code:
-  name: Code
+llm:
+  name: LLM Papers
   image: /public/img/mrrobot.jpg
-  #color: '#949667'
-  color: '#656565'
+  color: "#6b46c1"
   description: >
-    Talk is cheap, show me the code.
+    Deep dives into the papers that built the modern LLM stack —
+    transformers, pretraining, alignment, efficiency, and reasoning.
 
-Software:
-    name: Software
-    image: /public/img/mrrobot.jpg
-    # color: '#949667'
-    color: '#656565'
-    description: >
-        记录下认知Computer的过程
+ai:
+  name: AI & Machine Learning
+  image: /public/img/nap.jpg
+  color: "#2563eb"
+  description: >
+    Foundations and practice: deep learning, computer vision,
+    reinforcement learning, and interpretability.
 
-Learning:
-    name: Learning
-    image: /public/img/mrrobot.jpg
-    # color: '#949667'
-    color: '#656565'
-    description: >
-        多读书，少犯傻
+data:
+  name: Data Science
+  image: /public/img/hyde.jpg
+  color: "#0d9488"
+  description: >
+    Practical data work — Kaggle, geospatial analysis, and SQL at depth.
 
+projects:
+  name: Projects
+  image: /public/img/jekyll.jpg
+  color: "#d97706"
+  description: >
+    Things I built: MCP servers, smart-home agents, and edge deployments.
+
+engineering:
+  name: Engineering Archive
+  image: /public/img/mrrobot.jpg
+  color: "#64748b"
+  description: >
+    Earlier work in software, systems, and math — kept here as I pivot
+    toward AI & machine learning.

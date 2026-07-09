@@ -2,7 +2,7 @@
 layout: post
 title: "Game AI and Reinforcement Learning"
 date: 2025-12-20
-categories: [Learning]
+tags: [ai]
 ---
 
 **Core Idea**: This course explores the fascinating world of game AI, from classic algorithms to the cutting-edge field of reinforcement learning. You'll learn how to build agents that can make intelligent decisions in game environments.

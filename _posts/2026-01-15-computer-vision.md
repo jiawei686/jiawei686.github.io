@@ -2,7 +2,7 @@
 layout: post
 title: "Computer Vision"
 date: 2026-01-15
-categories: [Learning]
+tags: [ai]
 ---
 
 **Core Idea**: Computer vision is a field of AI that trains computers to interpret and understand the visual world. This course focuses on using Convolutional Neural Networks (CNNs) with TensorFlow and Keras to build powerful image classification models.
