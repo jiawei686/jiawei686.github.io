@@ -8,7 +8,15 @@ title: Jiawei — Notes on LLMs, Deep Learning & ML Systems
   deep learning, and the systems that run them.
 </p>
 
+{% comment %}Hide archived (engineering) posts from the homepage; they remain browsable at /tag/engineering/{% endcomment %}
+{% assign visible_posts = "" | split: "," %}
 {% for post in site.posts %}
+  {% unless post.tags contains 'engineering' %}
+    {% assign visible_posts = visible_posts | push: post %}
+  {% endunless %}
+{% endfor %}
+
+{% for post in visible_posts %}
   {% assign currentdate = post.date | date: "%Y" %}
   {% if currentdate != date %}
     {% unless forloop.first %}</ul><hr/>{% endunless %}
