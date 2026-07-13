@@ -15,21 +15,27 @@ title: Jiawei — Notes on LLMs, Deep Learning & ML Systems
   {% endunless %}
 {% endfor %}
 
-{% for post in visible_posts %}
-  {% assign currentdate = post.date | date: "%Y" %}
-  {% if currentdate != date %}
-    {% unless forloop.first %}</ul><hr/>{% endunless %}
-    <h2 id="y{{post.date | date: "%Y"}}" class="page-title">{{ currentdate }}</h2>
+{% assign categories = "llm|ai|data|projects" | split: "|" %}
+{% for cat in categories %}
+  {% assign cat_posts = visible_posts | where: "tags", cat %}
+  {% if cat_posts.size > 0 %}
+    {% assign cat_name = site.data.tags[cat].name %}
+    <h2 id="{{ cat }}" class="page-title">
+      <a href="{{ site.baseurl }}/tag/{{ cat }}/">{{ cat_name }}</a>
+      <small>{{ cat_posts.size }} posts</small>
+    </h2>
     <ul class="related-posts">
-    {% assign date = currentdate %}
+      {% for post in cat_posts %}
+        <li>
+          <h4>
+            <a href="{{ site.baseurl }}{{ post.url }}">
+              <span>{{ post.title }}</span>
+              <small>{{ post.date | date: "%m/%d" }}</small>
+            </a>
+          </h4>
+        </li>
+      {% endfor %}
+    </ul>
+    <hr/>
   {% endif %}
-  <li>
-    <h4>
-      <a href="{{ site.baseurl }}{{ post.url }}">
-        <span>{{ post.title }}</span>
-        <small>{{ post.date | date: "%m/%d" }}</small>
-      </a>
-    </h4>
-  </li>
-  {% if forloop.last %}</ul><hr/>{% endif %}
 {% endfor %}
