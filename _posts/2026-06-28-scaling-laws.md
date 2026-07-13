@@ -3,6 +3,7 @@ layout: post
 title: "Scaling Laws for Neural Language Models"
 date: 2026-06-28
 tags: [llm]
+subcat: training
 ---
 
 **Paper:** Kaplan, J., et al., *Scaling Laws for Neural Language Models*, 2020. [arXiv:2001.08361](https://arxiv.org/abs/2001.08361)

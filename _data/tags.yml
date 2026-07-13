@@ -1,9 +1,9 @@
 llm:
-  name: LLM Papers
+  name: Paper Deep-Dives
   image: /public/img/mrrobot.jpg
   color: "#6b46c1"
   description: >
-    Deep dives into the papers that built the modern LLM stack —
+    Close readings of the papers that built the modern LLM stack —
     transformers, pretraining, alignment, efficiency, and reasoning.
 
 ai:

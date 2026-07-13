@@ -3,6 +3,7 @@ layout: post
 title: "BERT: Bidirectional Pretraining from Transformers"
 date: 2026-03-08
 tags: [llm]
+subcat: training
 ---
 
 **Paper:** Devlin et al., *BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding*, NAACL 2019. [arXiv:1810.04805](https://arxiv.org/abs/1810.04805)

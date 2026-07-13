@@ -3,6 +3,7 @@ layout: post
 title: "Toolformer: Language Models That Teach Themselves to Use Tools"
 date: 2026-05-24
 tags: [llm]
+subcat: agents
 ---
 
 **Paper:** Schick, Dwivedi-Yu, Dessì, Raileanu, Lomeli, Zettlemoyer, Cancedda, Goyal, Lewis, *Toolformer: Language Models Can Teach Themselves to Use Tools*, NeurIPS 2023. [arXiv:2302.04761](https://arxiv.org/abs/2302.04761)

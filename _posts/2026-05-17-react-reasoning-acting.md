@@ -3,6 +3,7 @@ layout: post
 title: "ReAct: Reasoning + Acting in Language Models"
 date: 2026-05-17
 tags: [llm]
+subcat: agents
 ---
 
 **Paper:** Yao, Zhao, Yu, Du, Shafran, Narasimhan, Cao, *ReAct: Synergizing Reasoning and Acting in Language Models*, ICLR 2023. [arXiv:2210.03629](https://arxiv.org/abs/2210.03629)

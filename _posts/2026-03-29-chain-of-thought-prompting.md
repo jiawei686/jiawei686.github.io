@@ -3,6 +3,7 @@ layout: post
 title: "Chain-of-Thought Prompting: Let the Model Think Step by Step"
 date: 2026-03-29
 tags: [llm]
+subcat: reasoning
 ---
 
 **Paper:** Wei et al., *Chain-of-Thought Prompting Elicits Reasoning in Large Language Models*, 2022. [arXiv:2201.11903](https://arxiv.org/abs/2201.11903)

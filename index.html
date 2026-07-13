@@ -15,7 +15,39 @@ title: Jiawei — Notes on LLMs, Deep Learning & ML Systems
   {% endunless %}
 {% endfor %}
 
-{% assign categories = "llm|ai|data|projects" | split: "|" %}
+{% comment %}LLM umbrella, subdivided into themes by `subcat`{% endcomment %}
+{% assign llm_posts = visible_posts | where: "tags", "llm" %}
+{% if llm_posts.size > 0 %}
+  <h2 id="llm" class="page-title">
+    <a href="{{ site.baseurl }}/tag/llm/">Paper Deep-Dives</a>
+    <small>{{ llm_posts.size }} posts</small>
+  </h2>
+  {% assign subcats = "architecture:Architecture &amp; Attention|training:Training &amp; Scaling|alignment:Alignment &amp; RLHF|reasoning:Reasoning|agents:Agents &amp; Tools|multimodal:Multimodal" | split: "|" %}
+  {% for sc in subcats %}
+    {% assign parts = sc | split: ":" %}
+    {% assign slug = parts[0] %}
+    {% assign sname = parts[1] %}
+    {% assign sub_posts = llm_posts | where: "subcat", slug %}
+    {% if sub_posts.size > 0 %}
+      <h3 class="sub-title">{{ sname }} <small>{{ sub_posts.size }}</small></h3>
+      <ul class="related-posts">
+        {% for post in sub_posts %}
+          <li>
+            <h4>
+              <a href="{{ site.baseurl }}{{ post.url }}">
+                <span>{{ post.title }}</span>
+                <small>{{ post.date | date: "%m/%d" }}</small>
+              </a>
+            </h4>
+          </li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  {% endfor %}
+  <hr/>
+{% endif %}
+
+{% assign categories = "ai|data|projects" | split: "|" %}
 {% for cat in categories %}
   {% assign cat_posts = visible_posts | where: "tags", cat %}
   {% if cat_posts.size > 0 %}

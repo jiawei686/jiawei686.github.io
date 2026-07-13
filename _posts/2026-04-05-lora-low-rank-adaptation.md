@@ -3,6 +3,7 @@ layout: post
 title: "LoRA: Low-Rank Adaptation of Large Models"
 date: 2026-04-05
 tags: [llm]
+subcat: training
 ---
 
 **Paper:** Hu et al., *LoRA: Low-Rank Adaptation of Large Language Models*, ICLR 2022. [arXiv:2106.09685](https://arxiv.org/abs/2106.09685)

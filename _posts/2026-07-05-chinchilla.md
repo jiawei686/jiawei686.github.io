@@ -3,6 +3,7 @@ layout: post
 title: "Chinchilla: Training Compute-Optimal Large Language Models"
 date: 2026-06-30
 tags: [llm]
+subcat: training
 ---
 
 **Paper:** Hoffmann, J., et al. (DeepMind), *Training Compute-Optimal Large Language Models*, 2022. [arXiv:2203.15556](https://arxiv.org/abs/2203.15556)

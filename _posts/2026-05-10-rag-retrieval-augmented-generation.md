@@ -3,6 +3,7 @@ layout: post
 title: "RAG: Retrieval-Augmented Generation"
 date: 2026-05-10
 tags: [llm]
+subcat: agents
 ---
 
 **Paper:** Lewis, Perez, Piktus, Petroni, Karpukhin, Goyal, Küttler, Lewis, Yih, Rocktäschel, Riedel, Kiela, *Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks*, NeurIPS 2020. [arXiv:2005.11401](https://arxiv.org/abs/2005.11401)

@@ -3,6 +3,7 @@ layout: post
 title: "LLaMA: The Open-Weight Catalyst"
 date: 2026-04-19
 tags: [llm]
+subcat: training
 ---
 
 **Paper:** Touvron et al., *LLaMA: Open and Efficient Foundation Language Models*, 2023. [arXiv:2302.13971](https://arxiv.org/abs/2302.13971) — followed by *LLaMA 2* (arXiv:2307.09288) and *LLaMA 3* (2024).

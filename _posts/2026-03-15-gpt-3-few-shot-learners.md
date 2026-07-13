@@ -3,6 +3,7 @@ layout: post
 title: "GPT-3 and Few-Shot Learning at Scale"
 date: 2026-03-15
 tags: [llm]
+subcat: training
 ---
 
 **Paper:** Brown et al., *Language Models are Few-Shot Learners*, NeurIPS 2020. [arXiv:2005.14165](https://arxiv.org/abs/2005.14165)

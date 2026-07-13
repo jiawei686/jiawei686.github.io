@@ -3,6 +3,7 @@ layout: post
 title: "The Transformer: Attention Is All You Need"
 date: 2026-03-01
 tags: [llm]
+subcat: architecture
 ---
 
 **Paper:** Vaswani et al., *Attention Is All You Need*, NeurIPS 2017. [arXiv:1706.03762](https://arxiv.org/abs/1706.03762)

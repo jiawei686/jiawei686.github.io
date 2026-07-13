@@ -3,6 +3,7 @@ layout: post
 title: "Generative Agents: Believable Simulacra of Human Behavior"
 date: 2026-06-07
 tags: [llm]
+subcat: agents
 ---
 
 **Paper:** Park, Chan, Roh, Zito, Fried, Bernstein, *Generative Agents: Interactive Simulacra of Human Behavior*, UIST 2023. [arXiv:2304.03442](https://arxiv.org/abs/2304.03442)

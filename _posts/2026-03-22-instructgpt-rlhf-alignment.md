@@ -3,6 +3,7 @@ layout: post
 title: "InstructGPT: Aligning LLMs with Human Preference (RLHF)"
 date: 2026-03-22
 tags: [llm]
+subcat: alignment
 ---
 
 **Paper:** Ouyang et al., *Training language models to follow instructions with human feedback (InstructGPT)*, 2022. [arXiv:2203.02155](https://arxiv.org/abs/2203.02155)

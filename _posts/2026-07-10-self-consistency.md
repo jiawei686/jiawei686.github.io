@@ -3,6 +3,7 @@ layout: post
 title: "Self-Consistency: Improving Chain-of-Thought Reasoning"
 date: 2026-07-10
 tags: [llm]
+subcat: reasoning
 ---
 
 **Paper:** Wang, X., et al., *Self-Consistency Improves Chain-of-Thought Reasoning in Language Models*, ICLR 2023. [arXiv:2203.11171](https://arxiv.org/abs/2203.11171)

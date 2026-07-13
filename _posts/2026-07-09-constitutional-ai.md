@@ -3,6 +3,7 @@ layout: post
 title: "Constitutional AI: Harmlessness from AI Feedback"
 date: 2026-07-09
 tags: [llm]
+subcat: alignment
 ---
 
 **Paper:** Bai, Y., et al. (Anthropic), *Constitutional AI: Harmlessness from AI Feedback*, 2022. [arXiv:2212.08073](https://arxiv.org/abs/2212.08073)

@@ -3,6 +3,7 @@ layout: post
 title: "RLHF: Deep Reinforcement Learning from Human Preferences"
 date: 2026-07-05
 tags: [llm]
+subcat: alignment
 ---
 
 **Paper:** Christiano, P., et al., *Deep Reinforcement Learning from Human Preferences*, NeurIPS 2017. [arXiv:1706.03741](https://arxiv.org/abs/1706.03741)

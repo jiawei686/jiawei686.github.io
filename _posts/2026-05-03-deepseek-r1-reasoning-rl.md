@@ -3,6 +3,7 @@ layout: post
 title: "DeepSeek-R1: Reasoning via Reinforcement Learning"
 date: 2026-05-03
 tags: [llm]
+subcat: reasoning
 ---
 
 **Paper:** DeepSeek-AI, *DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning*, 2025. [arXiv:2501.12948](https://arxiv.org/abs/2501.12948)

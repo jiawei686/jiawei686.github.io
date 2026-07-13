@@ -3,6 +3,7 @@ layout: post
 title: "FlashAttention: IO-Aware Exact Attention"
 date: 2026-04-12
 tags: [llm]
+subcat: architecture
 ---
 
 **Paper:** Dao et al., *FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness*, NeurIPS 2022. [arXiv:2205.14135](https://arxiv.org/abs/2205.14135)

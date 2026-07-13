@@ -3,6 +3,7 @@ layout: post
 title: "Tree of Thoughts: Deliberate Problem Solving"
 date: 2026-06-21
 tags: [llm]
+subcat: reasoning
 ---
 
 **Paper:** Yao, Yu, Zhao, Shafran, Griffiths, Cao, Narasimhan, *Tree of Thoughts: Deliberate Problem Solving with Large Language Models*, NeurIPS 2023. [arXiv:2305.10601](https://arxiv.org/abs/2305.10601)

@@ -3,6 +3,7 @@ layout: post
 title: "Mixtral of Experts: Sparse Mixture of Experts"
 date: 2026-04-26
 tags: [llm]
+subcat: training
 ---
 
 **Paper:** Jiang et al., *Mixtral of Experts*, 2024. [arXiv:2401.04088](https://arxiv.org/abs/2401.04088)

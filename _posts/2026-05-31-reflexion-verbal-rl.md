@@ -3,6 +3,7 @@ layout: post
 title: "Reflexion: Verbal Reinforcement Learning for Language Agents"
 date: 2026-05-31
 tags: [llm]
+subcat: agents
 ---
 
 **Paper:** Shinn, Cassano, Berman, Gopinath, Moss, Labash, *Reflexion: Language Agents with Verbal Reinforcement Learning*, NeurIPS 2023. [arXiv:2303.11366](https://arxiv.org/abs/2303.11366)

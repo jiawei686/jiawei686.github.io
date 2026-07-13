@@ -3,6 +3,7 @@ layout: post
 title: "AutoGen: Multi-Agent Conversation as Computation"
 date: 2026-06-14
 tags: [llm]
+subcat: agents
 ---
 
 **Paper:** Wu, Bansal, Zhang, Wu, Zhang, Zhu, Li, Jiang, Zhang, Wang, Krishna, Wu, *AutoGen: Enabling Next-Gen LLM Applications via Multi-Agent Conversation*, 2023. [arXiv:2308.08155](https://arxiv.org/abs/2308.08155)
