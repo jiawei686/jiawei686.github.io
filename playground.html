@@ -89,8 +89,8 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
     <h2>1 - Self-Attention</h2>
     <p class="pg-sub">From <em>Attention Is All You Need</em> (Transformer). Click a word to see what it attends to.</p>
     <div class="pg-explain">
-      <b>讲解：</b>自注意力让序列里每个 token 同时"看"所有其他 token，并为每个token算出一组注意力权重（softmax 归一化，和为 1）。权重越高，说明该 token 对当前词越重要。这一步取代了 RNN 的递归，使得并行训练和捕捉长距离依赖成为可能。
-      <span class="pg-paper">对应论文：<a href="/2026/03/01/the-transformer-attention-is-all-you-need/">The Transformer</a></span>
+      <b>What's happening:</b> Self-attention lets every token in a sequence "look at" all other tokens at once, and computes a set of attention weights for each (softmax-normalized, summing to 1). A higher weight means that token matters more to the current word. This replaces RNN recurrence, making parallel training and long-range dependency capture possible.
+      <span class="pg-paper">Paper: <a href="/2026/03/01/the-transformer-attention-is-all-you-need/">The Transformer</a></span>
     </div>
     <div class="pg-stage"><svg id="attn-svg" viewBox="0 0 820 320" aria-label="self attention"></svg></div>
     <div class="pg-weights" id="attn-weights"></div>
@@ -102,8 +102,8 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
     <h2>2 - Mixture of Experts</h2>
     <p class="pg-sub">From <em>Mixtral of Experts</em>. A router sends each token to the top-2 of 4 experts.</p>
     <div class="pg-explain">
-      <b>讲解：</b>MoE 把一个大模型拆成很多"专家"子网络，但每个 token 只激活其中少数几个（这里 top-2）。一个轻量路由器决定路由。于是参数总量可以非常大，而单次推理的计算量只随激活的专家增长——这就是"用更多参数却不更慢"的关键。
-      <span class="pg-paper">对应论文：<a href="/2026/04/26/mixtral-mixture-of-experts/">Mixtral</a></span>
+      <b>What's happening:</b> MoE splits one big model into many "expert" sub-networks, but each token only activates a few of them (top-2 here). A lightweight router decides the routing. That means the total parameter count can be huge, while compute per forward pass grows only with the activated experts — the key to "more parameters without being slower."
+      <span class="pg-paper">Paper: <a href="/2026/04/26/mixtral-mixture-of-experts/">Mixtral</a></span>
     </div>
     <div class="pg-stage"><svg id="moe-svg" viewBox="0 0 820 360" aria-label="mixture of experts"></svg></div>
     <div class="pg-controls">
@@ -118,8 +118,8 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
     <h2>3 - Scaling Laws</h2>
     <p class="pg-sub">From <em>Scaling Laws</em> &amp; <em>Chinchilla</em>. Drag to grow the model and its data.</p>
     <div class="pg-explain">
-      <b>讲解：</b>大模型有个很"乖"的规律：只要同时加大参数量(N)、数据量(D)、算力(C)，验证集 loss 会按幂律平滑下降。Chinchilla 进一步指出——绝大多数模型"数据喂少了"，应该让 D 和 N 大致 1:20 同比例增长，而不是一味堆参数。
-      <span class="pg-paper">对应论文：<a href="/2026/06/28/scaling-laws/">Scaling Laws</a> · <a href="/2026/06/30/chinchilla/">Chinchilla</a></span>
+      <b>What's happening:</b> Large models follow a remarkably clean rule: as you scale up parameters (N), data (D), and compute (C) together, validation loss drops smoothly along a power law. Chinchilla went further — most models were "under-fed on data," and D and N should grow roughly 1:20 together rather than piling on parameters alone.
+      <span class="pg-paper">Papers: <a href="/2026/06/28/scaling-laws/">Scaling Laws</a> · <a href="/2026/06/30/chinchilla/">Chinchilla</a></span>
     </div>
     <div class="pg-slider">
       <label style="width:110px">Model size</label>
@@ -141,8 +141,8 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
     <h2>4 - Retrieval-Augmented Generation</h2>
     <p class="pg-sub">From <em>RAG</em>. Pick a question; the system retrieves the closest notes, then answers from them.</p>
     <div class="pg-explain">
-      <b>讲解：</b>RAG 把"模型记忆"和"外部知识库"分开：先根据用户问题检索最相关的文档片段，再把它们拼进 prompt，让模型基于这些证据作答。这样既减少幻觉，又能在不重训模型的情况下更新知识。
-      <span class="pg-paper">对应论文：<a href="/2026/05/10/rag-retrieval-augmented-generation/">RAG</a></span>
+      <b>What's happening:</b> RAG separates a model’s "memory" from an external knowledge base: it first retrieves the most relevant document snippets for the user’s question, then stitches them into the prompt so the model answers from that evidence. This cuts hallucinations and lets you update knowledge without retraining.
+      <span class="pg-paper">Paper: <a href="/2026/05/10/rag-retrieval-augmented-generation/">RAG</a></span>
     </div>
     <div class="pg-controls" id="rag-q"></div>
     <div class="pg-ret" id="rag-ret"></div>
@@ -156,8 +156,8 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
     <h2>5 - Chain-of-Thought</h2>
     <p class="pg-sub">From <em>Chain-of-Thought Prompting</em>. Letting the model reason step by step unlocks hard problems.</p>
     <div class="pg-explain">
-      <b>讲解：</b>直接要答案，模型容易在中间步骤翻车；只要加一句"让我们一步步思考"，它就会把推理链显式写出来，再给结论。CoT 的本质是让模型先生成"推理 token"，把复杂问题拆解成可验证的小步——算术、常识、符号推理的准确率因此大幅提升。
-      <span class="pg-paper">对应论文：<a href="/2026/03/29/chain-of-thought-prompting/">Chain-of-Thought</a></span>
+      <b>What's happening:</b> Asked for a direct answer, a model often trips up on the intermediate steps; but add a line like "let’s think step by step" and it will spell out the reasoning chain before giving the conclusion. The essence of CoT is having the model first generate "reasoning tokens" that break a hard problem into verifiable small steps — which sharply lifts accuracy on arithmetic, commonsense, and symbolic reasoning.
+      <span class="pg-paper">Paper: <a href="/2026/03/29/chain-of-thought-prompting/">Chain-of-Thought</a></span>
     </div>
     <div class="pg-box" id="cot-problem"></div>
     <div class="pg-controls">
@@ -172,8 +172,8 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
     <h2>6 - Tree-of-Thoughts</h2>
     <p class="pg-sub">From <em>Tree of Thoughts</em>. Explore many reasoning branches, score them, keep the best.</p>
     <div class="pg-explain">
-      <b>讲解：</b>CoT 只有"一条"推理线，错了就全错。ToT 把推理变成一棵树：从问题长出多个候选"思路"(thought)，每一步都给分支打分/自评估，剪掉差的、沿最好的继续展开，最后回溯出最优解。这给了模型"规划 + 回溯"的能力，特别适合需要搜索的难题。
-      <span class="pg-paper">对应论文：<a href="/2026/06/21/tree-of-thoughts/">Tree of Thoughts</a></span>
+      <b>What's happening:</b> CoT has only a single reasoning line — if it goes wrong, everything fails. ToT turns reasoning into a tree: multiple candidate "thoughts" branch out from the problem, each step is scored / self-evaluated, weak branches are pruned, and the strongest is expanded further, finally backtracking to the best solution. This gives the model "planning + backtracking" power, ideal for hard search problems.
+      <span class="pg-paper">Paper: <a href="/2026/06/21/tree-of-thoughts/">Tree of Thoughts</a></span>
     </div>
     <div class="pg-stage"><svg id="tot-svg" viewBox="0 0 820 360" aria-label="tree of thoughts"></svg></div>
     <div class="pg-controls">
@@ -189,8 +189,8 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
     <h2>7 - RLHF vs DPO</h2>
     <p class="pg-sub">From <em>InstructGPT / RLHF</em> &amp; <em>DPO</em>. A reward model ranks responses; the policy learns to match preferences.</p>
     <div class="pg-explain">
-      <b>讲解：</b>想让模型"听话、有用、安全"，靠的是偏好对齐。做法是拿人类对两个回答的好坏排序去训练一个"奖励模型"，再让策略往高奖励方向靠。RLHF 需要奖励模型 + PPO 强化学习两阶段；DPO 则更巧——直接从偏好对里推导出一个分类式损失，一步到位，跳过了奖励模型和 RL 循环。
-      <span class="pg-paper">对应论文：<a href="/2026/07/05/rlhf-from-human-preferences/">RLHF (original)</a> · <a href="/2026/03/22/instructgpt-rlhf-alignment/">InstructGPT</a> · <a href="/2026/07/07/dpo/">DPO</a></span>
+      <b>What's happening:</b> Making a model "helpful, useful, and safe" is about preference alignment. The recipe: take human rankings of which of two answers is better to train a "reward model," then push the policy toward higher rewards. RLHF needs two stages — reward model + PPO reinforcement learning; DPO is cleverer — it derives a classification-style loss directly from the preference pairs in one step, skipping both the reward model and the RL loop.
+      <span class="pg-paper">Papers: <a href="/2026/07/05/rlhf-from-human-preferences/">RLHF (original)</a> · <a href="/2026/03/22/instructgpt-rlhf-alignment/">InstructGPT</a> · <a href="/2026/07/07/dpo/">DPO</a></span>
     </div>
     <div class="pg-slider">
       <label style="width:170px">Reward of response A</label>
@@ -215,8 +215,8 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
     <h2>8 - LoRA (Low-Rank Adaptation)</h2>
     <p class="pg-sub">From <em>LoRA</em>. Fine-tune a tiny low-rank update instead of the whole weight matrix.</p>
     <div class="pg-explain">
-      <b>讲解：</b>全量微调要更新整个权重矩阵 W(d×d)，参数量巨大。LoRA 的洞察是：微调时的"变化量"ΔW 往往是低秩的——可以用两个瘦长矩阵 B(d×r) 和 A(r×d) 的乘积来近似，只训练这俩（参数量 2·d·r，r 很小）。原模型冻结不动，换任务只换 LoRA 小尾巴，又快又省。
-      <span class="pg-paper">对应论文：<a href="/2026/04/05/lora-low-rank-adaptation/">LoRA</a></span>
+      <b>What's happening:</b> Full fine-tuning updates the entire weight matrix W (d×d) — an enormous parameter count. LoRA’s insight is that the "change" ΔW during fine-tuning is usually low-rank: it can be approximated by the product of two thin matrices B (d×r) and A (r×d), and you only train those two (params = 2·d·r, with r tiny). The base model stays frozen; to switch tasks you just swap the small LoRA tail — fast and cheap.
+      <span class="pg-paper">Paper: <a href="/2026/04/05/lora-low-rank-adaptation/">LoRA</a></span>
     </div>
     <div class="pg-slider">
       <label style="width:120px">Rank r</label>
@@ -232,8 +232,8 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
     <h2>9 - RoPE (Rotary Position Embedding)</h2>
     <p class="pg-sub">From <em>RoFormer</em>. Rotate token vectors by angle &theta;&middot;position so attention depends on relative position.</p>
     <div class="pg-explain">
-      <b>讲解：</b>Transformer 本身不知道词序。RoPE 的做法很优雅：把每个位置的 query/key 向量按角度 &theta;&middot;position 旋转一下。因为旋转后的向量内积只取决于"位置差"(m−n) 而不是绝对位置，所以注意力天然带上相对位置信息——这也是 LLaMA / Mistral / Qwen 默认的编码方式。
-      <span class="pg-paper">对应论文：<a href="/2026/07/03/rope/">RoPE</a></span>
+      <b>What's happening:</b> A Transformer has no built-in sense of word order. RoPE’s elegant trick: rotate each position’s query/key vector by an angle θ·position. Because the inner product of rotated vectors depends only on the "position difference" (m−n) rather than absolute position, attention naturally carries relative-position information — which is why LLaMA / Mistral / Qwen use it by default.
+      <span class="pg-paper">Paper: <a href="/2026/07/03/rope/">RoPE</a></span>
     </div>
     <div class="pg-slider">
       <label style="width:140px">Token q position</label>
@@ -254,8 +254,8 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
     <h2>10 - BPE Tokenization</h2>
     <p class="pg-sub">From GPT-2 / GPT-3 tokenizers. Byte-Pair Encoding merges the most frequent character pairs, again and again.</p>
     <div class="pg-explain">
-      <b>讲解：</b>模型读不懂"单词"，只能读 token。BPE 从单个字符出发，反复把"出现频率最高的相邻字符对"合并成一个新 token（比如 t+o→to，to+k→tok…），直到达到词表大小。于是常见词变成短 token、生僻词拆成碎 token——这也是为什么"非英文/乱码"会被切成很多小片、更费 token。
-      <span class="pg-paper">对应论文：<a href="/2026/03/15/gpt-3-few-shot-learners/">GPT-3</a> (tokenizer)</span>
+      <b>What's happening:</b> A model can’t read "words," only tokens. BPE starts from single characters and repeatedly merges the "most frequent adjacent character pair" into a new token (e.g. t+o→to, to+k→tok…) until it hits the vocabulary size. Common words become short tokens, rare words split into fragments — which is why "non-English / gibberish" gets chopped into many small pieces and costs more tokens.
+      <span class="pg-paper">Paper: <a href="/2026/03/15/gpt-3-few-shot-learners/">GPT-3</a> (tokenizer)</span>
     </div>
     <div class="pg-controls">
       <input type="text" id="bpe-in" value="tokenization" style="padding:7px 10px;border:1px solid #cbd5e1;border-radius:8px;font-size:.9rem;min-width:180px">
