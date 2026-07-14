@@ -1,0 +1,328 @@
+---
+layout: page
+title: Playground
+permalink: /playground/
+---
+
+<style>
+.pg { max-width: 860px; }
+.pg-intro { color: #475569; font-size: 1.02rem; line-height: 1.6; }
+.pg-demo {
+  border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px 22px;
+  margin: 26px 0; background: #fff; box-shadow: 0 1px 3px rgba(15,23,42,.05);
+}
+.pg-demo h2 { margin: 0 0 4px; font-size: 1.25rem; color: #1e293b; }
+.pg-demo .pg-sub { color: #64748b; font-size: .92rem; margin: 0 0 14px; }
+.pg-stage { background: #f8fafc; border-radius: 10px; padding: 10px; }
+.pg-stage svg { width: 100%; height: auto; display: block; }
+.pg-controls { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.pg-btn {
+  border: 1px solid #cbd5e1; background: #fff; color: #334155;
+  padding: 7px 14px; border-radius: 8px; cursor: pointer; font-size: .9rem;
+  transition: all .15s;
+}
+.pg-btn:hover { border-color: #6b46c1; color: #6b46c1; }
+.pg-btn:disabled { opacity: .45; cursor: default; }
+.pg-tok {
+  cursor: pointer; user-select: none;
+}
+.pg-tok text { font-size: 13px; fill: #334155; text-anchor: middle; }
+.pg-tok circle { fill: #fff; stroke: #94a3b8; stroke-width: 2; transition: stroke .2s, fill .2s; }
+.pg-tok:hover circle { stroke: #6b46c1; }
+.pg-tok.active circle { fill: #6b46c1; stroke: #6b46c1; }
+.pg-tok.active text { fill: #fff; }
+.attn-line { stroke: #6b46c1; transition: opacity .35s ease; }
+.pg-weights { margin-top: 12px; }
+.pg-wrow { display: flex; align-items: center; gap: 8px; font-size: .82rem; margin: 3px 0; color: #475569; }
+.pg-wrow .lab { width: 70px; text-align: right; }
+.pg-wbar { flex: 1; height: 9px; background: #e2e8f0; border-radius: 5px; overflow: hidden; }
+.pg-wbar > i { display: block; height: 100%; background: #6b46c1; width: 0; transition: width .35s; }
+.pg-readout { font-size: .9rem; color: #334155; margin-top: 10px; }
+.pg-readout b { color: #6b46c1; }
+.pg-slider { display: flex; align-items: center; gap: 10px; margin: 10px 0; font-size: .88rem; color: #475569; }
+.pg-slider input[type=range] { flex: 1; }
+.pg-expert { transition: transform .15s; }
+.pg-expert.pulse { transform: scale(1.06); }
+.pg-load { font-size: .8rem; fill: #475569; text-anchor: middle; }
+.pg-corpus { font-size: .82rem; color: #475569; margin: 0; padding-left: 18px; }
+.pg-ret { margin-top: 6px; }
+.pg-ret .bar { height: 22px; background: #e2e8f0; border-radius: 6px; overflow: hidden; margin: 4px 0; position: relative; }
+.pg-ret .bar > i { display: block; height: 100%; background: #0d9488; width: 0; transition: width .4s; }
+.pg-ret .bar > span { position: absolute; left: 8px; top: 2px; font-size: .78rem; color: #fff; }
+.pg-box { background: #f1f5f9; border-left: 3px solid #6b46c1; border-radius: 6px; padding: 8px 12px; margin-top: 8px; font-size: .86rem; color: #334155; }
+.pg-note { font-size: .78rem; color: #94a3b8; margin-top: 14px; }
+</style>
+
+<div class="pg">
+  <p class="pg-intro">
+    Interactive, simplified visualizations of the core ideas behind the papers in
+    <a href="/tag/llm/">Paper Deep-Dives</a>. Nothing here is a real model — these are
+    teaching sketches that make the mechanics intuitive. Click, drag, and route.
+  </p>
+
+  <!-- 1. Self-Attention -->
+  <section class="pg-demo" id="d-attn">
+    <h2>1 · Self-Attention</h2>
+    <p class="pg-sub">From <em>Attention Is All You Need</em> (Transformer). Click a word to see what it attends to.</p>
+    <div class="pg-stage"><svg id="attn-svg" viewBox="0 0 820 320" aria-label="self attention"></svg></div>
+    <div class="pg-weights" id="attn-weights"></div>
+    <p class="pg-note">Weights are softmax-normalized, so they sum to 1. Try "it" — notice it leans toward "cat" and "mat".</p>
+  </section>
+
+  <!-- 2. Mixture of Experts -->
+  <section class="pg-demo" id="d-moe">
+    <h2>2 · Mixture of Experts</h2>
+    <p class="pg-sub">From <em>Mixtral of Experts</em>. A router sends each token to the top-2 of 4 experts.</p>
+    <div class="pg-stage"><svg id="moe-svg" viewBox="0 0 820 360" aria-label="mixture of experts"></svg></div>
+    <div class="pg-controls">
+      <button class="pg-btn" id="moe-next">Route next token ▸</button>
+      <button class="pg-btn" id="moe-reset">Reset</button>
+    </div>
+    <p class="pg-note">Only a fraction of experts activate per token — that's why MoE stays cheap at inference.</p>
+  </section>
+
+  <!-- 3. Scaling Laws -->
+  <section class="pg-demo" id="d-scale">
+    <h2>3 · Scaling Laws</h2>
+    <p class="pg-sub">From <em>Scaling Laws</em> &amp; <em>Chinchilla</em>. Drag to grow the model and its data.</p>
+    <div class="pg-slider">
+      <label style="width:110px">Model size</label>
+      <input type="range" id="sc-n" min="0" max="100" value="42">
+      <span id="sc-n-v" style="width:80px;text-align:right">7.0B</span>
+    </div>
+    <div class="pg-slider">
+      <label style="width:110px">Training data</label>
+      <input type="range" id="sc-d" min="0" max="100" value="42">
+      <span id="sc-d-v" style="width:80px;text-align:right">140B</span>
+    </div>
+    <div class="pg-stage"><svg id="scale-svg" viewBox="0 0 820 300" aria-label="scaling laws"></svg></div>
+    <div class="pg-readout" id="scale-out"></div>
+    <p class="pg-note">Illustrative curves (not exact Chinchilla coefficients). The point: spend compute on both dimensions, and returns diminish.</p>
+  </section>
+
+  <!-- 4. RAG -->
+  <section class="pg-demo" id="d-rag">
+    <h2>4 · Retrieval-Augmented Generation</h2>
+    <p class="pg-sub">From <em>RAG</em>. Pick a question; the system retrieves the closest notes, then answers from them.</p>
+    <div class="pg-controls" id="rag-q"></div>
+    <div class="pg-ret" id="rag-ret"></div>
+    <div class="pg-box" id="rag-ctx" style="display:none"></div>
+    <div class="pg-box" id="rag-ans" style="display:none; border-left-color:#0d9488"></div>
+    <p class="pg-note">Similarity here is plain word overlap (Jaccard) — enough to show the retrieve-then-read loop.</p>
+  </section>
+</div>
+
+<script>
+{% raw %}
+(function(){
+  var SVGNS = "http://www.w3.org/2000/svg";
+  function el(tag, attrs){ var e=document.createElementNS(SVGNS,tag); for(var k in attrs){ e.setAttribute(k, attrs[k]); } return e; }
+
+  /* ---------- 1. Self-Attention ---------- */
+  (function(){
+    var toks = ["The","cat","sat","on","the","mat","because","it","was","tired"];
+    var RAW = [
+      [3,1,1,0,0,0,0,0,0,0],
+      [1,3,2,0,0,1,0,0,0,0],
+      [1,2,3,1,0,1,0,0,0,0],
+      [0,0,1,3,0,2,0,0,0,0],
+      [1,0,0,0,3,0,0,0,0,0],
+      [0,1,1,2,0,3,0,1,0,0],
+      [0,0,0,0,0,0,3,0,1,2],
+      [0,3,1,0,0,2,0,3,1,1],
+      [0,0,0,0,0,0,1,0,3,1],
+      [0,0,0,0,0,0,2,0,1,3]
+    ];
+    function softmax(row){
+      var m=Math.max.apply(null,row), s=0, o=row.map(function(v){ var x=Math.exp((v-m)/1.1); s+=x; return x; });
+      return o.map(function(v){ return v/s; });
+    }
+    var W = RAW.map(softmax);
+    var svg=document.getElementById("attn-svg");
+    var n=toks.length, y=200, x0=60, x1=760, dx=(x1-x0)/(n-1);
+    var gLines=el("g",{}), gNodes=el("g",{});
+    svg.appendChild(gLines); svg.appendChild(gNodes);
+    var xs=[];
+    toks.forEach(function(t,i){
+      var cx=x0+i*dx; xs.push(cx);
+      var g=el("g",{class:"pg-tok","data-i":i});
+      g.appendChild(el("circle",{cx:cx,cy:y,r:24}));
+      var tx=el("text",{x:cx,y:y+4}); tx.textContent=t; g.appendChild(tx);
+      g.addEventListener("click",function(){ select(i); });
+      gNodes.appendChild(g);
+    });
+    function select(i){
+      [].forEach.call(gNodes.querySelectorAll(".pg-tok"),function(g){ g.classList.remove("active"); });
+      gNodes.querySelectorAll(".pg-tok")[i].classList.add("active");
+      gLines.innerHTML="";
+      for(var j=0;j<n;j++){
+        if(j===i) continue;
+        var w=W[i][j];
+        var ln=el("line",{class:"attn-line",x1:xs[i],y1:y,x2:xs[j],y2:y,
+          "stroke-width":(1+w*5),"stroke-opacity":0});
+        gLines.appendChild(ln);
+        (function(ln,w){ setTimeout(function(){ ln.setAttribute("stroke-opacity", w.toFixed(3)); }, 10); })(ln,w);
+      }
+      var box=document.getElementById("attn-weights"); box.innerHTML="";
+      toks.forEach(function(t,j){
+        var w=W[i][j];
+        var row=document.createElement("div"); row.className="pg-wrow";
+        row.innerHTML='<span class="lab">'+t+'</span><span class="pg-wbar"><i style="width:'+(w*100).toFixed(1)+'%"></i></span><span>'+(w*100).toFixed(0)+'%</span>';
+        box.appendChild(row);
+      });
+    }
+    select(7);
+  })();
+
+  /* ---------- 2. Mixture of Experts ---------- */
+  (function(){
+    var svg=document.getElementById("moe-svg");
+    var tokens=["The","router","sends","each","token","to","specialist","experts","for","speed","and","capacity"];
+    var experts=[{n:"Expert A",c:"#6b46c1"},{n:"Expert B",c:"#2563eb"},{n:"Expert C",c:"#0d9488"},{n:"Expert D",c:"#d97706"}];
+    var rx=120, ry=180;
+    svg.appendChild(el("ellipse",{cx:rx,cy:ry,rx:54,ry:34,fill:"#e2e8f0",stroke:"#94a3b8"}));
+    var rl=el("text",{x:rx,y:ry+5,"text-anchor":"middle",fill:"#334155","font-size":14}); rl.textContent="Router"; svg.appendChild(rl);
+    var ex=[];
+    experts.forEach(function(e,i){
+      var ey=70+i*75;
+      var g=el("g",{class:"pg-expert"}); g.setAttribute("style","transform-origin:"+(640)+"px "+(ey+28)+"px");
+      var r=el("rect",{x:560,y:ey,width:170,height:56,rx:10,fill:"#fff",stroke:e.c,"stroke-width":2}); g.appendChild(r);
+      var t=el("text",{x:645,y:ey+24,"text-anchor":"middle",fill:"#334155","font-size":14}); t.textContent=e.n; g.appendChild(t);
+      var ld=el("text",{class:"pg-load",x:645,y:ey+46}); ld.textContent="loaded 0"; g.appendChild(ld);
+      svg.appendChild(g);
+      ex.push({g:g,ld:ld,x:645,y:ey+28,c:e.c,count:0});
+    });
+    function route(tok, cb){
+      // deterministic pseudo-pick of top-2 experts from token string
+      var h=0; for(var k=0;k<tok.length;k++){ h=(h*31+tok.charCodeAt(k))>>>0; }
+      var a=h%4, b=((h>>3)+1)%4; if(a===b) b=(b+1)%4;
+      var picked=[a,b];
+      picked.forEach(function(ei){
+        var e=ex[ei];
+        var g=el("g",{});
+        var circ=el("circle",{cx:rx,cy:ry,r:13,fill:e.c}); g.appendChild(circ);
+        var tx=el("text",{x:rx,y:ry+4,"text-anchor":"middle",fill:"#fff","font-size":10}); tx.textContent=tok.slice(0,3); g.appendChild(tx);
+        svg.appendChild(g);
+        var t0=null, dur=600;
+        function step(ts){
+          if(!t0) t0=ts; var p=Math.min(1,(ts-t0)/dur);
+          var x=rx+(e.x-rx)*p, y=ry+(e.y-ry)*p;
+          g.setAttribute("transform","translate("+(x-rx)+","+(y-ry)+")");
+          if(p<1){ requestAnimationFrame(step); }
+          else {
+            e.count++; e.ld.textContent="loaded "+e.count;
+            e.g.classList.add("pulse"); setTimeout(function(){ e.g.classList.remove("pulse"); },160);
+            svg.removeChild(g);
+            if(cb) cb();
+          }
+        }
+        requestAnimationFrame(step);
+      });
+    }
+    var idx=0;
+    document.getElementById("moe-next").addEventListener("click",function(){
+      if(idx>=tokens.length) return;
+      route(tokens[idx], null); idx++;
+      if(idx>=tokens.length){ this.disabled=true; this.textContent="All routed ✓"; }
+    });
+    document.getElementById("moe-reset").addEventListener("click",function(){
+      idx=0; ex.forEach(function(e){ e.count=0; e.ld.textContent="loaded 0"; });
+      var btn=document.getElementById("moe-next"); btn.disabled=false; btn.textContent="Route next token ▸";
+    });
+    route(tokens[0],null); idx=1;
+  })();
+
+  /* ---------- 3. Scaling Laws ---------- */
+  (function(){
+    var svg=document.getElementById("scale-svg");
+    var W=820,H=300, padL=50, padB=34, padT=16;
+    // axes
+    svg.appendChild(el("line",{x1:padL,y1:H-padB,x2:W-10,y2:H-padB,stroke:"#cbd5e1"}));
+    svg.appendChild(el("line",{x1:padL,y1:10,x2:padL,y2:H-padB,stroke:"#cbd5e1"}));
+    var axL=el("text",{x:14,y:H/2,"font-size":12,fill:"#64748b",transform:"rotate(-90 14 "+(H/2)+")","text-anchor":"middle"}); axL.textContent="val loss"; svg.appendChild(axL);
+    var axX=el("text",{x:W/2,y:H-6,"font-size":12,fill:"#64748b","text-anchor":"middle"}); axX.textContent="training compute (log)"; svg.appendChild(axX);
+    var nIn=document.getElementById("sc-n"), dIn=document.getElementById("sc-d");
+    var nV=document.getElementById("sc-n-v"), dV=document.getElementById("sc-d-v");
+    var out=document.getElementById("scale-out");
+    // simple illustrative loss function
+    function loss(N,D){ var n=N/7e9, d=D/1.4e11; return 1.8 + 0.9*Math.pow(1/n,0.1) + 0.7*Math.pow(1/d,0.1); }
+    function compute(N,D){ return 6*N*D; }
+    function fmt(x){
+      if(x>=1e12) return (x/1e12).toFixed(1)+"T";
+      if(x>=1e9) return (x/1e9).toFixed(1)+"B";
+      if(x>=1e6) return (x/1e6).toFixed(1)+"M";
+      return x.toFixed(0);
+    }
+    // static illustrative curve (loss vs compute)
+    var pts=[];
+    for(var c=1e18; c<=5e23; c*=1.6){
+      var l=1.8 + 0.9*Math.pow(1/( (c/ (6*1.4e11)) /7e9 ),0.1) + 0.7*Math.pow(1/(c/(6*7e9)/1.4e11),0.1);
+    }
+    // draw a smooth decreasing curve from compute range
+    var cMin=1e18, cMax=5e23;
+    function cx(c){ return padL + (Math.log10(c)-Math.log10(cMin))/(Math.log10(cMax)-Math.log10(cMin))*(W-10-padL); }
+    function cy(l){ var lMin=2.4,lMax=4.2; return (H-padB) - (l-lMin)/(lMax-lMin)*(H-padB-padT); }
+    var dPath="";
+    for(var c=cMin; c<=cMax; c*=1.25){
+      var N=7e9, D=c/(6*N); var l=loss(N,D);
+      dPath += (dPath?"L":"M")+cx(c).toFixed(1)+" "+cy(l).toFixed(1)+" ";
+    }
+    svg.appendChild(el("path",{d:dPath,fill:"none",stroke:"#cbd5e1","stroke-width":2}));
+    var dot=el("circle",{r:7,fill:"#6b46c1"}); svg.appendChild(dot);
+    function update(){
+      var N=Math.pow(10, 8 + (nIn.value/100)*2.0)*1e0; // 1e8 .. 1e10
+      var D=Math.pow(10, 9 + (dIn.value/100)*2.5)*1e0; // 1e9 .. ~3e11
+      var l=loss(N,D), C=compute(N,D);
+      nV.textContent=fmt(N); dV.textContent=fmt(D);
+      var cxv=cx(C), cyv=cy(l);
+      dot.setAttribute("cx",cxv); dot.setAttribute("cy",cyv);
+      out.innerHTML="Model <b>"+fmt(N)+"</b> params · Data <b>"+fmt(D)+"</b> tokens · Compute <b>"+fmt(C)+"</b> FLOPs · Val loss <b>"+l.toFixed(2)+"</b>";
+    }
+    nIn.addEventListener("input",update); dIn.addEventListener("input",update);
+    update();
+  })();
+
+  /* ---------- 4. RAG ---------- */
+  (function(){
+    var docs=[
+      {t:"Self-attention lets every token weigh all others at once, enabling parallel training and long-range context.", k:["self","attention","token","parallel","context","attention"]},
+      {t:"Mixture of Experts routes each token to a few specialists, scaling parameters without scaling compute per token.", k:["mixture","experts","route","token","specialists","compute"]},
+      {t:"Scaling laws show loss falls predictably as compute, data, and parameters grow together; Chinchilla favors more data.", k:["scaling","laws","loss","compute","data","parameters","chinchilla"]},
+      {t:"RLHF aligns a language model to human preferences using a reward model trained from ranked demonstrations.", k:["rlhf","align","language","model","reward","preferences","human"]}
+    ];
+    var queries=[
+      {q:"What is self-attention?", w:["self","attention","token","context"]},
+      {q:"How do Mixture of Experts work?", w:["mixture","experts","route","token"]},
+      {q:"Why scale data with model size?", w:["scaling","data","parameters","compute"]},
+      {q:"What is RLHF?", w:["rlhf","reward","preferences","human"]}
+    ];
+    function jaccard(a,b){ var s=new Set(a), inter=0; b.forEach(function(x){ if(s.has(x)) inter++; }); var uni=a.length+b.length-inter; return uni? inter/uni:0; }
+    var qBox=document.getElementById("rag-q");
+    queries.forEach(function(q,i){
+      var b=document.createElement("button"); b.className="pg-btn"; b.textContent=q.q;
+      b.addEventListener("click",function(){ run(i); });
+      qBox.appendChild(b);
+    });
+    function run(i){
+      var q=queries[i];
+      var scored=docs.map(function(d,di){ return {di:di, s:jaccard(q.w, d.k)}; }).sort(function(a,b){ return b.s-a.s; });
+      var ret=document.getElementById("rag-ret"); ret.innerHTML="";
+      scored.forEach(function(r){
+        var d=docs[r.di];
+        var bar=document.createElement("div"); bar.className="bar";
+        bar.innerHTML='<i style="width:'+(r.s*100).toFixed(0)+'%"></i><span>'+ (r.s*100).toFixed(0) +"%  ·  doc "+(r.di+1)+"</span>';
+        ret.appendChild(bar);
+      });
+      var top=scored.slice(0,2);
+      var ctx=document.getElementById("rag-ctx");
+      ctx.style.display="block";
+      ctx.innerHTML="<b>Retrieved context:</b><br>"+ top.map(function(r){ return "• "+docs[r.di].t; }).join("<br>");
+      var ans=document.getElementById("rag-ans");
+      ans.style.display="block";
+      ans.innerHTML="<b>Answer (from retrieved notes):</b><br>"+ top.map(function(r){ return docs[r.di].t; }).join(" ");
+    }
+    run(0);
+  })();
+})();
+{% endraw %}
+</script>
