@@ -62,7 +62,7 @@ permalink: /playground/
 
   <!-- 1. Self-Attention -->
   <section class="pg-demo" id="d-attn">
-    <h2>1 · Self-Attention</h2>
+    <h2>1 - Self-Attention</h2>
     <p class="pg-sub">From <em>Attention Is All You Need</em> (Transformer). Click a word to see what it attends to.</p>
     <div class="pg-stage"><svg id="attn-svg" viewBox="0 0 820 320" aria-label="self attention"></svg></div>
     <div class="pg-weights" id="attn-weights"></div>
@@ -71,7 +71,7 @@ permalink: /playground/
 
   <!-- 2. Mixture of Experts -->
   <section class="pg-demo" id="d-moe">
-    <h2>2 · Mixture of Experts</h2>
+    <h2>2 - Mixture of Experts</h2>
     <p class="pg-sub">From <em>Mixtral of Experts</em>. A router sends each token to the top-2 of 4 experts.</p>
     <div class="pg-stage"><svg id="moe-svg" viewBox="0 0 820 360" aria-label="mixture of experts"></svg></div>
     <div class="pg-controls">
@@ -83,7 +83,7 @@ permalink: /playground/
 
   <!-- 3. Scaling Laws -->
   <section class="pg-demo" id="d-scale">
-    <h2>3 · Scaling Laws</h2>
+    <h2>3 - Scaling Laws</h2>
     <p class="pg-sub">From <em>Scaling Laws</em> &amp; <em>Chinchilla</em>. Drag to grow the model and its data.</p>
     <div class="pg-slider">
       <label style="width:110px">Model size</label>
@@ -102,7 +102,7 @@ permalink: /playground/
 
   <!-- 4. RAG -->
   <section class="pg-demo" id="d-rag">
-    <h2>4 · Retrieval-Augmented Generation</h2>
+    <h2>4 - Retrieval-Augmented Generation</h2>
     <p class="pg-sub">From <em>RAG</em>. Pick a question; the system retrieves the closest notes, then answers from them.</p>
     <div class="pg-controls" id="rag-q"></div>
     <div class="pg-ret" id="rag-ret"></div>
@@ -276,7 +276,7 @@ permalink: /playground/
       nV.textContent=fmt(N); dV.textContent=fmt(D);
       var cxv=cx(C), cyv=cy(l);
       dot.setAttribute("cx",cxv); dot.setAttribute("cy",cyv);
-      out.innerHTML="Model <b>"+fmt(N)+"</b> params · Data <b>"+fmt(D)+"</b> tokens · Compute <b>"+fmt(C)+"</b> FLOPs · Val loss <b>"+l.toFixed(2)+"</b>";
+      out.innerHTML="Model <b>"+fmt(N)+"</b> params - Data <b>"+fmt(D)+"</b> tokens - Compute <b>"+fmt(C)+"</b> FLOPs - Val loss <b>"+l.toFixed(2)+"</b>";
     }
     nIn.addEventListener("input",update); dIn.addEventListener("input",update);
     update();
@@ -310,7 +310,7 @@ permalink: /playground/
       scored.forEach(function(r){
         var d=docs[r.di];
         var bar=document.createElement("div"); bar.className="bar";
-        bar.innerHTML='<i style="width:'+(r.s*100).toFixed(0)+'%"></i><span>'+ (r.s*100).toFixed(0) +"%  ·  doc "+(r.di+1)+"</span>';
+        bar.innerHTML='<i style="width:'+(r.s*100).toFixed(0)+'%"></i><span>'+ (r.s*100).toFixed(0) +"%  -  doc "+(r.di+1)+"</span>";
         ret.appendChild(bar);
       });
       var top=scored.slice(0,2);
