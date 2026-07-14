@@ -5,14 +5,25 @@ permalink: /playground/
 ---
 
 <style>
-.pg { max-width: 860px; }
+.pg { max-width: 880px; }
 .pg-intro { color: #475569; font-size: 1.02rem; line-height: 1.6; }
+.pg-toc { font-size: .85rem; color: #475569; margin: 14px 0 6px; line-height: 2; }
+.pg-toc a { color: #6b46c1; text-decoration: none; }
+.pg-toc a:hover { text-decoration: underline; }
 .pg-demo {
   border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px 22px;
   margin: 26px 0; background: #fff; box-shadow: 0 1px 3px rgba(15,23,42,.05);
 }
 .pg-demo h2 { margin: 0 0 4px; font-size: 1.25rem; color: #1e293b; }
 .pg-demo .pg-sub { color: #64748b; font-size: .92rem; margin: 0 0 14px; }
+.pg-explain {
+  background: #f8fafc; border: 1px solid #e2e8f0; border-left: 3px solid #6b46c1;
+  border-radius: 6px; padding: 10px 14px; margin: 0 0 14px;
+  font-size: .88rem; color: #334155; line-height: 1.6;
+}
+.pg-explain b { color: #1e293b; }
+.pg-explain .pg-paper { display: inline-block; margin-top: 6px; font-size: .8rem; color: #6b46c1; }
+.pg-explain .pg-paper a { color: #6b46c1; }
 .pg-stage { background: #f8fafc; border-radius: 10px; padding: 10px; }
 .pg-stage svg { width: 100%; height: auto; display: block; }
 .pg-controls { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
@@ -23,9 +34,7 @@ permalink: /playground/
 }
 .pg-btn:hover { border-color: #6b46c1; color: #6b46c1; }
 .pg-btn:disabled { opacity: .45; cursor: default; }
-.pg-tok {
-  cursor: pointer; user-select: none;
-}
+.pg-tok { cursor: pointer; user-select: none; }
 .pg-tok text { font-size: 13px; fill: #334155; text-anchor: middle; }
 .pg-tok circle { fill: #fff; stroke: #94a3b8; stroke-width: 2; transition: stroke .2s, fill .2s; }
 .pg-tok:hover circle { stroke: #6b46c1; }
@@ -51,19 +60,38 @@ permalink: /playground/
 .pg-ret .bar > span { position: absolute; left: 8px; top: 2px; font-size: .78rem; color: #fff; }
 .pg-box { background: #f1f5f9; border-left: 3px solid #6b46c1; border-radius: 6px; padding: 8px 12px; margin-top: 8px; font-size: .86rem; color: #334155; }
 .pg-note { font-size: .78rem; color: #94a3b8; margin-top: 14px; }
+code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 </style>
 
 <div class="pg">
   <p class="pg-intro">
     Interactive, simplified visualizations of the core ideas behind the papers in
     <a href="/tag/llm/">Paper Deep-Dives</a>. Nothing here is a real model — these are
-    teaching sketches that make the mechanics intuitive. Click, drag, and route.
+    teaching sketches that make the mechanics intuitive. Click, drag, route, and watch.
   </p>
+
+  <div class="pg-toc">
+    <b>Jump:</b>
+    <a href="#d-attn">Self-Attention</a> ·
+    <a href="#d-moe">Mixture of Experts</a> ·
+    <a href="#d-scale">Scaling Laws</a> ·
+    <a href="#d-rag">RAG</a> ·
+    <a href="#d-cot">Chain-of-Thought</a> ·
+    <a href="#d-tot">Tree-of-Thoughts</a> ·
+    <a href="#d-rlhf">RLHF / DPO</a> ·
+    <a href="#d-lora">LoRA</a> ·
+    <a href="#d-rope">RoPE</a> ·
+    <a href="#d-bpe">BPE Tokenization</a>
+  </div>
 
   <!-- 1. Self-Attention -->
   <section class="pg-demo" id="d-attn">
     <h2>1 - Self-Attention</h2>
     <p class="pg-sub">From <em>Attention Is All You Need</em> (Transformer). Click a word to see what it attends to.</p>
+    <div class="pg-explain">
+      <b>讲解：</b>自注意力让序列里每个 token 同时"看"所有其他 token，并为每个token算出一组注意力权重（softmax 归一化，和为 1）。权重越高，说明该 token 对当前词越重要。这一步取代了 RNN 的递归，使得并行训练和捕捉长距离依赖成为可能。
+      <span class="pg-paper">对应论文：<a href="/2026/03/01/the-transformer-attention-is-all-you-need/">The Transformer</a></span>
+    </div>
     <div class="pg-stage"><svg id="attn-svg" viewBox="0 0 820 320" aria-label="self attention"></svg></div>
     <div class="pg-weights" id="attn-weights"></div>
     <p class="pg-note">Weights are softmax-normalized, so they sum to 1. Try "it" — notice it leans toward "cat" and "mat".</p>
@@ -73,6 +101,10 @@ permalink: /playground/
   <section class="pg-demo" id="d-moe">
     <h2>2 - Mixture of Experts</h2>
     <p class="pg-sub">From <em>Mixtral of Experts</em>. A router sends each token to the top-2 of 4 experts.</p>
+    <div class="pg-explain">
+      <b>讲解：</b>MoE 把一个大模型拆成很多"专家"子网络，但每个 token 只激活其中少数几个（这里 top-2）。一个轻量路由器决定路由。于是参数总量可以非常大，而单次推理的计算量只随激活的专家增长——这就是"用更多参数却不更慢"的关键。
+      <span class="pg-paper">对应论文：<a href="/2026/04/26/mixtral-mixture-of-experts/">Mixtral</a></span>
+    </div>
     <div class="pg-stage"><svg id="moe-svg" viewBox="0 0 820 360" aria-label="mixture of experts"></svg></div>
     <div class="pg-controls">
       <button class="pg-btn" id="moe-next">Route next token ▸</button>
@@ -85,6 +117,10 @@ permalink: /playground/
   <section class="pg-demo" id="d-scale">
     <h2>3 - Scaling Laws</h2>
     <p class="pg-sub">From <em>Scaling Laws</em> &amp; <em>Chinchilla</em>. Drag to grow the model and its data.</p>
+    <div class="pg-explain">
+      <b>讲解：</b>大模型有个很"乖"的规律：只要同时加大参数量(N)、数据量(D)、算力(C)，验证集 loss 会按幂律平滑下降。Chinchilla 进一步指出——绝大多数模型"数据喂少了"，应该让 D 和 N 大致 1:20 同比例增长，而不是一味堆参数。
+      <span class="pg-paper">对应论文：<a href="/2026/06/28/scaling-laws/">Scaling Laws</a> · <a href="/2026/06/30/chinchilla/">Chinchilla</a></span>
+    </div>
     <div class="pg-slider">
       <label style="width:110px">Model size</label>
       <input type="range" id="sc-n" min="0" max="100" value="42">
@@ -104,11 +140,128 @@ permalink: /playground/
   <section class="pg-demo" id="d-rag">
     <h2>4 - Retrieval-Augmented Generation</h2>
     <p class="pg-sub">From <em>RAG</em>. Pick a question; the system retrieves the closest notes, then answers from them.</p>
+    <div class="pg-explain">
+      <b>讲解：</b>RAG 把"模型记忆"和"外部知识库"分开：先根据用户问题检索最相关的文档片段，再把它们拼进 prompt，让模型基于这些证据作答。这样既减少幻觉，又能在不重训模型的情况下更新知识。
+      <span class="pg-paper">对应论文：<a href="/2026/05/10/rag-retrieval-augmented-generation/">RAG</a></span>
+    </div>
     <div class="pg-controls" id="rag-q"></div>
     <div class="pg-ret" id="rag-ret"></div>
     <div class="pg-box" id="rag-ctx" style="display:none"></div>
     <div class="pg-box" id="rag-ans" style="display:none; border-left-color:#0d9488"></div>
     <p class="pg-note">Similarity here is plain word overlap (Jaccard) — enough to show the retrieve-then-read loop.</p>
+  </section>
+
+  <!-- 5. Chain-of-Thought -->
+  <section class="pg-demo" id="d-cot">
+    <h2>5 - Chain-of-Thought</h2>
+    <p class="pg-sub">From <em>Chain-of-Thought Prompting</em>. Letting the model reason step by step unlocks hard problems.</p>
+    <div class="pg-explain">
+      <b>讲解：</b>直接要答案，模型容易在中间步骤翻车；只要加一句"让我们一步步思考"，它就会把推理链显式写出来，再给结论。CoT 的本质是让模型先生成"推理 token"，把复杂问题拆解成可验证的小步——算术、常识、符号推理的准确率因此大幅提升。
+      <span class="pg-paper">对应论文：<a href="/2026/03/29/chain-of-thought-prompting/">Chain-of-Thought</a></span>
+    </div>
+    <div class="pg-box" id="cot-problem"></div>
+    <div class="pg-controls">
+      <button class="pg-btn" id="cot-direct">Direct answer</button>
+      <button class="pg-btn" id="cot-cot">Chain-of-Thought ▸</button>
+    </div>
+    <div class="pg-box" id="cot-out" style="display:none"></div>
+  </section>
+
+  <!-- 6. Tree-of-Thoughts -->
+  <section class="pg-demo" id="d-tot">
+    <h2>6 - Tree-of-Thoughts</h2>
+    <p class="pg-sub">From <em>Tree of Thoughts</em>. Explore many reasoning branches, score them, keep the best.</p>
+    <div class="pg-explain">
+      <b>讲解：</b>CoT 只有"一条"推理线，错了就全错。ToT 把推理变成一棵树：从问题长出多个候选"思路"(thought)，每一步都给分支打分/自评估，剪掉差的、沿最好的继续展开，最后回溯出最优解。这给了模型"规划 + 回溯"的能力，特别适合需要搜索的难题。
+      <span class="pg-paper">对应论文：<a href="/2026/06/21/tree-of-thoughts/">Tree of Thoughts</a></span>
+    </div>
+    <div class="pg-stage"><svg id="tot-svg" viewBox="0 0 820 360" aria-label="tree of thoughts"></svg></div>
+    <div class="pg-controls">
+      <button class="pg-btn" id="tot-eval">Evaluate branches</button>
+      <button class="pg-btn" id="tot-best">Follow best path</button>
+      <button class="pg-btn" id="tot-reset">Reset</button>
+    </div>
+    <div class="pg-readout" id="tot-out"></div>
+  </section>
+
+  <!-- 7. RLHF / DPO -->
+  <section class="pg-demo" id="d-rlhf">
+    <h2>7 - RLHF vs DPO</h2>
+    <p class="pg-sub">From <em>InstructGPT / RLHF</em> &amp; <em>DPO</em>. A reward model ranks responses; the policy learns to match preferences.</p>
+    <div class="pg-explain">
+      <b>讲解：</b>想让模型"听话、有用、安全"，靠的是偏好对齐。做法是拿人类对两个回答的好坏排序去训练一个"奖励模型"，再让策略往高奖励方向靠。RLHF 需要奖励模型 + PPO 强化学习两阶段；DPO 则更巧——直接从偏好对里推导出一个分类式损失，一步到位，跳过了奖励模型和 RL 循环。
+      <span class="pg-paper">对应论文：<a href="/2026/07/05/rlhf-from-human-preferences/">RLHF (original)</a> · <a href="/2026/03/22/instructgpt-rlhf-alignment/">InstructGPT</a> · <a href="/2026/07/07/dpo/">DPO</a></span>
+    </div>
+    <div class="pg-slider">
+      <label style="width:170px">Reward of response A</label>
+      <input type="range" id="rl-a" min="-3" max="3" step="0.1" value="1.2">
+      <span id="rl-a-v" style="width:46px;text-align:right">1.2</span>
+    </div>
+    <div class="pg-slider">
+      <label style="width:170px">Reward of response B</label>
+      <input type="range" id="rl-b" min="-3" max="3" step="0.1" value="0.3">
+      <span id="rl-b-v" style="width:46px;text-align:right">0.3</span>
+    </div>
+    <div class="pg-stage"><svg id="rl-svg" viewBox="0 0 820 120" aria-label="rlhf dpo"></svg></div>
+    <div class="pg-readout" id="rl-out"></div>
+    <div class="pg-controls">
+      <button class="pg-btn" id="rl-toggle">Show: RLHF pipeline</button>
+    </div>
+    <div class="pg-box" id="rl-desc"></div>
+  </section>
+
+  <!-- 8. LoRA -->
+  <section class="pg-demo" id="d-lora">
+    <h2>8 - LoRA (Low-Rank Adaptation)</h2>
+    <p class="pg-sub">From <em>LoRA</em>. Fine-tune a tiny low-rank update instead of the whole weight matrix.</p>
+    <div class="pg-explain">
+      <b>讲解：</b>全量微调要更新整个权重矩阵 W(d×d)，参数量巨大。LoRA 的洞察是：微调时的"变化量"ΔW 往往是低秩的——可以用两个瘦长矩阵 B(d×r) 和 A(r×d) 的乘积来近似，只训练这俩（参数量 2·d·r，r 很小）。原模型冻结不动，换任务只换 LoRA 小尾巴，又快又省。
+      <span class="pg-paper">对应论文：<a href="/2026/04/05/lora-low-rank-adaptation/">LoRA</a></span>
+    </div>
+    <div class="pg-slider">
+      <label style="width:120px">Rank r</label>
+      <input type="range" id="lora-r" min="1" max="32" value="4">
+      <span id="lora-r-v" style="width:40px;text-align:right">4</span>
+    </div>
+    <div class="pg-stage"><svg id="lora-svg" viewBox="0 0 820 240" aria-label="lora"></svg></div>
+    <div class="pg-readout" id="lora-out"></div>
+  </section>
+
+  <!-- 9. RoPE -->
+  <section class="pg-demo" id="d-rope">
+    <h2>9 - RoPE (Rotary Position Embedding)</h2>
+    <p class="pg-sub">From <em>RoFormer</em>. Rotate token vectors by angle &theta;&middot;position so attention depends on relative position.</p>
+    <div class="pg-explain">
+      <b>讲解：</b>Transformer 本身不知道词序。RoPE 的做法很优雅：把每个位置的 query/key 向量按角度 &theta;&middot;position 旋转一下。因为旋转后的向量内积只取决于"位置差"(m−n) 而不是绝对位置，所以注意力天然带上相对位置信息——这也是 LLaMA / Mistral / Qwen 默认的编码方式。
+      <span class="pg-paper">对应论文：<a href="/2026/07/03/rope/">RoPE</a></span>
+    </div>
+    <div class="pg-slider">
+      <label style="width:140px">Token q position</label>
+      <input type="range" id="rope-pi" min="0" max="10" value="2">
+      <span id="rope-pi-v" style="width:30px;text-align:right">2</span>
+    </div>
+    <div class="pg-slider">
+      <label style="width:140px">Token k position</label>
+      <input type="range" id="rope-pj" min="0" max="10" value="5">
+      <span id="rope-pj-v" style="width:30px;text-align:right">5</span>
+    </div>
+    <div class="pg-stage"><svg id="rope-svg" viewBox="0 0 820 260" aria-label="rope"></svg></div>
+    <div class="pg-readout" id="rope-out"></div>
+  </section>
+
+  <!-- 10. BPE Tokenization -->
+  <section class="pg-demo" id="d-bpe">
+    <h2>10 - BPE Tokenization</h2>
+    <p class="pg-sub">From GPT-2 / GPT-3 tokenizers. Byte-Pair Encoding merges the most frequent character pairs, again and again.</p>
+    <div class="pg-explain">
+      <b>讲解：</b>模型读不懂"单词"，只能读 token。BPE 从单个字符出发，反复把"出现频率最高的相邻字符对"合并成一个新 token（比如 t+o→to，to+k→tok…），直到达到词表大小。于是常见词变成短 token、生僻词拆成碎 token——这也是为什么"非英文/乱码"会被切成很多小片、更费 token。
+      <span class="pg-paper">对应论文：<a href="/2026/03/15/gpt-3-few-shot-learners/">GPT-3</a> (tokenizer)</span>
+    </div>
+    <div class="pg-controls">
+      <input type="text" id="bpe-in" value="tokenization" style="padding:7px 10px;border:1px solid #cbd5e1;border-radius:8px;font-size:.9rem;min-width:180px">
+      <button class="pg-btn" id="bpe-run">Tokenize ▸</button>
+    </div>
+    <div class="pg-readout" id="bpe-out"></div>
   </section>
 </div>
 
@@ -193,7 +346,6 @@ permalink: /playground/
       ex.push({g:g,ld:ld,x:645,y:ey+28,c:e.c,count:0});
     });
     function route(tok, cb){
-      // deterministic pseudo-pick of top-2 experts from token string
       var h=0; for(var k=0;k<tok.length;k++){ h=(h*31+tok.charCodeAt(k))>>>0; }
       var a=h%4, b=((h>>3)+1)%4; if(a===b) b=(b+1)%4;
       var picked=[a,b];
@@ -223,11 +375,11 @@ permalink: /playground/
     document.getElementById("moe-next").addEventListener("click",function(){
       if(idx>=tokens.length) return;
       route(tokens[idx], null); idx++;
-      if(idx>=tokens.length){ this.disabled=true; this.textContent="All routed ✓"; }
+      if(idx>=tokens.length){ this.disabled=true; this.textContent="All routed"; }
     });
     document.getElementById("moe-reset").addEventListener("click",function(){
       idx=0; ex.forEach(function(e){ e.count=0; e.ld.textContent="loaded 0"; });
-      var btn=document.getElementById("moe-next"); btn.disabled=false; btn.textContent="Route next token ▸";
+      var btn=document.getElementById("moe-next"); btn.disabled=false; btn.textContent="Route next token";
     });
     route(tokens[0],null); idx=1;
   })();
@@ -236,7 +388,6 @@ permalink: /playground/
   (function(){
     var svg=document.getElementById("scale-svg");
     var W=820,H=300, padL=50, padB=34, padT=16;
-    // axes
     svg.appendChild(el("line",{x1:padL,y1:H-padB,x2:W-10,y2:H-padB,stroke:"#cbd5e1"}));
     svg.appendChild(el("line",{x1:padL,y1:10,x2:padL,y2:H-padB,stroke:"#cbd5e1"}));
     var axL=el("text",{x:14,y:H/2,"font-size":12,fill:"#64748b",transform:"rotate(-90 14 "+(H/2)+")","text-anchor":"middle"}); axL.textContent="val loss"; svg.appendChild(axL);
@@ -244,7 +395,6 @@ permalink: /playground/
     var nIn=document.getElementById("sc-n"), dIn=document.getElementById("sc-d");
     var nV=document.getElementById("sc-n-v"), dV=document.getElementById("sc-d-v");
     var out=document.getElementById("scale-out");
-    // simple illustrative loss function
     function loss(N,D){ var n=N/7e9, d=D/1.4e11; return 1.8 + 0.9*Math.pow(1/n,0.1) + 0.7*Math.pow(1/d,0.1); }
     function compute(N,D){ return 6*N*D; }
     function fmt(x){
@@ -253,12 +403,6 @@ permalink: /playground/
       if(x>=1e6) return (x/1e6).toFixed(1)+"M";
       return x.toFixed(0);
     }
-    // static illustrative curve (loss vs compute)
-    var pts=[];
-    for(var c=1e18; c<=5e23; c*=1.6){
-      var l=1.8 + 0.9*Math.pow(1/( (c/ (6*1.4e11)) /7e9 ),0.1) + 0.7*Math.pow(1/(c/(6*7e9)/1.4e11),0.1);
-    }
-    // draw a smooth decreasing curve from compute range
     var cMin=1e18, cMax=5e23;
     function cx(c){ return padL + (Math.log10(c)-Math.log10(cMin))/(Math.log10(cMax)-Math.log10(cMin))*(W-10-padL); }
     function cy(l){ var lMin=2.4,lMax=4.2; return (H-padB) - (l-lMin)/(lMax-lMin)*(H-padB-padT); }
@@ -270,8 +414,8 @@ permalink: /playground/
     svg.appendChild(el("path",{d:dPath,fill:"none",stroke:"#cbd5e1","stroke-width":2}));
     var dot=el("circle",{r:7,fill:"#6b46c1"}); svg.appendChild(dot);
     function update(){
-      var N=Math.pow(10, 8 + (nIn.value/100)*2.0)*1e0; // 1e8 .. 1e10
-      var D=Math.pow(10, 9 + (dIn.value/100)*2.5)*1e0; // 1e9 .. ~3e11
+      var N=Math.pow(10, 8 + (nIn.value/100)*2.0)*1e0;
+      var D=Math.pow(10, 9 + (dIn.value/100)*2.5)*1e0;
       var l=loss(N,D), C=compute(N,D);
       nV.textContent=fmt(N); dV.textContent=fmt(D);
       var cxv=cx(C), cyv=cy(l);
@@ -316,12 +460,226 @@ permalink: /playground/
       var top=scored.slice(0,2);
       var ctx=document.getElementById("rag-ctx");
       ctx.style.display="block";
-      ctx.innerHTML="<b>Retrieved context:</b><br>"+ top.map(function(r){ return "• "+docs[r.di].t; }).join("<br>");
+      ctx.innerHTML="<b>Retrieved context:</b><br>"+ top.map(function(r){ return " - "+docs[r.di].t; }).join("<br>");
       var ans=document.getElementById("rag-ans");
       ans.style.display="block";
       ans.innerHTML="<b>Answer (from retrieved notes):</b><br>"+ top.map(function(r){ return docs[r.di].t; }).join(" ");
     }
     run(0);
+  })();
+
+  /* ---------- 5. Chain-of-Thought ---------- */
+  (function(){
+    var problem = "A juggler has 16 balls. Half are golf balls, and half of the golf balls are blue. How many blue golf balls are there?";
+    document.getElementById("cot-problem").innerHTML = "<b>Problem:</b> " + problem;
+    var steps = [
+      "There are 16 balls total.",
+      "Half are golf balls -> 16 / 2 = 8 golf balls.",
+      "Half of the golf balls are blue -> 8 / 2 = 4 blue golf balls."
+    ];
+    document.getElementById("cot-direct").addEventListener("click", function(){
+      var o=document.getElementById("cot-out"); o.style.display="block"; o.style.borderLeftColor="#dc2626";
+      o.innerHTML = "<b style='color:#dc2626'>Direct answer (no reasoning):</b> 8 golf balls? <span style='color:#94a3b8'>-- a guess, and it is wrong</span>";
+    });
+    document.getElementById("cot-cot").addEventListener("click", function(){
+      var o=document.getElementById("cot-out"); o.style.display="block"; o.style.borderLeftColor="#0d9488";
+      o.innerHTML = "<b style='color:#0d9488'>Chain-of-Thought:</b><br>";
+      var ul=document.createElement("div"); o.appendChild(ul);
+      steps.forEach(function(s,i){
+        var d=document.createElement("div");
+        d.style.opacity="0"; d.style.transition="opacity .4s"; d.style.padding="3px 0";
+        d.textContent = (i+1)+". "+s;
+        ul.appendChild(d);
+        setTimeout(function(){ d.style.opacity="1"; }, 350*(i+1));
+      });
+      var fin=document.createElement("div");
+      fin.style.marginTop="8px"; fin.style.fontWeight="bold"; fin.style.opacity="0"; fin.style.transition="opacity .4s";
+      fin.textContent = "-> Answer: 4 blue golf balls. ✓";
+      o.appendChild(fin);
+      setTimeout(function(){ fin.style.opacity="1"; }, 350*(steps.length+1));
+    });
+  })();
+
+  /* ---------- 6. Tree-of-Thoughts ---------- */
+  (function(){
+    var svg=document.getElementById("tot-svg"); var H=360;
+    var root={x:90,y:H/2,label:"Problem"};
+    var branches=[
+      {x:330,y:70,label:"Idea A",val:0.35},
+      {x:330,y:180,label:"Idea B",val:0.82},
+      {x:330,y:290,label:"Idea C",val:0.55}
+    ];
+    function cls(s){ return s.replace(/ /g,''); }
+    function col(v){ return v>=0.7?"#0d9488":(v>=0.5?"#d97706":"#dc2626"); }
+    branches.forEach(function(b){
+      svg.appendChild(el("line",{x1:root.x,y1:root.y,x2:b.x,y2:b.y,stroke:"#cbd5e1","stroke-width":2,class:"tot-edge-"+cls(b.label)}));
+    });
+    svg.appendChild(el("circle",{cx:root.x,cy:root.y,r:26,fill:"#334155"}));
+    var rt=el("text",{x:root.x,y:root.y+4,"text-anchor":"middle",fill:"#fff","font-size":12}); rt.textContent="Root"; svg.appendChild(rt);
+    branches.forEach(function(b){
+      svg.appendChild(el("circle",{cx:b.x,cy:b.y,r:26,fill:"#fff",stroke:"#94a3b8","stroke-width":2,class:"tot-node-"+cls(b.label)}));
+      var t=el("text",{x:b.x,y:b.y+4,"text-anchor":"middle",fill:"#334155","font-size":12}); t.textContent=b.label; svg.appendChild(t);
+      var vt=el("text",{x:b.x,y:b.y+44,"text-anchor":"middle",fill:"#64748b","font-size":11,class:"tot-val-"+cls(b.label)}); svg.appendChild(vt);
+    });
+    document.getElementById("tot-eval").addEventListener("click",function(){
+      branches.forEach(function(b){
+        svg.querySelector(".tot-node-"+cls(b.label)).setAttribute("fill",col(b.val));
+        svg.querySelector(".tot-val-"+cls(b.label)).textContent="score "+b.val.toFixed(2);
+      });
+      document.getElementById("tot-out").innerHTML="Each branch is scored independently; weak ones get pruned before we commit to an answer.";
+    });
+    document.getElementById("tot-best").addEventListener("click",function(){
+      var best=branches.reduce(function(a,b){ return b.val>a.val?b:a; });
+      var e=svg.querySelector(".tot-edge-"+cls(best.label));
+      e.setAttribute("stroke","#6b46c1"); e.setAttribute("stroke-width","4");
+      document.getElementById("tot-out").innerHTML="<b>Best path:</b> "+best.label+" (score "+best.val.toFixed(2)+"). In real ToT we would expand this branch further before answering.";
+    });
+    document.getElementById("tot-reset").addEventListener("click",function(){
+      branches.forEach(function(b){
+        svg.querySelector(".tot-node-"+cls(b.label)).setAttribute("fill","#fff");
+        svg.querySelector(".tot-val-"+cls(b.label)).textContent="";
+        var e=svg.querySelector(".tot-edge-"+cls(b.label)); e.setAttribute("stroke","#cbd5e1"); e.setAttribute("stroke-width","2");
+      });
+      document.getElementById("tot-out").innerHTML="";
+    });
+  })();
+
+  /* ---------- 7. RLHF / DPO ---------- */
+  (function(){
+    var a=document.getElementById("rl-a"), b=document.getElementById("rl-b");
+    var av=document.getElementById("rl-a-v"), bv=document.getElementById("rl-b-v");
+    var svg=document.getElementById("rl-svg"); var W=820,H=120;
+    var barA=el("rect",{x:40,y:28,width:0,height:26,fill:"#6b46c1",rx:4});
+    var barB=el("rect",{x:40,y:66,width:0,height:26,fill:"#2563eb",rx:4});
+    svg.appendChild(barA); svg.appendChild(barB);
+    var tA=el("text",{x:48,y:46,fill:"#fff","font-size":12}); svg.appendChild(tA);
+    var tB=el("text",{x:48,y:84,fill:"#fff","font-size":12}); svg.appendChild(tB);
+    var mode="RLHF";
+    var descs={
+      "RLHF":"<b>RLHF:</b> train a reward model on human preference pairs (chosen vs rejected), then fine-tune the policy with PPO to maximize reward while staying close to the base model via a KL penalty. Two stages: needs a separate RM and an RL loop.",
+      "DPO":"<b>DPO (Direct Preference Optimization):</b> skip the reward model and the RL loop entirely. It rewrites the preference objective into a single simple classification-style loss that trains the policy directly from (chosen, rejected) pairs in one stage."
+    };
+    function sig(x){ return 1/(1+Math.exp(-x)); }
+    function update(){
+      var ra=parseFloat(a.value), rb=parseFloat(b.value);
+      av.textContent=ra.toFixed(1); bv.textContent=rb.toFixed(1);
+      var pa=sig(ra-rb);
+      var fullW=W-130;
+      barA.setAttribute("width",(pa*fullW).toFixed(0));
+      barB.setAttribute("width",((1-pa)*fullW).toFixed(0));
+      tA.textContent="A  P(A wins)="+(pa*100).toFixed(0)+"%";
+      tB.textContent="B  P(B wins)="+((1-pa)*100).toFixed(0)+"%";
+      document.getElementById("rl-out").innerHTML="Preference P(A > B) = sigmoid(r_A - r_B) = <b>"+(pa*100).toFixed(0)+"%</b> - the bigger the reward gap, the more confidently the model prefers A.";
+    }
+    a.addEventListener("input",update); b.addEventListener("input",update);
+    document.getElementById("rl-toggle").addEventListener("click",function(){
+      mode = mode==="RLHF" ? "DPO" : "RLHF";
+      this.textContent = "Show: "+mode+" pipeline";
+      document.getElementById("rl-desc").innerHTML = descs[mode];
+    });
+    document.getElementById("rl-desc").innerHTML = descs["RLHF"];
+    update();
+  })();
+
+  /* ---------- 8. LoRA ---------- */
+  (function(){
+    var D=512;
+    var svg=document.getElementById("lora-svg"); var W=820,H=240;
+    var rIn=document.getElementById("lora-r"), rV=document.getElementById("lora-r-v");
+    svg.appendChild(el("rect",{x:50,y:60,width:110,height:110,fill:"#e2e8f0",stroke:"#94a3b8","stroke-width":2}));
+    var ft=el("text",{x:105,y:190,"text-anchor":"middle",fill:"#64748b","font-size":12}); svg.appendChild(ft);
+    var aRect=el("rect",{x:260,y:60,width:8,height:110,fill:"#6b46c1",rx:2});
+    var bRect=el("rect",{x:330,y:160,width:110,height:8,fill:"#2563eb",rx:2});
+    svg.appendChild(bRect); svg.appendChild(aRect);
+    var at=el("text",{x:264,y:50,"text-anchor":"middle",fill:"#64748b","font-size":11}); svg.appendChild(at);
+    var bt=el("text",{x:385,y:185,"text-anchor":"middle",fill:"#64748b","font-size":11}); svg.appendChild(bt);
+    var eq=el("text",{x:480,y:130,"text-anchor":"start",fill:"#334155","font-size":13}); svg.appendChild(eq);
+    function update(){
+      var r=parseInt(rIn.value,10); rV.textContent=r;
+      var w=Math.max(3, r/32*34);
+      aRect.setAttribute("width", w.toFixed(0));
+      bRect.setAttribute("height", w.toFixed(0));
+      var fullP=D*D, loraP=2*D*r;
+      ft.textContent="W  ("+D+"x"+D+")";
+      at.textContent="B  ("+D+"x"+r+")";
+      bt.textContent="A  ("+r+"x"+D+")";
+      eq.textContent="Trainable: "+loraP.toLocaleString()+"  vs  full "+fullP.toLocaleString()+"  ->  "+(100*loraP/fullP).toFixed(3)+"%";
+      document.getElementById("lora-out").innerHTML="With r="+r+": you train <b>"+loraP.toLocaleString()+"</b> params instead of <b>"+fullP.toLocaleString()+"</b> - a <b>"+(fullP/loraP).toFixed(0)+"x</b> saving, while the original W stays frozen.";
+    }
+    rIn.addEventListener("input",update);
+    update();
+  })();
+
+  /* ---------- 9. RoPE ---------- */
+  (function(){
+    var svg=document.getElementById("rope-svg"); var H=260;
+    var pi=document.getElementById("rope-pi"), pj=document.getElementById("rope-pj");
+    var piv=document.getElementById("rope-pi-v"), pjv=document.getElementById("rope-pj-v");
+    var theta=0.3;
+    var ax=180, ay=200, bx=560, by=200, L=90;
+    function arrow(cx,cy,ang,color,label){
+      var ex=cx+Math.cos(ang)*L, ey=cy-Math.sin(ang)*L;
+      var g=el("g",{});
+      g.appendChild(el("line",{x1:cx,y1:cy,x2:ex,y2:ey,stroke:color,"stroke-width":3}));
+      g.appendChild(el("circle",{cx:ex,cy:ey,r:4,fill:color}));
+      var t=el("text",{x:ex+8,y:ey+4,fill:color,"font-size":13}); t.textContent=label; g.appendChild(t);
+      return g;
+    }
+    svg.appendChild(el("circle",{cx:ax,cy:ay,r:3,fill:"#94a3b8"}));
+    svg.appendChild(el("circle",{cx:bx,cy:by,r:3,fill:"#94a3b8"}));
+    var lblA=el("text",{x:ax,y:ay+22,"text-anchor":"middle",fill:"#64748b","font-size":12}); lblA.textContent="token q (origin)"; svg.appendChild(lblA);
+    var lblB=el("text",{x:bx,y:by+22,"text-anchor":"middle",fill:"#64748b","font-size":12}); lblB.textContent="token k (origin)"; svg.appendChild(lblB);
+    var ga=el("g",{}), gb=el("g",{}); svg.appendChild(ga); svg.appendChild(gb);
+    function update(){
+      var p_i=parseInt(pi.value,10), p_j=parseInt(pj.value,10);
+      piv.textContent=p_i; pjv.textContent=p_j;
+      ga.innerHTML=""; gb.innerHTML="";
+      ga.appendChild(arrow(ax,ay,theta*p_i,"#6b46c1","q"+p_i));
+      gb.appendChild(arrow(bx,by,theta*p_j,"#2563eb","k"+p_j));
+      var aff=Math.cos(theta*(p_i-p_j));
+      document.getElementById("rope-out").innerHTML="Both vectors rotate by theta x position. Their alignment depends only on the <b>difference</b> (p_i - p_j) = "+(p_i-p_j)+", giving cos = <b>"+aff.toFixed(3)+"</b>. Same relative distance => same attention, wherever the tokens sit in the sequence.";
+    }
+    pi.addEventListener("input",update); pj.addEventListener("input",update);
+    update();
+  })();
+
+  /* ---------- 10. BPE Tokenization ---------- */
+  (function(){
+    var merges=["th","er","on","an","re","ti","es","or","te","in","al","ng","ou","ar","en","st","ed","ly","nt","nd","ai","ee","oo","ea","ll","ss","tr","pr","pl","sl","ch","qu","play","ing","tion","ate","ment","able"];
+    var input=document.getElementById("bpe-in"), out=document.getElementById("bpe-out");
+    function tokenize(word){
+      var chars=word.split("");
+      var steps=[chars.slice()];
+      while(true){
+        var best=-1, bp=-1;
+        for(var i=0;i<chars.length-1;i++){
+          var pair=chars[i]+chars[i+1];
+          var idx=merges.indexOf(pair);
+          if(idx>=0 && (bp<0 || idx<bp)){ bp=idx; best=i; }
+        }
+        if(best<0) break;
+        chars[best]=chars[best]+chars[best+1];
+        chars.splice(best+1,1);
+        steps.push(chars.slice());
+      }
+      return steps;
+    }
+    document.getElementById("bpe-run").addEventListener("click",function(){
+      var w=input.value.trim().toLowerCase();
+      if(!w){ return; }
+      var steps=tokenize(w);
+      out.innerHTML="";
+      steps.forEach(function(s,i){
+        var d=document.createElement("div");
+        d.style.opacity="0"; d.style.transition="opacity .35s"; d.style.padding="2px 0"; d.style.fontSize=".9rem";
+        d.innerHTML=(i===0?"chars: ":("step "+i+": "))+s.map(function(t){ return "<code style='background:#f1f5f9;padding:1px 5px;border-radius:4px;margin:0 2px'>"+t+"</code>"; }).join(" ");
+        out.appendChild(d);
+        setTimeout(function(){ d.style.opacity="1"; }, 250*i);
+      });
+      var fin=document.createElement("div"); fin.style.marginTop="8px"; fin.style.fontWeight="bold"; fin.style.color="#6b46c1";
+      fin.textContent="-> "+steps[steps.length-1].length+" tokens: ["+steps[steps.length-1].join(", ")+"]";
+      out.appendChild(fin);
+    });
   })();
 })();
 {% endraw %}
