@@ -61,6 +61,71 @@ permalink: /playground/
 .pg-box { background: #f1f5f9; border-left: 3px solid #6b46c1; border-radius: 6px; padding: 8px 12px; margin-top: 8px; font-size: .86rem; color: #334155; }
 .pg-note { font-size: .78rem; color: #94a3b8; margin-top: 14px; }
 code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+/* ---- sandbox-style demos (11-14) ---- */
+.sb { max-width: 860px; margin: 0 auto; }
+.sb h1 { font-size: 1.7rem; color: #1e293b; margin: 0 0 4px; }
+.sb .sb-sub { color: #64748b; font-size: 1rem; margin: 0 0 20px; }
+.sb-card {
+  border: 1px solid #e2e8f0; border-radius: 14px; padding: 18px 20px;
+  margin: 22px 0; background: #fff; box-shadow: 0 1px 3px rgba(15,23,42,.05);
+}
+.sb-card h2 { margin: 0 0 10px; font-size: 1.1rem; color: #1e293b; }
+.sb-explain {
+  background: #f8fafc; border: 1px solid #e2e8f0; border-left: 3px solid #6b46c1;
+  border-radius: 6px; padding: 10px 14px; margin: 0 0 14px;
+  font-size: .9rem; color: #334155; line-height: 1.65;
+}
+.sb-explain b { color: #1e293b; }
+.sb-explain code { background: #eef2f7; padding: 1px 5px; border-radius: 4px; font-size: .85em; }
+.sb-row { display: flex; align-items: center; gap: 12px; margin: 12px 0; font-size: .9rem; color: #475569; flex-wrap: wrap; }
+.sb-row label { width: 130px; flex: none; }
+.sb-row input[type=range] { flex: 1; }
+.sb-row .val { width: 56px; text-align: right; font-variant-numeric: tabular-nums; color: #6b46c1; font-weight: 600; }
+.sb-row .eq { font-weight: 700; color: #1e293b; font-size: 1.05rem; }
+.sb-row select, .sb-controls select { padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: .9rem; }
+.sb-bar { display: flex; align-items: center; gap: 10px; margin: 7px 0; font-size: .85rem; }
+.sb-bar .lab { width: 70px; text-align: right; color: #334155; font-weight: 600; }
+.sb-bar .track { flex: 1; height: 22px; background: #f1f5f9; border-radius: 6px; overflow: hidden; position: relative; }
+.sb-bar .track > i { display: block; height: 100%; background: #6b46c1; width: 0; transition: width .3s; }
+.sb-bar .pct { width: 64px; text-align: right; color: #64748b; font-variant-numeric: tabular-nums; }
+.sb-bar.dim .lab, .sb-bar.dim .pct { color: #cbd5e1; }
+.sb-bar.dim .track > i { background: #e2e8f0; }
+.sb-bar.win .track > i { background: #0d9488; }
+.sb-btn {
+  border: 1px solid #cbd5e1; background: #fff; color: #334155;
+  padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: .9rem; transition: all .15s;
+}
+.sb-btn:hover { border-color: #6b46c1; color: #6b46c1; }
+.sb-btn.primary { background: #6b46c1; color: #fff; border-color: #6b46c1; }
+.sb-btn.primary:hover { background: #5a35a8; color: #fff; }
+.sb-sample-out { margin-top: 14px; font-size: .95rem; color: #334155; min-height: 1.4em; }
+.sb-sample-out .tok { display: inline-block; background: #f3e8ff; color: #6b46c1; border-radius: 6px; padding: 2px 10px; margin: 0 3px; font-weight: 600; }
+.sb-controls { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; align-items: center; }
+.sb-stage { background: #f8fafc; border-radius: 10px; padding: 8px; }
+.sb-stage svg { width: 100%; height: auto; display: block; }
+.sb-readout { font-size: .95rem; color: #334155; margin-top: 12px; line-height: 1.6; }
+.sb-readout .hl { color: #6b46c1; font-weight: 700; }
+.sb-readout .ok { color: #0d9488; font-weight: 700; }
+.sb-readout .no { color: #dc2626; font-weight: 700; }
+.sb-legend { font-size: .8rem; color: #64748b; margin-top: 10px; display: flex; gap: 16px; flex-wrap: wrap; }
+.sb-legend i { display: inline-block; width: 11px; height: 11px; border-radius: 50%; margin-right: 5px; vertical-align: middle; }
+.sb-logits { display: flex; flex-wrap: wrap; gap: 10px; margin: 12px 0; }
+.sb-logits .li { display: flex; flex-direction: column; align-items: center; font-size: .78rem; color: #64748b; }
+.sb-logits input { width: 64px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 8px; text-align: center; font-size: .95rem; }
+.sb-formula { font-size: 1.05rem; color: #1e293b; text-align: center; margin: 10px 0; font-family: ui-monospace, Menlo, monospace; }
+.sb-input { display: flex; gap: 10px; margin: 12px 0; flex-wrap: wrap; }
+.sb-input input[type=text] {
+  flex: 1; min-width: 220px; padding: 9px 12px; border: 1px solid #cbd5e1;
+  border-radius: 8px; font-size: .95rem;
+}
+.sb-note { font-size: .78rem; color: #94a3b8; margin-top: 14px; }
+.attn-grid { display: grid; gap: 2px; margin-top: 14px; }
+.attn-grid .corner { background: transparent; }
+.attn-grid .head { display: flex; align-items: center; justify-content: center; font-size: .78rem; color: #64748b; padding: 2px; text-align: center; word-break: break-all; }
+.attn-grid .rowhead { justify-content: flex-end; padding-right: 6px; font-weight: 600; color: #334155; }
+.attn-grid .acell { aspect-ratio: 1 / 1; border-radius: 3px; cursor: pointer; transition: outline .1s; }
+.attn-grid .acell:hover { outline: 2px solid #1e293b; }
 </style>
 
 <div class="pg">
@@ -81,7 +146,7 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
     <a href="#d-rlhf">RLHF / DPO</a> ·
     <a href="#d-lora">LoRA</a> ·
     <a href="#d-rope">RoPE</a> ·
-    <a href="#d-bpe">BPE Tokenization</a>
+    <a href="#d-bpe">BPE Tokenization</a> · <a href="#d-sampling">Sampling</a> · <a href="#d-softmax">Softmax</a> · <a href="#d-embeddings">Embeddings</a> · <a href="#d-attnmatrix">Attention matrix</a>
   </div>
 
   <!-- 1. Self-Attention -->
@@ -263,6 +328,161 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
     </div>
     <div class="pg-readout" id="bpe-out"></div>
   </section>
+<section class="pg-demo" id="d-sampling">
+  <h2>11 - Sampling: temperature, top-p &amp; top-k</h2>
+  <p class="pg-sub">A language model outputs <em>logits</em>. Sampling is the recipe that turns them into a chosen next word.</p>
+<div class="sb">
+  <div class="sb-card">
+    <h2>① The candidate logits</h2>
+    <div class="sb-explain">
+      Imagine the prompt ended and the model must pick the next word. It scores every word in its vocabulary;
+      here are eight candidates with their raw logits. Higher logit = the model "prefers" that word. These are
+      fixed for this sandbox — play with the controls below to see how the <em>same</em> logits become very
+      different behaviors.
+    </div>
+    <div id="sm-logit-bars"></div>
+  </div>
+
+  <div class="sb-card">
+    <h2>② Carve the distribution</h2>
+    <div class="sb-explain">
+      <b>What's happening:</b> logits are turned into probabilities by <code>softmax</code>, then three knobs reshape them.
+      <b>Temperature</b> divides the logits first — low T sharpens (confident), high T flattens (random).
+      <b>Top-k</b> keeps only the k most likely words. <b>Top-p (nucleus)</b> keeps the smallest set of words whose
+      probabilities sum to at least p. Anything left is zeroed and the rest renormalized.
+    </div>
+
+    <div class="sb-row">
+      <label>Temperature</label>
+      <input type="range" id="sm-temp" min="0.2" max="2" step="0.1" value="1">
+      <span class="val" id="sm-temp-v">1.0</span>
+    </div>
+    <div class="sb-row">
+      <label>Top-p (nucleus)</label>
+      <input type="range" id="sm-topp" min="0" max="1" step="0.05" value="0.9">
+      <span class="val" id="sm-topp-v">0.90</span>
+    </div>
+    <div class="sb-row">
+      <label>Top-k</label>
+      <select id="sm-topk">
+        <option value="0">off</option>
+        <option value="1">k = 1 (greedy)</option>
+        <option value="2">k = 2</option>
+        <option value="3">k = 3</option>
+        <option value="4">k = 4</option>
+      </select>
+      <span class="val" id="sm-topk-v"></span>
+    </div>
+
+    <div id="sm-prob-bars" style="margin-top:14px"></div>
+  </div>
+
+  <div class="sb-card">
+    <h2>③ Draw a word</h2>
+    <div class="sb-explain">
+      Sampling means drawing one token from the final distribution. Hit the button a few times at high temperature
+      (try T = 2, top-p = 1) and you'll get variety; at T = 0.2 or top-k = 1 the model becomes a broken record.
+    </div>
+    <div class="sb-controls">
+      <button class="sb-btn primary" id="sm-btn-sample">Sample one word ▸</button>
+      <button class="sb-btn" id="sm-btn-ten">Sample ×10</button>
+      <button class="sb-btn" id="sm-btn-reset">Reset</button>
+    </div>
+    <div class="sb-sample-out" id="sm-sample-out"></div>
+    <p class="sb-note">All numbers are real softmax / nucleus computations over the eight fixed logits above — this is exactly what a decoder does at inference, just with a vocabulary of millions instead of eight.</p>
+  </div>
+</div>
+</section>
+
+<section class="pg-demo" id="d-softmax">
+  <h2>12 - Softmax &amp; temperature, viscerally</h2>
+  <p class="pg-sub">The function that turns a vector of logits into a probability distribution - and the temperature dial that controls how <em>confident</em> it is.</p>
+<div class="sb">
+  <div class="sb-card">
+    <h2>① The logits</h2>
+    <div class="sb-explain">
+      <b>What's happening:</b> before softmax, the model holds raw, unbounded scores called <em>logits</em>.
+      Edit any of them and watch the distribution below react. Raising one logit lifts its probability and
+      steals mass from the others.
+    </div>
+    <div class="sb-logits" id="sx-logit-inputs"></div>
+    <div class="sb-formula">softmax(z)<sub>i</sub> = e<sup>z<sub>i</sub></sup> / &Sigma;<sub>j</sub> e<sup>z<sub>j</sub></sup></div>
+  </div>
+
+  <div class="sb-card">
+    <h2>② Temperature</h2>
+    <div class="sb-explain">
+      <b>What's happening:</b> in practice we divide the logits by a temperature <code>T</code> before softmax.
+      As <code>T → 0</code> the distribution collapses onto the largest logit (a confident, almost one-hot
+      choice). As <code>T → ∞</code> every word becomes equally likely. Sweep the slider and feel the model
+      go from decisive to indecisive.
+    </div>
+    <div class="sb-row">
+      <label>Temperature T</label>
+      <input type="range" id="sx-temp" min="0.2" max="4" step="0.1" value="1">
+      <span class="val" id="sx-temp-v">1.0</span>
+    </div>
+    <div id="sx-prob-bars"></div>
+    <div class="sb-readout" id="sx-out"></div>
+    <p class="sb-note">These are the exact same probabilities the <a href="#d-sampling">Sampling</a> sandbox starts from — sampling just adds top-p / top-k and the random draw on top.</p>
+  </div>
+</div>
+</section>
+
+<section class="pg-demo" id="d-embeddings">
+  <h2>13 - Word embeddings &amp; analogies</h2>
+  <p class="pg-sub">Embeddings put words into a space where <em>meaning is distance</em>. The famous trick: do arithmetic on the vectors.</p>
+<div class="sb">
+  <div class="sb-card">
+    <h2>① Pick an analogy</h2>
+    <div class="sb-explain">
+      <b>What's happening:</b> every word below is a point in a 2-D plane (a deliberately tiny "embedding").
+      The surprising fact about real embeddings is that <code>king − man + woman</code> lands almost exactly on
+      <code>queen</code>. Here the space is hand-built so the arithmetic is exact — a toy, but the principle is
+      the one that powers word2vec and friends.
+    </div>
+    <div class="sb-row">
+      <select id="em-sel-a"></select>
+      <span class="eq">−</span>
+      <select id="em-sel-b"></select>
+      <span class="eq">+</span>
+      <select id="em-sel-c"></select>
+    </div>
+    <div class="sb-legend">
+      <span><i style="background:#2563eb"></i>A (subtract)</span>
+      <span><i style="background:#dc2626"></i>B (subtract)</span>
+      <span><i style="background:#0d9488"></i>C (add)</span>
+      <span><i style="background:#6b46c1"></i>result &amp; nearest</span>
+    </div>
+    <div class="sb-stage"><svg id="em-svg" viewBox="0 0 520 470" aria-label="word embeddings"></svg></div>
+    <div class="sb-readout" id="em-out"></div>
+    <p class="sb-note">Coordinates are made-up but consistent: e.g. <code>queen = king − man + woman</code> holds exactly. Real models learn hundreds of such directions from text alone.</p>
+  </div>
+</div>
+</section>
+
+<section class="pg-demo" id="d-attnmatrix">
+  <h2>14 - The attention matrix, laid bare</h2>
+  <p class="pg-sub">Self-attention is just a grid of weights. Every row says "for this word, how much do I look at every other word?"</p>
+<div class="sb">
+  <div class="sb-card">
+    <h2>① Type a sentence</h2>
+    <div class="sb-explain">
+      <b>What's happening:</b> each token gets a 4-D vector (here from a fixed, illustrative embedding that also
+      encodes word position). We score every query·key pair, divide by <code>√d</code>, and softmax each row.
+      The result is a proper distribution — every row sums to 1. Hover any cell for its exact weight.
+    </div>
+    <div class="sb-input">
+      <input type="text" id="at-sent" value="the cat sat on the mat" />
+      <button class="sb-btn primary" id="at-btn-go">Compute ▸</button>
+    </div>
+    <div class="at-grid" id="at-grid"></div>
+    <div class="sb-readout" id="at-out">Hover a cell to read its weight.</div>
+    <p class="sb-note">Embeddings are deterministic but random-by-design (not trained), so this shows the <em>shape</em> of an attention matrix, not a real model's beliefs. Try "the dog and the cat played" to see position pull weight toward nearby words.</p>
+  </div>
+</div>
+</section>
+
 </div>
 
 <script>
@@ -682,5 +902,316 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
     });
   })();
 })();
+
+(function(){
+
+const vocab = [
+  {w:"cat", l:3.2}, {w:"mat", l:2.7}, {w:"dog", l:1.2}, {w:"hat", l:0.9},
+  {w:"rat", l:0.5}, {w:"bat", l:0.2}, {w:"sit", l:-0.3}, {w:"sat", l:-0.6},
+];
+let T = 1.0, topp = 0.9, topk = 0;
+
+function softmax(arr){
+  const m = Math.max.apply(null, arr);
+  const e = arr.map(x => Math.exp(x - m));
+  const s = e.reduce((a,b)=>a+b, 0);
+  return e.map(x => x / s);
+}
+function compute(){
+  let logits = vocab.map(v => v.l / T);
+  let probs = softmax(logits);
+  if(topk > 0){
+    const order = probs.map((p,i)=>[p,i]).sort((a,b)=>b[0]-a[0]).map(x=>x[1]);
+    const keep = new Set(order.slice(0, topk));
+    probs = probs.map((p,i)=> keep.has(i) ? p : 0);
+    let s = probs.reduce((a,b)=>a+b,0) || 1;
+    probs = probs.map(p => p / s);
+  }
+  if(topp < 1){
+    const order = probs.map((p,i)=>[p,i]).sort((a,b)=>b[0]-a[0]).map(x=>x[1]);
+    let cum = 0; const keep = new Set();
+    for(const i of order){ cum += probs[i]; keep.add(i); if(cum >= topp) break; }
+    probs = probs.map((p,i)=> keep.has(i) ? p : 0);
+    let s = probs.reduce((a,b)=>a+b,0) || 1;
+    probs = probs.map(p => p / s);
+  }
+  return probs;
+}
+function renderLogits(){
+  const box = document.getElementById("sm-logit-bars");
+  box.innerHTML = "";
+  vocab.forEach(v => {
+    const max = 3.2;
+    const pct = Math.max(2, (v.l / max) * 100);
+    const row = document.createElement("div");
+    row.className = "sb-bar";
+    row.innerHTML = `<span class="lab">${v.w}</span><span class="track"><i style="width:${pct}%"></i></span><span class="pct">${v.l.toFixed(1)}</span>`;
+    box.appendChild(row);
+  });
+}
+function renderProbs(){
+  const probs = compute();
+  const box = document.getElementById("sm-prob-bars");
+  box.innerHTML = "";
+  vocab.forEach((v,i) => {
+    const p = probs[i];
+    const dim = p <= 0.0001 ? " dim" : "";
+    const pct = (p * 100);
+    const row = document.createElement("div");
+    row.className = "sb-bar" + dim;
+    row.innerHTML = `<span class="lab">${v.w}</span><span class="track"><i style="width:${Math.max(0,pct)}%"></i></span><span class="pct">${p>0?(pct).toFixed(1)+"%":"0%"}</span>`;
+    box.appendChild(row);
+  });
+}
+function draw(){
+  const probs = compute();
+  const r = Math.random();
+  let cum = 0;
+  for(let i=0;i<probs.length;i++){
+    cum += probs[i];
+    if(r <= cum) return vocab[i].w;
+  }
+  return vocab[vocab.length-1].w;
+}
+document.getElementById("sm-temp").addEventListener("input", e => {
+  T = parseFloat(e.target.value); document.getElementById("sm-temp-v").textContent = T.toFixed(1); renderProbs();
+});
+document.getElementById("sm-topp").addEventListener("input", e => {
+  topp = parseFloat(e.target.value); document.getElementById("sm-topp-v").textContent = topp.toFixed(2); renderProbs();
+});
+document.getElementById("sm-topk").addEventListener("change", e => {
+  topk = parseInt(e.target.value, 10);
+  document.getElementById("sm-topk-v").textContent = topk ? ("k="+topk) : "off";
+  renderProbs();
+});
+document.getElementById("sm-btn-sample").addEventListener("click", () => {
+  const out = document.getElementById("sm-sample-out");
+  out.innerHTML = 'next word → <span class="tok">' + draw() + '</span>';
+});
+document.getElementById("sm-btn-ten").addEventListener("click", () => {
+  const out = document.getElementById("sm-sample-out");
+  let s = "ten draws → ";
+  for(let i=0;i<10;i++) s += '<span class="tok">' + draw() + '</span>';
+  out.innerHTML = s;
+});
+document.getElementById("sm-btn-reset").addEventListener("click", () => {
+  document.getElementById("sm-sample-out").innerHTML = "";
+});
+renderLogits();
+renderProbs();
+
+})();
+
+(function(){
+
+const labels = ["z₁","z₂","z₃","z₄","z₅"];
+let logits = [2.0, 1.0, 0.5, -0.5, -1.0];
+let T = 1.0;
+
+function softmax(arr){
+  const m = Math.max.apply(null, arr);
+  const e = arr.map(x => Math.exp(x - m));
+  const s = e.reduce((a,b)=>a+b, 0);
+  return e.map(x => x / s);
+}
+function buildInputs(){
+  const box = document.getElementById("sx-logit-inputs");
+  box.innerHTML = "";
+  logits.forEach((v,i) => {
+    const wrap = document.createElement("div");
+    wrap.className = "li";
+    wrap.innerHTML = `<input type="number" step="0.1" value="${v}" data-i="${i}"><span>${labels[i]}</span>`;
+    box.appendChild(wrap);
+  });
+  box.querySelectorAll("input").forEach(inp => {
+    inp.addEventListener("input", e => {
+      logits[+e.target.dataset.i] = parseFloat(e.target.value) || 0;
+      render();
+    });
+  });
+}
+function render(){
+  const probs = softmax(logits.map(z => z / T));
+  const box = document.getElementById("sx-prob-bars");
+  box.innerHTML = "";
+  let maxP = 0, maxI = 0;
+  probs.forEach((p,i) => { if(p>maxP){ maxP=p; maxI=i; } });
+  probs.forEach((p,i) => {
+    const row = document.createElement("div");
+    row.className = "sb-bar" + (i===maxI ? " win" : "");
+    row.innerHTML = `<span class="lab">${labels[i]}</span><span class="track"><i style="width:${(p*100).toFixed(1)}%"></i></span><span class="pct">${(p*100).toFixed(1)}%</span>`;
+    box.appendChild(row);
+  });
+  document.getElementById("sx-out").innerHTML =
+    `argmax = <b>${labels[maxI]}</b> at <b>${(maxP*100).toFixed(1)}%</b> ` +
+    (T<0.6 ? "— near one-hot (very confident)" : T>2.5 ? "— nearly flat (very uncertain)" : "— balanced");
+}
+document.getElementById("sx-temp").addEventListener("input", e => {
+  T = parseFloat(e.target.value);
+  document.getElementById("sx-temp-v").textContent = T.toFixed(1);
+  render();
+});
+buildInputs();
+render();
+
+})();
+
+(function(){
+
+const words = [
+  {w:"king",   x:2, y:3},  {w:"queen",  x:2, y:5},  {w:"man",    x:1, y:1},
+  {w:"woman",  x:1, y:3},  {w:"prince", x:2, y:4},  {w:"paris",  x:4, y:2},
+  {w:"rome",   x:4, y:3},  {w:"france", x:3, y:0},  {w:"italy",  x:3, y:1},
+  {w:"london", x:4, y:4},  {w:"berlin", x:4, y:1},  {w:"germany",x:3, y:-1},
+  {w:"cat",    x:0, y:0},  {w:"dog",    x:0, y:2},
+];
+const X0 = 60, X1 = 480, Y0 = 60, Y1 = 420;   // svg pixel bounds
+const DX0 = 0, DX1 = 5, DY0 = -1, DY1 = 5;     // data bounds
+function px(x){ return X0 + (x - DX0) / (DX1 - DX0) * (X1 - X0); }
+function py(y){ return Y1 - (y - DY0) / (DY1 - DY0) * (Y1 - Y0); }
+
+function fillSelects(){
+  ["em-sel-a","em-sel-b","em-sel-c"].forEach(id => {
+    const s = document.getElementById(id);
+    s.innerHTML = words.map((w,i)=>`<option value="${i}">${w.w}</option>`).join("");
+  });
+  document.getElementById("em-sel-a").value = 0; // king
+  document.getElementById("em-sel-b").value = 2; // man
+  document.getElementById("em-sel-c").value = 3; // woman
+}
+function dist(a,b){ return Math.hypot(a.x-b.x, a.y-b.y); }
+function nearest(p){
+  let best=null, bd=1e9;
+  for(const w of words){ const d=dist(p,w); if(d<bd){ bd=d; best=w; } }
+  return {w:best, d:bd};
+}
+function draw(){
+  const a = words[+document.getElementById("em-sel-a").value];
+  const b = words[+document.getElementById("em-sel-b").value];
+  const c = words[+document.getElementById("em-sel-c").value];
+  const d = { x: a.x - b.x + c.x, y: a.y - b.y + c.y };
+  const near = nearest(d);
+  const svg = document.getElementById("em-svg");
+  let g = "";
+  // grid + axes
+  g += `<line x1="${px(0)}" y1="${Y0}" x2="${px(0)}" y2="${Y1}" stroke="#cbd5e1" stroke-width="1"/>`;
+  g += `<line x1="${X0}" y1="${py(0)}" x2="${X1}" y2="${py(0)}" stroke="#cbd5e1" stroke-width="1"/>`;
+  for(let gx=1; gx<=5; gx++) g += `<line x1="${px(gx)}" y1="${Y0}" x2="${px(gx)}" y2="${Y1}" stroke="#eef2f7" stroke-width="1"/>`;
+  for(let gy=-1; gy<=5; gy++) g += `<line x1="${X0}" y1="${py(gy)}" x2="${X1}" y2="${py(gy)}" stroke="#eef2f7" stroke-width="1"/>`;
+  // result point (hollow purple)
+  g += `<circle cx="${px(d.x)}" cy="${py(d.y)}" r="9" fill="none" stroke="#6b46c1" stroke-width="3"/>`;
+  // words
+  const colors = {}; colors[a.w]="#2563eb"; colors[b.w]="#dc2626"; colors[c.w]="#0d9488";
+  words.forEach(w => {
+    const col = colors[w.w] || "#94a3b8";
+    const isNear = near.w === w;
+    const r = isNear ? 8 : 6;
+    g += `<circle cx="${px(w.x)}" cy="${py(w.y)}" r="${r}" fill="${isNear?'#6b46c1':col}" ${isNear?'stroke="#6b46c1" stroke-width="3"':''}/>`;
+    g += `<text x="${px(w.x)+10}" y="${py(w.y)+4}" font-size="12" fill="#334155">${w.w}</text>`;
+  });
+  svg.innerHTML = g;
+  const exact = (Math.abs(near.d) < 1e-9);
+  document.getElementById("em-out").innerHTML =
+    `<b>${a.w}</b> − <b>${b.w}</b> + <b>${c.w}</b> = (<span class="hl">${d.x}, ${d.y}</span>) ` +
+    `→ nearest word is <span class="hl">${near.w}</span> ` +
+    (exact ? `<span class="ok">✓ exact match</span>` : `(distance ${near.d.toFixed(2)})`);
+}
+["em-sel-a","em-sel-b","em-sel-c"].forEach(id =>
+  document.getElementById(id).addEventListener("change", draw));
+fillSelects();
+draw();
+
+})();
+
+(function(){
+
+const D = 4;
+function xmur3(str){
+  let h = 1779033703 ^ str.length;
+  for(let i=0;i<str.length;i++){
+    h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
+    h = h << 13 | h >>> 19;
+  }
+  return function(){
+    h = Math.imul(h ^ (h>>>16), 2246822507);
+    h = Math.imul(h ^ (h>>>13), 3266489909);
+    return (h ^= h>>>16) >>> 0;
+  };
+}
+function mulberry32(a){
+  return function(){
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+function embed(word){
+  const rnd = mulberry32(xmur3(word)());
+  const v = [];
+  for(let i=0;i<D;i++) v.push(rnd()*2-1);
+  return v;
+}
+function posEmbed(pos){
+  const k = 0.7;
+  return [Math.cos(pos*k), Math.sin(pos*k), Math.cos(pos*k*2.3), Math.sin(pos*k*2.3)];
+}
+function fullEmbed(word, pos){
+  const w = embed(word), p = posEmbed(pos);
+  return w.map((val,i)=> val + 0.8*p[i]);
+}
+function softmax(arr){
+  const m = Math.max.apply(null, arr);
+  const e = arr.map(x => Math.exp(x - m));
+  const s = e.reduce((a,b)=>a+b,0);
+  return e.map(x => x / s);
+}
+function compute(tokens){
+  const E = tokens.map((tk,i)=> fullEmbed(tk, i));
+  const raw = E.map(qi => E.map(kj => {
+    let s=0; for(let k=0;k<D;k++) s += qi[k]*kj[k];
+    return s / Math.sqrt(D);
+  }));
+  return raw.map(row => softmax(row));
+}
+function render(){
+  let tokens = document.getElementById("at-sent").value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  if(tokens.length > 12) tokens = tokens.slice(0,12);
+  if(tokens.length < 2){
+    document.getElementById("at-out").textContent = "Type at least two words.";
+    return;
+  }
+  const A = compute(tokens);
+  const N = tokens.length;
+  const grid = document.getElementById("at-grid");
+  grid.style.gridTemplateColumns = `64px repeat(${N}, 1fr)`;
+  grid.innerHTML = "";
+  const corner = document.createElement("div"); corner.className = "corner"; grid.appendChild(corner);
+  tokens.forEach(t => {
+    const h = document.createElement("div"); h.className = "head"; h.textContent = t; grid.appendChild(h);
+  });
+  for(let i=0;i<N;i++){
+    const rh = document.createElement("div"); rh.className = "head rowhead"; rh.textContent = tokens[i]; grid.appendChild(rh);
+    for(let j=0;j<N;j++){
+      const w = A[i][j];
+      const alpha = Math.min(1, w*2.4 + 0.04);
+      const c = document.createElement("div");
+      c.className = "acell";
+      c.style.background = `rgba(107,70,193,${alpha.toFixed(3)})`;
+      c.title = `query "${tokens[i]}" → key "${tokens[j]}" = ${w.toFixed(3)}`;
+      c.addEventListener("mouseenter", () => {
+        document.getElementById("at-out").innerHTML =
+          `query <b>${tokens[i]}</b> looks at key <b>${tokens[j]}</b> with weight <span class="hl">${w.toFixed(3)}</span>`;
+      });
+      grid.appendChild(c);
+    }
+  }
+}
+document.getElementById("at-btn-go").addEventListener("click", render);
+document.getElementById("at-sent").addEventListener("keydown", e => { if(e.key==="Enter") render(); });
+render();
+
+})();
+
 {% endraw %}
 </script>
