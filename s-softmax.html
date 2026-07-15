@@ -1,0 +1,129 @@
+---
+layout: page
+title: Softmax
+hide_in_sidebar: true
+permalink: /s/softmax/
+---
+
+<style>
+.sb { max-width: 860px; }
+.sb h1 { font-size: 1.7rem; color: #1e293b; margin: 0 0 4px; }
+.sb .sb-sub { color: #64748b; font-size: 1rem; margin: 0 0 20px; }
+.sb-card {
+  border: 1px solid #e2e8f0; border-radius: 14px; padding: 18px 20px;
+  margin: 22px 0; background: #fff; box-shadow: 0 1px 3px rgba(15,23,42,.05);
+}
+.sb-card h2 { margin: 0 0 10px; font-size: 1.1rem; color: #1e293b; }
+.sb-explain {
+  background: #f8fafc; border: 1px solid #e2e8f0; border-left: 3px solid #6b46c1;
+  border-radius: 6px; padding: 10px 14px; margin: 0 0 14px;
+  font-size: .9rem; color: #334155; line-height: 1.65;
+}
+.sb-explain b { color: #1e293b; }
+.sb-explain code { background: #eef2f7; padding: 1px 5px; border-radius: 4px; font-size: .85em; }
+.sb-logits { display: flex; flex-wrap: wrap; gap: 10px; margin: 12px 0; }
+.sb-logits .li { display: flex; flex-direction: column; align-items: center; font-size: .78rem; color: #64748b; }
+.sb-logits input { width: 64px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 8px; text-align: center; font-size: .95rem; }
+.sb-row { display: flex; align-items: center; gap: 12px; margin: 14px 0; font-size: .9rem; color: #475569; }
+.sb-row label { width: 120px; flex: none; }
+.sb-row input[type=range] { flex: 1; }
+.sb-row .val { width: 56px; text-align: right; color: #6b46c1; font-weight: 600; font-variant-numeric: tabular-nums; }
+.sb-bar { display: flex; align-items: center; gap: 10px; margin: 7px 0; font-size: .85rem; }
+.sb-bar .lab { width: 70px; text-align: right; color: #334155; font-weight: 600; }
+.sb-bar .track { flex: 1; height: 22px; background: #f1f5f9; border-radius: 6px; overflow: hidden; }
+.sb-bar .track > i { display: block; height: 100%; background: #6b46c1; width: 0; transition: width .25s; }
+.sb-bar .pct { width: 64px; text-align: right; color: #64748b; font-variant-numeric: tabular-nums; }
+.sb-bar.win .track > i { background: #0d9488; }
+.sb-formula { font-size: 1.05rem; color: #1e293b; text-align: center; margin: 10px 0; font-family: ui-monospace, Menlo, monospace; }
+.sb-readout { font-size: .9rem; color: #334155; margin-top: 12px; }
+.sb-note { font-size: .78rem; color: #94a3b8; margin-top: 14px; }
+code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+</style>
+
+<div class="sb">
+  <h1>Softmax &amp; temperature, viscerally</h1>
+  <p class="sb-sub">The function that turns a vector of logits into a probability distribution — and the temperature dial that controls how <em>confident</em> it is.</p>
+
+  <div class="sb-card">
+    <h2>① The logits</h2>
+    <div class="sb-explain">
+      <b>What's happening:</b> before softmax, the model holds raw, unbounded scores called <em>logits</em>.
+      Edit any of them and watch the distribution below react. Raising one logit lifts its probability and
+      steals mass from the others.
+    </div>
+    <div class="sb-logits" id="logit-inputs"></div>
+    <div class="sb-formula">softmax(z)<sub>i</sub> = e<sup>z<sub>i</sub></sup> / &Sigma;<sub>j</sub> e<sup>z<sub>j</sub></sup></div>
+  </div>
+
+  <div class="sb-card">
+    <h2>② Temperature</h2>
+    <div class="sb-explain">
+      <b>What's happening:</b> in practice we divide the logits by a temperature <code>T</code> before softmax.
+      As <code>T → 0</code> the distribution collapses onto the largest logit (a confident, almost one-hot
+      choice). As <code>T → ∞</code> every word becomes equally likely. Sweep the slider and feel the model
+      go from decisive to indecisive.
+    </div>
+    <div class="sb-row">
+      <label>Temperature T</label>
+      <input type="range" id="t-temp" min="0.2" max="4" step="0.1" value="1">
+      <span class="val" id="t-temp-v">1.0</span>
+    </div>
+    <div id="prob-bars"></div>
+    <div class="sb-readout" id="softmax-out"></div>
+    <p class="sb-note">These are the exact same probabilities the <a href="/s/sampling/">Sampling</a> sandbox starts from — sampling just adds top-p / top-k and the random draw on top.</p>
+  </div>
+</div>
+
+{% raw %}
+<script>
+const labels = ["z₁","z₂","z₃","z₄","z₅"];
+let logits = [2.0, 1.0, 0.5, -0.5, -1.0];
+let T = 1.0;
+
+function softmax(arr){
+  const m = Math.max.apply(null, arr);
+  const e = arr.map(x => Math.exp(x - m));
+  const s = e.reduce((a,b)=>a+b, 0);
+  return e.map(x => x / s);
+}
+function buildInputs(){
+  const box = document.getElementById("logit-inputs");
+  box.innerHTML = "";
+  logits.forEach((v,i) => {
+    const wrap = document.createElement("div");
+    wrap.className = "li";
+    wrap.innerHTML = `<input type="number" step="0.1" value="${v}" data-i="${i}"><span>${labels[i]}</span>`;
+    box.appendChild(wrap);
+  });
+  box.querySelectorAll("input").forEach(inp => {
+    inp.addEventListener("input", e => {
+      logits[+e.target.dataset.i] = parseFloat(e.target.value) || 0;
+      render();
+    });
+  });
+}
+function render(){
+  const probs = softmax(logits.map(z => z / T));
+  const box = document.getElementById("prob-bars");
+  box.innerHTML = "";
+  let maxP = 0, maxI = 0;
+  probs.forEach((p,i) => { if(p>maxP){ maxP=p; maxI=i; } });
+  probs.forEach((p,i) => {
+    const row = document.createElement("div");
+    row.className = "sb-bar" + (i===maxI ? " win" : "");
+    row.innerHTML = `<span class="lab">${labels[i]}</span><span class="track"><i style="width:${(p*100).toFixed(1)}%"></i></span><span class="pct">${(p*100).toFixed(1)}%</span>`;
+    box.appendChild(row);
+  });
+  document.getElementById("softmax-out").innerHTML =
+    `argmax = <b>${labels[maxI]}</b> at <b>${(maxP*100).toFixed(1)}%</b> ` +
+    (T<0.6 ? "— near one-hot (very confident)" : T>2.5 ? "— nearly flat (very uncertain)" : "— balanced");
+}
+document.getElementById("t-temp").addEventListener("input", e => {
+  T = parseFloat(e.target.value);
+  document.getElementById("t-temp-v").textContent = T.toFixed(1);
+  render();
+});
+buildInputs();
+render();
+</script>
+{% endraw %}

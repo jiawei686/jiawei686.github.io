@@ -1,0 +1,134 @@
+---
+layout: page
+title: Embeddings
+hide_in_sidebar: true
+permalink: /s/embeddings/
+---
+
+<style>
+.sb { max-width: 860px; }
+.sb h1 { font-size: 1.7rem; color: #1e293b; margin: 0 0 4px; }
+.sb .sb-sub { color: #64748b; font-size: 1rem; margin: 0 0 20px; }
+.sb-card {
+  border: 1px solid #e2e8f0; border-radius: 14px; padding: 18px 20px;
+  margin: 22px 0; background: #fff; box-shadow: 0 1px 3px rgba(15,23,42,.05);
+}
+.sb-card h2 { margin: 0 0 10px; font-size: 1.1rem; color: #1e293b; }
+.sb-explain {
+  background: #f8fafc; border: 1px solid #e2e8f0; border-left: 3px solid #6b46c1;
+  border-radius: 6px; padding: 10px 14px; margin: 0 0 14px;
+  font-size: .9rem; color: #334155; line-height: 1.65;
+}
+.sb-explain b { color: #1e293b; }
+.sb-row { display: flex; align-items: center; gap: 10px; margin: 10px 0; font-size: .92rem; color: #475569; flex-wrap: wrap; }
+.sb-row .eq { font-weight: 700; color: #1e293b; font-size: 1.05rem; }
+.sb-row select { padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: .9rem; }
+.sb-stage { background: #f8fafc; border-radius: 10px; padding: 8px; }
+.sb-stage svg { width: 100%; height: auto; display: block; }
+.sb-readout { font-size: .95rem; color: #334155; margin-top: 12px; line-height: 1.6; }
+.sb-readout .hl { color: #6b46c1; font-weight: 700; }
+.sb-readout .ok { color: #0d9488; font-weight: 700; }
+.sb-readout .no { color: #dc2626; font-weight: 700; }
+.sb-legend { font-size: .8rem; color: #64748b; margin-top: 10px; display: flex; gap: 16px; flex-wrap: wrap; }
+.sb-legend i { display: inline-block; width: 11px; height: 11px; border-radius: 50%; margin-right: 5px; vertical-align: middle; }
+.sb-note { font-size: .78rem; color: #94a3b8; margin-top: 14px; }
+code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+</style>
+
+<div class="sb">
+  <h1>Word embeddings &amp; analogies</h1>
+  <p class="sb-sub">Embeddings put words into a space where <em>meaning is distance</em>. The famous trick: do arithmetic on the vectors.</p>
+
+  <div class="sb-card">
+    <h2>① Pick an analogy</h2>
+    <div class="sb-explain">
+      <b>What's happening:</b> every word below is a point in a 2-D plane (a deliberately tiny "embedding").
+      The surprising fact about real embeddings is that <code>king − man + woman</code> lands almost exactly on
+      <code>queen</code>. Here the space is hand-built so the arithmetic is exact — a toy, but the principle is
+      the one that powers word2vec and friends.
+    </div>
+    <div class="sb-row">
+      <select id="sel-a"></select>
+      <span class="eq">−</span>
+      <select id="sel-b"></select>
+      <span class="eq">+</span>
+      <select id="sel-c"></select>
+    </div>
+    <div class="sb-legend">
+      <span><i style="background:#2563eb"></i>A (subtract)</span>
+      <span><i style="background:#dc2626"></i>B (subtract)</span>
+      <span><i style="background:#0d9488"></i>C (add)</span>
+      <span><i style="background:#6b46c1"></i>result &amp; nearest</span>
+    </div>
+    <div class="sb-stage"><svg id="emb-svg" viewBox="0 0 520 470" aria-label="word embeddings"></svg></div>
+    <div class="sb-readout" id="emb-out"></div>
+    <p class="sb-note">Coordinates are made-up but consistent: e.g. <code>queen = king − man + woman</code> holds exactly. Real models learn hundreds of such directions from text alone.</p>
+  </div>
+</div>
+
+{% raw %}
+<script>
+const words = [
+  {w:"king",   x:2, y:3},  {w:"queen",  x:2, y:5},  {w:"man",    x:1, y:1},
+  {w:"woman",  x:1, y:3},  {w:"prince", x:2, y:4},  {w:"paris",  x:4, y:2},
+  {w:"rome",   x:4, y:3},  {w:"france", x:3, y:0},  {w:"italy",  x:3, y:1},
+  {w:"london", x:4, y:4},  {w:"berlin", x:4, y:1},  {w:"germany",x:3, y:-1},
+  {w:"cat",    x:0, y:0},  {w:"dog",    x:0, y:2},
+];
+const X0 = 60, X1 = 480, Y0 = 60, Y1 = 420;   // svg pixel bounds
+const DX0 = 0, DX1 = 5, DY0 = -1, DY1 = 5;     // data bounds
+function px(x){ return X0 + (x - DX0) / (DX1 - DX0) * (X1 - X0); }
+function py(y){ return Y1 - (y - DY0) / (DY1 - DY0) * (Y1 - Y0); }
+
+function fillSelects(){
+  ["sel-a","sel-b","sel-c"].forEach(id => {
+    const s = document.getElementById(id);
+    s.innerHTML = words.map((w,i)=>`<option value="${i}">${w.w}</option>`).join("");
+  });
+  document.getElementById("sel-a").value = 0; // king
+  document.getElementById("sel-b").value = 2; // man
+  document.getElementById("sel-c").value = 3; // woman
+}
+function dist(a,b){ return Math.hypot(a.x-b.x, a.y-b.y); }
+function nearest(p){
+  let best=null, bd=1e9;
+  for(const w of words){ const d=dist(p,w); if(d<bd){ bd=d; best=w; } }
+  return {w:best, d:bd};
+}
+function draw(){
+  const a = words[+document.getElementById("sel-a").value];
+  const b = words[+document.getElementById("sel-b").value];
+  const c = words[+document.getElementById("sel-c").value];
+  const d = { x: a.x - b.x + c.x, y: a.y - b.y + c.y };
+  const near = nearest(d);
+  const svg = document.getElementById("emb-svg");
+  let g = "";
+  // grid + axes
+  g += `<line x1="${px(0)}" y1="${Y0}" x2="${px(0)}" y2="${Y1}" stroke="#cbd5e1" stroke-width="1"/>`;
+  g += `<line x1="${X0}" y1="${py(0)}" x2="${X1}" y2="${py(0)}" stroke="#cbd5e1" stroke-width="1"/>`;
+  for(let gx=1; gx<=5; gx++) g += `<line x1="${px(gx)}" y1="${Y0}" x2="${px(gx)}" y2="${Y1}" stroke="#eef2f7" stroke-width="1"/>`;
+  for(let gy=-1; gy<=5; gy++) g += `<line x1="${X0}" y1="${py(gy)}" x2="${X1}" y2="${py(gy)}" stroke="#eef2f7" stroke-width="1"/>`;
+  // result point (hollow purple)
+  g += `<circle cx="${px(d.x)}" cy="${py(d.y)}" r="9" fill="none" stroke="#6b46c1" stroke-width="3"/>`;
+  // words
+  const colors = {}; colors[a.w]="#2563eb"; colors[b.w]="#dc2626"; colors[c.w]="#0d9488";
+  words.forEach(w => {
+    const col = colors[w.w] || "#94a3b8";
+    const isNear = near.w === w;
+    const r = isNear ? 8 : 6;
+    g += `<circle cx="${px(w.x)}" cy="${py(w.y)}" r="${r}" fill="${isNear?'#6b46c1':col}" ${isNear?'stroke="#6b46c1" stroke-width="3"':''}/>`;
+    g += `<text x="${px(w.x)+10}" y="${py(w.y)+4}" font-size="12" fill="#334155">${w.w}</text>`;
+  });
+  svg.innerHTML = g;
+  const exact = (Math.abs(near.d) < 1e-9);
+  document.getElementById("emb-out").innerHTML =
+    `<b>${a.w}</b> − <b>${b.w}</b> + <b>${c.w}</b> = (<span class="hl">${d.x}, ${d.y}</span>) ` +
+    `→ nearest word is <span class="hl">${near.w}</span> ` +
+    (exact ? `<span class="ok">✓ exact match</span>` : `(distance ${near.d.toFixed(2)})`);
+}
+["sel-a","sel-b","sel-c"].forEach(id =>
+  document.getElementById(id).addEventListener("change", draw));
+fillSelects();
+draw();
+</script>
+{% endraw %}
