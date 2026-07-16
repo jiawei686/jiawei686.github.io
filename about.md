@@ -11,11 +11,15 @@ title: About
 .cv-body{flex:1;min-width:0;}
 .cv-row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;}
 .cv-title{font-weight:700;font-size:1.04rem;text-decoration:none;color:#2a2a2a;}
-.cv-title:hover{text-decoration:underline;}
+a.cv-title:hover{text-decoration:underline;}
 .cv-date{color:#9a9a9a;font-size:.84rem;white-space:nowrap;}
 .cv-sub{color:#555;font-size:.92rem;margin-top:2px;}
 .cv-sub a{color:#2a7ae2;text-decoration:none;}
 .cv-sub a:hover{text-decoration:underline;}
+.patents{margin:6px 0 18px;padding-left:1.2em;}
+.patents li{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.patents li a{color:#2a7ae2;text-decoration:none;}
+.patents li a:hover{text-decoration:underline;}
 </style>
 
 I'm **Jiawei Cui**, a software engineer in Shenzhen. Five years at Tencent building front-end systems (incl. the open-source Cherry Markdown editor); now focused on AI/ML — training models and studying LLM papers. This site is where I think in public.
@@ -86,9 +90,13 @@ I'm **Jiawei Cui**, a software engineer in Shenzhen. Five years at Tencent build
 
 ## Patents
 
+<div class="patents" markdown="1">
+
 - [CN115878098A](https://patents.google.com/patent/CN115878098A/) — Data processing method, device, equipment and storage medium
 - [CN115705465A](https://patents.google.com/patent/CN115705465A/) — Presentation method, device, equipment and storage medium of data analysis result
 - [CN115705142A](https://patents.google.com/patent/CN115705142A/) — Dual-region synchronous presentation method and device, electronic equipment and storage medium
+
+</div>
 
 ## Standardized Tests
 
