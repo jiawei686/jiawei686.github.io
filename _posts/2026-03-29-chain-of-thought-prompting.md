@@ -8,11 +8,9 @@ subcat: reasoning
 
 **Paper:** Wei et al., *Chain-of-Thought Prompting Elicits Reasoning in Large Language Models*, 2022. [arXiv:2201.11903](https://arxiv.org/abs/2201.11903)
 
-## The observation
+On multi-step problems, arithmetic, commonsense, symbolic, LLMs were weak when you asked for the answer directly. The fix was almost embarrassingly simple. Prompt the model to show its intermediate reasoning steps before it commits to a final answer. That "chain of thought" (CoT) unlocked a big chunk of reasoning ability that was sitting there the whole time.
 
-For multi-step problems (arithmetic, commonsense, symbolic), LLMs were weak when asked for the answer directly. The fix was almost absurdly simple: **prompt the model to show its intermediate reasoning steps before the final answer.** This "chain of thought" (CoT) unlocked a large fraction of latent reasoning ability.
-
-## Two flavors
+## Two ways to do it
 
 **Few-shot CoT.** Give exemplars that include a worked-out reasoning trace, then the question:
 
@@ -24,19 +22,19 @@ Q: <real question>
 A:
 ```
 
-**Zero-shot CoT.** Just append the magic phrase *"Let's think step by step."* — no exemplars needed.
+**Zero-shot CoT.** Just append the magic phrase "Let's think step by step." No exemplars needed.
 
-## Why it helps
+## Why showing your work helps
 
-Generating the reasoning tokens gives the model more "compute" (sequential steps) to decompose the problem, and each step is an easier prediction than the leap to the answer. It also makes the model's reasoning inspectable and debuggable.
+Spelling out the reasoning gives the model more compute in the literal sense: more sequential steps to break the problem apart, and each step is an easier prediction than a blind leap to the answer. The side benefit is that you can read the reasoning, which makes the model's failures inspectable instead of mysterious.
 
-## Key results
+## Results, briefly
 
 - GSM8K (grade-school math): PaLM 540B jumped from **56%** (direct) to **72%** (CoT).
-- Gains scale with model size — CoT barely helped small models but transformed large ones. This is an emergent property of scale.
+- Gains scale with model size. CoT barely helped small models but transformed large ones, which is an emergent property of scale.
 - Improvements across arithmetic, commonsense (StrategyQA), and symbolic reasoning.
 
-## A quick demo
+## A tiny demo
 
 ```python
 prompt = """Solve step by step.
@@ -45,9 +43,9 @@ A: Let's think step by step."""
 # Model returns: 12 apples = 4 sets of 3 -> 4 * $2 = $8. Plus $5 bread = $13. Answer: $13.
 ```
 
-## Why it matters
+## The honest take
 
-CoT is the conceptual ancestor of everything that followed: self-consistency sampling ("let's generate many reasoning paths and vote"), tool-use, and the explicit "reasoning tokens" you now see in o1/R1-style models. It showed that *how you ask* is as important as *what you ask*, and that reasoning can be elicited without changing model weights.
+CoT is the ancestor of most of what came after. Self-consistency sampling, where you generate many reasoning paths and vote. Tool-use. The explicit reasoning tokens in o1 and R1 style models. The real lesson was that how you ask matters as much as what you ask, and you can pull reasoning out of a model without touching its weights. My honest take: it's a cheap trick that works far better than it has any right to, and we still don't fully know why.
 
 ## References
 

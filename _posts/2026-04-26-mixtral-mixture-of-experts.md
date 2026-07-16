@@ -8,30 +8,28 @@ subcat: training
 
 **Paper:** Jiang et al., *Mixtral of Experts*, 2024. [arXiv:2401.04088](https://arxiv.org/abs/2401.04088)
 
-## The core tension
+## The cost problem nobody could dodge
 
-Bigger models are smarter, but every token pays the full cost of every parameter. **Mixture of Experts (MoE)** breaks that link: keep a huge pool of parameters, but activate only a small subset per token. Mixtral made this practical and open.
+Bigger models get smarter, but every token used to pay for every parameter, all of them, every time. **Mixture of Experts (MoE)** cuts that knot. You keep a giant pool of weights and wake up only a small slice per token. Mixtral is the version that made the idea practical and, just as important, open.
 
-## Architecture
+## What's inside the layers
 
 Mixtral 8×7B is a Transformer where each **feed-forward layer** is replaced by `8` expert FFNs plus a router:
 
 - For every token, a router (a small linear layer) scores the experts and selects the **top-2**.
 - The output is the weighted combination of those two experts.
 
-$$
-y = \sum_{i \in \text{top-2}} \text{softmax}(\text{gate}(x))_i \cdot E_i(x)
-$$
+$$ y = \sum_{i \in \text{top-2}} \text{softmax}(\text{gate}(x))_i \cdot E_i(x) $$
 
 - **Total parameters:** ~47B.
 - **Active parameters per token:** ~13B (only 2 of 8 experts run).
 - Context length 32K; trained on 1T tokens.
 
-## Why sparse routing matters
+## Why the routing is the whole point
 
-Because only 2 experts fire per token, inference cost tracks the *active* 13B, not the full 47B — yet the model's *capacity* (what it can represent) is that of 47B. You get large-model quality at small-model latency.
+Only 2 experts fire per token, so the bill you pay at inference is the *active* 13B, not the full 47B. The model's *capacity*, what it can actually represent, is still that of a 47B model. That is the trick in one sentence: full-size quality, small-size latency.
 
-## Key results
+## What it scored
 
 - Outperformed **Llama-2 70B** and **GPT-3.5** on most benchmarks.
 - Especially strong on math, code, and multilingual tasks.
@@ -53,9 +51,9 @@ def moe(x, experts, gate, k=2):
     return out
 ```
 
-## Why it matters
+## The thing I'd flag before you copy it
 
-MoE is how many frontier models (Gemini, Grok, DeepSeek, Qwen-MoE) hit huge parameter counts without proportional inference cost. Understanding routing — and its failure modes like *expert collapse* (some experts never selected) — is essential reading for anyone designing efficient large models.
+MoE is how a lot of frontier models (Gemini, Grok, DeepSeek, Qwen-MoE) reach absurd parameter counts without proportional serving cost. The part people underestimate is routing: if you get it wrong, *expert collapse* sets in and some experts never get picked. Worth reading up on if you ever design one of these yourself.
 
 ## References
 

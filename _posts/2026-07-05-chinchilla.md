@@ -8,11 +8,11 @@ subcat: training
 
 **Paper:** Hoffmann, J., et al. (DeepMind), *Training Compute-Optimal Large Language Models*, 2022. [arXiv:2203.15556](https://arxiv.org/abs/2203.15556)
 
-## Why this paper matters
+## The field was oversizing models
 
-Kaplan's scaling laws (previous post) implied "make the model as big as possible and feed it whatever data you have." DeepMind re-ran the analysis with far more rigor — over 400 training runs — and found the field had been **wasting compute**. Under a fixed compute budget, parameters and training tokens should grow *in equal proportion*, not lopsidedly toward size. The 70B Chinchilla, trained on 1.4T tokens, beat Gopher (280B) and was competitive with models 4× its size. If you set a training budget today, this paper is the recipe you use.
+Kaplan's earlier scaling laws (previous post) boiled down to "make the model as big as possible and feed it whatever data you have." DeepMind went back and did the analysis properly, with over 400 training runs, and concluded the field had been **wasting compute**. Under a fixed budget, parameters and training tokens should grow in equal proportion, not lopsidedly toward size. Their 70B Chinchilla, trained on 1.4T tokens, beat Gopher at 280B and held its own against models 4× bigger. If you have a training budget to spend today, this is the recipe.
 
-## The core idea: equal scaling
+## The math, briefly
 
 Write the loss as a sum of power-law terms in parameters $N$ and data $D$:
 
@@ -20,35 +20,30 @@ $$
 L(N, D) = \frac{A}{N^{\alpha}} + \frac{B}{D^{\beta}} + E
 $$
 
-Fitting to the 400+ runs gives $\alpha \approx 0.34$, $\beta \approx 0.28$ (much larger exponents than Kaplan's — scaling helps *more* than previously thought). Minimizing under a compute constraint $C \approx 6 N D$ yields:
+Fit over the 400+ runs and you get $\alpha \approx 0.34$, $\beta \approx 0.28$. Both exponents are much larger than Kaplan's, which means scaling helps more than anyone had assumed. Minimize under the compute constraint $C \approx 6 N D$ and the optimum lands at:
 
 $$
 N_{\text{opt}} \propto C^{0.5}, \qquad D_{\text{opt}} \propto C^{0.5}
 $$
 
-The practical takeaway, often quoted as a rule of thumb: **train on roughly 20× as many tokens as parameters** ($D \approx 20 N$).
+The line everyone memorizes: **train on roughly 20× as many tokens as parameters** ($D \approx 20 N$).
 
-## What this corrected
+## Who was off the mark
 
-At the time, the flagship models were off the optimum:
+At the time, the big flagship models were all on the wrong side of the curve:
 
-- **GPT-3** (175B, ~300B tokens) — undertrained.
-- **Gopher** (280B, 300B tokens) — undertrained.
-- **MT-NLG** (530B) — severely over-parameterized.
+- **GPT-3** (175B, ~300B tokens), undertrained.
+- **Gopher** (280B, 300B tokens), undertrained.
+- **MT-NLG** (530B), severely over-parameterized.
 
-Chinchilla showed you could match or beat them with a fraction of the parameters if you simply fed them more data.
+Chinchilla's point was blunt: match or beat them with far fewer parameters, just give the model more data.
 
-## Key results
+## What it delivered
 
 - Chinchilla (70B, 1.4T tokens) outperformed Gopher (280B) on MMLU, reading comprehension, and closed-book QA.
 - Massively cheaper inference (70B vs 280B) for equal or better quality.
 - Established the "more data, smaller model" training paradigm now used across the industry.
 
-## Why it matters today
+## The part that actually persists
 
-Every serious training run since 2022 sizes its corpus from Chinchilla math, not Kaplan's. The lesson generalizes beyond text: the same 1:20 intuition shows up (with caveats) in vision and multimodal models. Pair this with the Scaling Laws post — together they are the "how big / how much data" chapter of any LLM course.
-
-## References
-
-- Hoffmann et al. (2022). *Training Compute-Optimal Large Language Models.* [arXiv:2203.15556](https://arxiv.org/abs/2203.15556)
-- Kaplan et al. (2020). *Scaling Laws for Neural Language Models.* [arXiv:2001.08361](https://arxiv.org/abs/2001.08361)
+Every serious training run since 2022 sizes its corpus from Chinchilla's math, not Kaplan's. The 1:20 intuition carries over to vision and multimodal work too, with caveats. Read it alongside the Scaling Laws post and you have the "how big, how much data" chapter of any LLM course. The open question for me is whether the 20× rule still holds now that we are scraping the bottom of the high-quality-data barrel.

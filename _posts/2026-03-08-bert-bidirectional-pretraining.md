@@ -8,11 +8,9 @@ subcat: training
 
 **Paper:** Devlin et al., *BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding*, NAACL 2019. [arXiv:1810.04805](https://arxiv.org/abs/1810.04805)
 
-## The problem BERT solved
+You've probably used a Transformer encoder today without naming it. The original Transformer was an encoder–decoder built for translation. GPT-style models read left to right, each token predicting the next, so every token only sees what's to its left. That's fine for generation and terrible for classification, question answering, or NER, where a word's meaning comes from both sides. BERT's bet was straightforward: pretrain a deep encoder to read both directions at once, then fine-tune it on whatever you actually want.
 
-The original Transformer was built for translation (encoder–decoder). GPT-style models are **left-to-right**: each token predicts the next, so a token can only attend to its left context. That is a real limitation for understanding tasks (classification, question answering, NER), where both directions matter. BERT asked: *what if we pretrain a deep Transformer encoder to "understand" text in both directions at once, then fine-tune it on any downstream task?*
-
-## Two pretraining objectives
+## The two objectives
 
 **Masked Language Modeling (MLM).** Randomly mask 15% of input tokens and train the model to reconstruct them.
 
@@ -20,11 +18,11 @@ The original Transformer was built for translation (encoder–decoder). GPT-styl
 - 10% replaced with a random token
 - 10% left unchanged (to reduce train/serve mismatch)
 
-This forces the model to build a bidirectional representation: predicting a masked word uses both left and right context.
+This forces a bidirectional representation: predicting a masked word pulls from left and right context both.
 
 **Next Sentence Prediction (NSP).** Given sentence A and B, predict whether B actually follows A. This teaches inter-sentence relationships useful for QA and inference.
 
-## Architecture
+## The architecture
 
 BERT uses the Transformer **encoder only**:
 
@@ -48,15 +46,15 @@ out = model(**tok(text, return_tensors="pt"))
 
 The `[CLS]` token's final hidden state is the standard sentence embedding for classification.
 
-## Key results
+## Results, briefly
 
-- GLUE benchmark: **80.5%** (vs 72.6% for prior SOTA) — an enormous jump.
+- GLUE benchmark: **80.5%** (vs 72.6% for prior SOTA), a jump of nearly 8 points.
 - SQuAD v1.1: 86.9 F1 (vs 81.9 human-at-the-time SOTA).
 - BERT-Base alone beat the previous best *ensemble* on several tasks.
 
-## Why it matters
+## The legacy
 
-BERT established the dominant **pretrain → fine-tune** paradigm and proved that a single bidirectional pretrained model could be adapted to nearly any NLP task with a tiny task-specific head. It is the direct ancestor of every encoder model (RoBERTa, DeBERTa, ModernBERT) and of the "foundation model" idea that LLMs later pushed to its logical extreme.
+BERT locked in the pretrain → fine-tune pattern and showed one bidirectional model could be bent to nearly any NLP task with a small task head. Every encoder model since (RoBERTa, DeBERTa, ModernBERT) descends from it, and the "foundation model" idea is BERT's wager pushed to the extreme. The caveat I'd flag: NSP, which the paper sells as core, turned out to be mostly dead weight. RoBERTa just dropped it and got better. Worth remembering when you read the original's claims about sentence pairs.
 
 ## References
 

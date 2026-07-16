@@ -8,13 +8,11 @@ subcat: agents
 
 **Paper:** Wu, Bansal, Zhang, Wu, Zhang, Zhu, Li, Jiang, Zhang, Wang, Krishna, Wu, *AutoGen: Enabling Next-Gen LLM Applications via Multi-Agent Conversation*, 2023. [arXiv:2308.08155](https://arxiv.org/abs/2308.08155)
 
-## Why this paper matters
+ReAct and Reflexion give you a single-agent loop. Real jobs need roles: a coder, a critic, a person, a tool, all talking to each other. AutoGen makes that conversation the program. It is the seed idea behind CrewAI, MetaGPT, and most of the orchestration frameworks people actually deploy.
 
-ReAct and Reflexion describe **single-agent** loops. Real applications need **roles** — a coder, a critic, a user, a tool — collaborating. AutoGen makes *multi-agent conversation* the primitive: agents talk to each other, and that conversation *is* the program. It is the conceptual foundation of modern orchestration frameworks (AutoGen, CrewAI, MetaGPT).
+## The one abstraction: ConversableAgent
 
-## The core idea: everything is a ConversableAgent
-
-AutoGen's unit is the **ConversableAgent** — any participant that can send and receive messages, backed by one of:
+AutoGen's unit is the **ConversableAgent**: any participant that can send and receive messages, backed by one of:
 
 - an **LLM** (reasons / writes),
 - a **human** (approves or answers),
@@ -22,7 +20,7 @@ AutoGen's unit is the **ConversableAgent** — any participant that can send and
 
 Each agent is customizable via a system message, an LLM config, a human-input mode, and a max-consecutive-auto-replies. A **GroupChat** manager broadcasts each message to the group; agents respond until a termination condition is met.
 
-## A canonical pattern: Assistant + UserProxy
+## The pattern worth stealing: Assistant + UserProxy
 
 ```python
 assistant = ConversableAgent("assistant", llm_config={"model": "gpt-4"})
@@ -38,17 +36,17 @@ user_proxy.initiate_chat(
 # flow back -> assistant fixes -> loop until done
 ```
 
-The user proxy autonomously runs generated code and feeds stdout / tracebacks back, so the assistant can self-correct — a concrete Reflexion-style loop, multi-agent style.
+The user proxy autonomously runs generated code and feeds stdout and tracebacks back. That is a Reflexion-style self-correction loop, just split across two agents instead of one: the assistant sees its own errors and patches them.
 
-## Key results
+## What the paper showed
 
 - Substantially less engineering effort than wiring single-agent prompts by hand.
 - On coding and math benchmarks, multi-agent conversation outperformed single-agent prompting.
 - Human-in-the-loop modes let a person gate risky actions (e.g., before executing code).
 
-## Why it matters today
+## Where I'd actually use it
 
-Complex agent pipelines are almost never one model in a loop — they are **teams**: a planner, a worker, a critic, a retriever, a user. AutoGen's "conversation-as-computation" model is the mental framework for designing them, and it composes cleanly with RAG (retriever agent), ReAct (worker), and Reflexion (critic). Next in the series, Tree-of-Thoughts adds structured search to this deliberation.
+Complex agent pipelines are almost never one model in a loop. They are teams: a planner, a worker, a critic, a retriever, a user. AutoGen's "conversation-as-computation" model is the mental framework I reach for when I design them, and it composes cleanly with RAG (retriever agent), ReAct (worker), and Reflexion (critic). The part I'd flag: the paper shows the happy path, but a chatty group of agents is also where cost and latency quietly blow up, and nothing here tells you when to stop talking. Next in the series, Tree-of-Thoughts adds structured search to this deliberation.
 
 ## References
 

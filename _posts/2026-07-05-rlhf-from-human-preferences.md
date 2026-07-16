@@ -8,11 +8,9 @@ subcat: alignment
 
 **Paper:** Christiano, P., et al., *Deep Reinforcement Learning from Human Preferences*, NeurIPS 2017. [arXiv:1706.03741](https://arxiv.org/abs/1706.03741)
 
-## Why this paper matters
+Modern alignment starts here. The reason ChatGPT is helpful rather than a raw next-token predictor traces back to this loop. You can't hand-write a reward function for "good behavior" on a complex task, so Christiano et al. did something simpler: show a human two behaviors, let them pick, learn a reward model from those preferences, then optimize with RL. Learn the reward, then optimize it. That's the whole InstructGPT pipeline in embryo, and the root of the RLHF subtree.
 
-Modern alignment — the reason ChatGPT is helpful instead of a raw next-token predictor — starts here. Hand-designing a reward function for "good behavior" is impossible for complex tasks. Christiano et al. proposed a simple, profound loop: **let a human compare two behaviors and learn a reward model from those preferences**, then optimize the policy with RL. This "learn the reward, then optimize it" recipe is exactly what InstructGPT and every chat model since turned into the alignment pipeline. It is the root of the entire RLHF subtree.
-
-## The core idea: preferences → reward → policy
+## The loop: preferences → reward → policy
 
 **1. Collect preferences.** A human is shown two trajectories (or, for language, two completions) and picks the better one: $(x, y_w) \succ (x, y_l)$.
 
@@ -28,17 +26,17 @@ $$
 \max_{\pi_\theta}\; \mathbb{E}_{x,\,y\sim\pi_\theta}\big[r_\phi(x, y)\big] - \beta\, \mathrm{KL}\!\big[\pi_\theta(\cdot\mid x)\,\|\,\pi_{\text{ref}}(\cdot\mid x)\big]
 $$
 
-The KL term stops the policy from collapsing into reward exploitation.
+The KL term stops the policy from collapsing into reward exploitation, which is the same failure mode InstructGPT has to guard against years later.
 
-## What was demonstrated
+## What they actually showed
 
-- Agents learned complex behaviors (simulated robotics, Atari) from **a few hundred** preference labels — no hand-coded reward.
+- Agents learned complex behaviors (simulated robotics, Atari) from **a few hundred** preference labels, with no hand-coded reward.
 - The human-in-the-loop *comparison* interface is far cheaper than demonstrating full trajectories.
 - The reward model, though imperfect, was good enough to drive real learning.
 
-## Why it matters today
+## Where this sits
 
-This is the seed of InstructGPT/RLHF (covered earlier) and, indirectly, of DPO and Constitutional AI. The whole modern alignment story is: (1) learn a reward from human comparisons (this paper), (2) use it to fine-tune a language model (InstructGPT), (3) simplify the optimization (DPO), (4) replace human labels with principles (Constitutional AI). Read it as chapter one of "how models learn what we want."
+This is chapter one of how models learn what we want. InstructGPT picks up at step two, DPO takes step three and throws away the RL, Constitutional AI swaps the human labels for principles. The seed is this one: learn a reward from comparisons. My caveat is that preference data is only as honest as the humans labeling it, and a reward model trained on thin data will happily certify behavior nobody actually wanted.
 
 ## References
 

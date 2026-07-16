@@ -8,25 +8,25 @@ subcat: training
 
 **Paper:** Touvron et al., *LLaMA: Open and Efficient Foundation Language Models*, 2023. [arXiv:2302.13971](https://arxiv.org/abs/2302.13971) — followed by *LLaMA 2* (arXiv:2307.09288) and *LLaMA 3* (2024).
 
-## The premise
+## What Meta actually shipped
 
-At a time when the best models were closed and enormous, Meta released **LLaMA**: a family (7B, 13B, 33B, 65B) trained *only on public data* — and showed that a well-trained 13B model could beat much larger closed models. The thesis: **data quality and compute efficiency matter more than raw parameter count.**
+In 2023 the best models were closed and gigantic. Meta did something different: they released **LLaMA**, a family of 7B, 13B, 33B, and 65B models trained *only on public data*, and a well-trained 13B could beat models many times its size. The bet behind it was simple. Data quality and compute efficiency beat raw parameter count.
 
-## What made it work
+## The ingredients
 
 - **Public, heavily deduplicated data**, ~1.4T tokens, with a strong emphasis on high-quality sources.
 - Standard Transformer decoder with a few modern tweaks: **pre-normalization** (RMSNorm), **SwiGLU** activations, and **rotary positional embeddings (RoPE)** instead of absolute/sinusoidal encodings.
 - Compute-optimal scaling: train smaller models on *more* tokens than prior art.
 
-## Key results
+## What it proved
 
 - LLaMA-13B **outperformed GPT-3 (175B)** on most benchmarks.
 - LLaMA-65B was competitive with Chinchilla-70B and PaLM-540B.
 - Released (with a research license) as *weights*, not just a paper.
 
-## Why it changed everything
+## Why this one stuck
 
-LLaMA turned "training a frontier model" from a tolerated secret into a reproducible artifact the open community could build on. Within weeks, the ecosystem exploded: Alpaca, Vicuna, WizardLM, and eventually the entire open-weight stack (Mistral, Mixtral, Qwen, DeepSeek, Phi) trace their lineage here. It is the moment "open source" became a serious contender in LLMs.
+Before LLaMA, training a frontier model was a tolerated industry secret. After it, the weights were a thing you could download, and the open community ran with them. Within weeks Alpaca, Vicuna, and WizardLM appeared, then the whole open-weight lineage (Mistral, Mixtral, Qwen, DeepSeek, Phi) followed. This is the point where open source stopped being a hobbyist afterthought and became a real lane.
 
 ## Using a LLaMA-family model
 

@@ -8,11 +8,9 @@ subcat: architecture
 
 **Paper:** Dao et al., *FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness*, NeurIPS 2022. [arXiv:2205.14135](https://arxiv.org/abs/2205.14135)
 
-## The bottleneck nobody noticed
+The bottleneck people missed for years: standard attention materializes the `N × N` attention matrix and ships it to GPU **HBM** (high-bandwidth memory). For sequence length `N`, that matrix is `O(N²)` in memory. The real cost is the round trips, though. GPUs carry a lot of compute and comparatively little memory bandwidth, so the repeated HBM reads and writes, not the arithmetic, gate the runtime. FlashAttention's move is simple to state: never materialize the matrix.
 
-Standard attention computes the `N × N` attention matrix explicitly and writes it to GPU **HBM** (high-bandwidth memory). For sequence length `N`, that matrix is `O(N²)` in memory and, more importantly, the repeated HBM reads/writes dominate runtime — GPUs are compute-rich but memory-bandwidth-poor. FlashAttention's insight: you don't need to materialize the full matrix.
-
-## The idea: tiling + online softmax, kept in SRAM
+## The trick: tiling + online softmax in SRAM
 
 FlashAttention computes attention in **blocks** that fit in the fast on-chip SRAM, and uses the **online softmax** trick to accumulate partial results without seeing the whole matrix at once.
 
@@ -25,17 +23,17 @@ $$
 
 Because softmax is *shift-invariant*, correcting by `e^{m^{(i-1)} - m^{(i)}}` lets you merge blocks correctly. The output `O` accumulates `softmax(QKᵀ)V` block by block, never forming the `N × N` map.
 
-## Results
+## Results, briefly
 
 - **2–4×** faster training than standard attention at the time.
 - **5–20×** less memory (no `N × N` matrix), enabling **much longer contexts** (the foundation for long-context models).
-- Exact (not approximate) attention — same math, just a smarter schedule.
+- Exact (not approximate) attention. Same math, just a smarter schedule.
 
 Later versions (FlashAttention-2, -3) pushed further with better parallelism and FP8/attention-specific hardware.
 
-## Why it matters
+## The part that matters
 
-FlashAttention is invisible infrastructure, but it is *why* modern LLMs can have 128K–1M token contexts and train efficiently. It is the canonical example of **IO-aware algorithm design**: the right complexity analysis isn't FLOPs, it's memory traffic. If you build or serve models, this is the difference between "it doesn't fit" and "it scales."
+FlashAttention is invisible plumbing, but it's the reason modern LLMs can run 128K–1M token contexts and still train. It's the textbook case of **IO-aware algorithm design**: the number that matters isn't FLOPs, it's memory traffic. If you serve or train models, this is the line between "won't fit" and "scales." My open question is whether the SRAM-tiling win, which assumes the A100's specific SRAM/HBM split, carries as cleanly onto hardware that doesn't match that hierarchy. I wouldn't bet on it being free.
 
 ## References
 

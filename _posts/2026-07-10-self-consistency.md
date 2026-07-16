@@ -8,13 +8,11 @@ subcat: reasoning
 
 **Paper:** Wang, X., et al., *Self-Consistency Improves Chain-of-Thought Reasoning in Language Models*, ICLR 2023. [arXiv:2203.11171](https://arxiv.org/abs/2203.11171)
 
-## Why this paper matters
+CoT showed that asking a model to think step by step unlocks reasoning. But a single greedy path is brittle. One bad step and the whole answer goes off the rails. Self-Consistency fixes this with a change so small it feels like a cheat: sample a bunch of reasoning paths, then take the majority vote on the final answer. No training, no verifier. It lifted accuracy on math and commonsense benchmarks by double digits. If you do any reasoning with LLMs, this is the cheapest win available.
 
-Chain-of-Thought (CoT) showed that asking a model to "think step by step" unlocks reasoning. But a single greedy reasoning path is fragile — one bad step derails the answer. Self-Consistency makes CoT *robust* with a tiny change: **sample many reasoning paths and take the majority vote on the final answer.** It's a decoding trick, not a training trick, and it lifted accuracy on math and commonsense benchmarks by double digits. If you do any reasoning with LLMs, this is the cheapest gain you can get.
+## Marginalizing over paths
 
-## The core idea: marginalize over reasoning paths
-
-A reasoning problem usually has *many* valid chains that reach the same answer but *few* that reach a wrong one. Greedily picking one path ignores that. Instead:
+A reasoning problem usually has many valid chains that reach the same answer but few that reach a wrong one. Greedily picking one path throws that away. Instead:
 
 1. Sample $k$ diverse CoT paths $\{z_1, \dots, z_k\}$ with temperature $> 0$.
 2. Parse the final answer $a_i$ from each path.
@@ -24,9 +22,9 @@ $$
 \hat{a} = \operatorname*{argmax}_{a} \sum_{i:\, \text{ans}(z_i) = a} p(z_i \mid x)
 $$
 
-Intuition: the correct answer is a *fixed point* — many independent samplings converge to it; wrong answers scatter.
+The intuition is that the correct answer is a fixed point. Sample the model many times and the right answer keeps showing up, while the wrong ones scatter.
 
-## A minimal sketch
+## The six-line version
 
 ```python
 paths = [model.generate(prompt, temperature=0.7) for _ in range(20)]
@@ -36,15 +34,15 @@ final = max(set(answers), key=answers.count)   # majority vote
 
 No extra training, no verifier model required.
 
-## Key results
+## Results, briefly
 
 - GSM8K: ~70% → ~78% (and higher with more samples) for PaLM 540B.
 - Large gains on MATH, StrategyQA, ARC-challenge, and other multi-step tasks.
 - Near or surpassing supervised verifier methods at the time, with zero additional supervision.
 
-## Why it matters today
+## The part worth keeping
 
-Self-Consistency is the practical companion to the CoT post. CoT gives the model a reasoning *process*; self-consistency makes that process *reliable*. It's also the conceptual ancestor of "test-time compute / sampling many thoughts" ideas that reasoning models (and Tree-of-Thought search) build on.
+Self-Consistency is the practical companion to the CoT post. CoT hands the model a reasoning process; self-consistency makes that process hold up. It's also the ancestor of the "sample many thoughts at test time" idea that reasoning models and Tree-of-Thought search lean on. The catch I'd flag: you pay for it in tokens, and on a question with no real path to a fixed point, more samples just buy you more confident noise.
 
 ## References
 
