@@ -16,7 +16,7 @@ title: About
 .cv-sub{color:#555;font-size:.92rem;margin-top:2px;}
 </style>
 
-I'm **Jiawei Cui**, a software engineer in Shenzhen. Five years at Tencent building front-end systems (incl. the open-source Cherry Markdown editor); now focused on AI/ML — training models, studying LLM papers, and quantitative ML on the side. This site is where I think in public.
+I'm **Jiawei Cui**, a software engineer in Shenzhen. Five years at Tencent building front-end systems (incl. the open-source Cherry Markdown editor); now focused on AI/ML — training models and studying LLM papers. This site is where I think in public.
 
 ## Education
 
@@ -84,7 +84,9 @@ I'm **Jiawei Cui**, a software engineer in Shenzhen. Five years at Tencent build
 
 ## Patents
 
-- CN115878098A · CN115705465A · CN115705142A
+- [CN115878098A](https://patents.google.com/patent/CN115878098A/)
+- [CN115705465A](https://patents.google.com/patent/CN115705465A/)
+- [CN115705142A](https://patents.google.com/patent/CN115705142A/)
 
 ## Standardized Tests
 
