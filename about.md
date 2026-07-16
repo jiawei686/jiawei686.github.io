@@ -14,6 +14,8 @@ title: About
 .cv-title:hover{text-decoration:underline;}
 .cv-date{color:#9a9a9a;font-size:.84rem;white-space:nowrap;}
 .cv-sub{color:#555;font-size:.92rem;margin-top:2px;}
+.cv-sub a{color:#2a7ae2;text-decoration:none;}
+.cv-sub a:hover{text-decoration:underline;}
 </style>
 
 I'm **Jiawei Cui**, a software engineer in Shenzhen. Five years at Tencent building front-end systems (incl. the open-source Cherry Markdown editor); now focused on AI/ML — training models and studying LLM papers. This site is where I think in public.
@@ -43,14 +45,14 @@ I'm **Jiawei Cui**, a software engineer in Shenzhen. Five years at Tencent build
   <div class="cv-item">
     <div class="cv-logo"><img src="{{ site.baseurl }}/public/img/tencent.svg" alt="Tencent"></div>
     <div class="cv-body">
-      <div class="cv-row"><span class="cv-title">Senior Frontend Engineer</span><span class="cv-date">2019 – 2024</span></div>
-      <div class="cv-sub">Tencent — Shenzhen, China · 3× 5-Star rating · Cherry Markdown PMC</div>
+      <div class="cv-row"><span class="cv-title">Senior Software Engineer</span><span class="cv-date">2019 – 2024</span></div>
+      <div class="cv-sub">Tencent — Shenzhen, China · 3× 5-Star rating · <a href="https://cloud.tencent.com/developer/article/2330949">Cherry Markdown PMC</a></div>
     </div>
   </div>
   <div class="cv-item">
     <div class="cv-logo"><img src="{{ site.baseurl }}/public/img/tencent.svg" alt="Tencent"></div>
     <div class="cv-body">
-      <div class="cv-row"><span class="cv-title">Frontend Engineer Intern</span><span class="cv-date">2018</span></div>
+      <div class="cv-row"><span class="cv-title">Software Engineer Intern</span><span class="cv-date">2018</span></div>
       <div class="cv-sub">Tencent — Shenzhen, China</div>
     </div>
   </div>
