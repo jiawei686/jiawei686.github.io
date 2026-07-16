@@ -79,7 +79,7 @@ I'm **Jiawei Cui**, a software engineer in Shenzhen. Five years at Tencent build
     <div class="cv-logo"><img src="{{ site.baseurl }}/public/img/github.svg" alt="GitHub"></div>
     <div class="cv-body">
       <div class="cv-row"><a class="cv-title" href="https://github.com/jiawei686/wechat-dev-mcp">wechat-dev-mcp</a><span class="cv-date">Owner</span></div>
-      <div class="cv-sub">WeChat Mini-Program dev tooling · jiawei686</div>
+      <div class="cv-sub">MCP server for AI agent to use WeChat DevTools automatically</div>
     </div>
   </div>
 </div>
