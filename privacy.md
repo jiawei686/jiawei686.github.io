@@ -1,6 +1,7 @@
 ---
 layout: page
 title: Privacy Policy
+hide_in_sidebar: true
 ---
 
 **Effective date:** July 16, 2026

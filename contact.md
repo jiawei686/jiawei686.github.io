@@ -1,6 +1,7 @@
 ---
 layout: page
 title: Contact
+hide_in_sidebar: true
 ---
 
 Have a question, a correction, or a paper you would like me to dig into? I would love to hear from you.
