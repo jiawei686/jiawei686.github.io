@@ -20,6 +20,10 @@ title:            Jiawei's Blog
 description:      >
     Notes on LLMs, deep learning, and building things that work.
 
+# SEO: keywords help Baidu/other engines; the three names make the site
+# discoverable for "cuijiawei", "kiritocui", and "崔家维" searches.
+keywords:         "cuijiawei, kiritocui, 崔家维, Jiawei Cui, LLM, large language models, deep learning, transformer, machine learning, AI blog, paper deep-dive"
+
 # The tags listed as entries in the sidebar
 sidebar_tags:     [llm, ai, data, projects, engineering]
 
@@ -28,7 +32,10 @@ image:            /public/img/nap.jpg
 color:            "#656565"
 
 author:
-  name:           "Jiawei"
+  name:           "Jiawei Cui"
+  # Alternate spellings / handles — used in JSON-LD so search engines
+  # associate them with this site without showing them on the page.
+  alternate_names: ["kiritocui", "崔家维", "cuijiawei"]
   github:         jiawei686
   photo:          /public/img/head.jpg
 
