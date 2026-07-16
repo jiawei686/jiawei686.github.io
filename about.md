@@ -6,8 +6,8 @@ title: About
 <style>
 .cv{margin:4px 0 20px;}
 .cv-item{display:flex;align-items:center;gap:14px;margin:14px 0;}
-.cv-logo{width:60px;flex:0 0 60px;display:flex;align-items:center;justify-content:center;}
-.cv-logo img{height:34px;width:auto;max-width:60px;object-fit:contain;}
+.cv-logo{width:84px;flex:0 0 84px;display:flex;align-items:center;justify-content:center;}
+.cv-logo img{height:50px;width:auto;max-width:84px;object-fit:contain;}
 .cv-body{flex:1;min-width:0;}
 .cv-row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;}
 .cv-title{font-weight:700;font-size:1.04rem;text-decoration:none;color:#2a2a2a;}
