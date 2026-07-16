@@ -6,10 +6,12 @@ title: About
 <style>
 .cv{margin:4px 0 20px;}
 .cv-item{display:flex;align-items:center;gap:14px;margin:14px 0;}
-.cv-logo{width:42px;height:42px;flex:0 0 42px;object-fit:contain;border-radius:9px;background:#f3f3f3;padding:4px;}
+.cv-logo{width:60px;flex:0 0 60px;display:flex;align-items:center;justify-content:center;}
+.cv-logo img{height:34px;width:auto;max-width:60px;object-fit:contain;}
 .cv-body{flex:1;min-width:0;}
 .cv-row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;}
-.cv-title{font-weight:700;font-size:1.04rem;}
+.cv-title{font-weight:700;font-size:1.04rem;text-decoration:none;color:#2a2a2a;}
+.cv-title:hover{text-decoration:underline;}
 .cv-date{color:#9a9a9a;font-size:.84rem;white-space:nowrap;}
 .cv-sub{color:#555;font-size:.92rem;margin-top:2px;}
 </style>
@@ -20,14 +22,14 @@ I'm **Jiawei Cui**, a software engineer in Shenzhen. Five years at Tencent build
 
 <div class="cv">
   <div class="cv-item">
-    <img class="cv-logo" src="{{ site.baseurl }}/public/img/ntu.svg" alt="NTU">
+    <div class="cv-logo"><img src="{{ site.baseurl }}/public/img/ntu.png" alt="NTU"></div>
     <div class="cv-body">
       <div class="cv-row"><span class="cv-title">Nanyang Technological University</span><span class="cv-date">2026 – 2028 (expected)</span></div>
-      <div class="cv-sub">M.S. in Artificial Intelligence — Singapore</div>
+      <div class="cv-sub">M.S. in Data Science (MSDS) — Singapore</div>
     </div>
   </div>
   <div class="cv-item">
-    <img class="cv-logo" src="{{ site.baseurl }}/public/img/sysu.svg" alt="SYSU">
+    <div class="cv-logo"><img src="{{ site.baseurl }}/public/img/sysu.png" alt="SYSU"></div>
     <div class="cv-body">
       <div class="cv-row"><span class="cv-title">Sun Yat-sen University</span><span class="cv-date">2015 – 2019</span></div>
       <div class="cv-sub">B.S., Information and Computing Science — Guangzhou, China</div>
@@ -39,24 +41,17 @@ I'm **Jiawei Cui**, a software engineer in Shenzhen. Five years at Tencent build
 
 <div class="cv">
   <div class="cv-item">
-    <img class="cv-logo" src="{{ site.baseurl }}/public/img/tencent.svg" alt="Tencent">
+    <div class="cv-logo"><img src="{{ site.baseurl }}/public/img/tencent.svg" alt="Tencent"></div>
     <div class="cv-body">
       <div class="cv-row"><span class="cv-title">Senior Frontend Engineer</span><span class="cv-date">2019 – 2024</span></div>
       <div class="cv-sub">Tencent — Shenzhen, China · 3× 5-Star rating · Cherry Markdown PMC</div>
     </div>
   </div>
   <div class="cv-item">
-    <img class="cv-logo" src="{{ site.baseurl }}/public/img/tencent.svg" alt="Tencent">
+    <div class="cv-logo"><img src="{{ site.baseurl }}/public/img/tencent.svg" alt="Tencent"></div>
     <div class="cv-body">
       <div class="cv-row"><span class="cv-title">Frontend Engineer Intern</span><span class="cv-date">2018</span></div>
       <div class="cv-sub">Tencent — Shenzhen, China</div>
-    </div>
-  </div>
-  <div class="cv-item">
-    <img class="cv-logo" src="{{ site.baseurl }}/public/img/tencent.svg" alt="Quant">
-    <div class="cv-body">
-      <div class="cv-row"><span class="cv-title">Quantitative Trading (Self-Initiated)</span><span class="cv-date">2025</span></div>
-      <div class="cv-sub">Multi-factor ML & ETF momentum strategies</div>
     </div>
   </div>
 </div>
@@ -65,28 +60,27 @@ I'm **Jiawei Cui**, a software engineer in Shenzhen. Five years at Tencent build
 
 <div class="cv">
   <div class="cv-item">
-    <img class="cv-logo" src="{{ site.baseurl }}/public/img/github.svg" alt="GitHub">
+    <div class="cv-logo"><img src="{{ site.baseurl }}/public/img/github.svg" alt="GitHub"></div>
     <div class="cv-body">
-      <div class="cv-row"><span class="cv-title">Cherry Markdown</span><span class="cv-date">4.4k ★</span></div>
-      <div class="cv-sub">Co-starter & owner · Tencent/cherry-markdown · used by 20+ teams</div>
+      <div class="cv-row"><a class="cv-title" href="https://github.com/Tencent/cherry-markdown">Cherry Markdown</a><span class="cv-date">4.4k ★</span></div>
+      <div class="cv-sub">Co-starter & owner · used by 20+ teams</div>
     </div>
   </div>
   <div class="cv-item">
-    <img class="cv-logo" src="{{ site.baseurl }}/public/img/github.svg" alt="GitHub">
+    <div class="cv-logo"><img src="{{ site.baseurl }}/public/img/github.svg" alt="GitHub"></div>
     <div class="cv-body">
-      <div class="cv-row"><span class="cv-title">hippy-vue-html</span><span class="cv-date">Owner</span></div>
+      <div class="cv-row"><a class="cv-title" href="https://github.com/hippy-contrib/hippy-vue-html">hippy-vue-html</a><span class="cv-date">Owner</span></div>
       <div class="cv-sub">Cross-platform rich-text component · hippy-contrib</div>
     </div>
   </div>
+  <div class="cv-item">
+    <div class="cv-logo"><img src="{{ site.baseurl }}/public/img/github.svg" alt="GitHub"></div>
+    <div class="cv-body">
+      <div class="cv-row"><a class="cv-title" href="https://github.com/jiawei686/wechat-dev-mcp">wechat-dev-mcp</a><span class="cv-date">Owner</span></div>
+      <div class="cv-sub">WeChat Mini-Program dev tooling · jiawei686</div>
+    </div>
+  </div>
 </div>
-
-## Technical Skills
-
-- **Python** (advanced, Numba tuning), **C++**, **JavaScript**; Linux, Docker, Nginx, research visualization
-
-## Awards & Honors
-
-- Tencent Open Source Excellence Award · Rhino Bird Excellent Tutor · SYSU ACM Contest 1st Prize · NOIP 1st Prize
 
 ## Patents
 
