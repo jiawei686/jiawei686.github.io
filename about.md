@@ -17,7 +17,8 @@ a.cv-title:hover{text-decoration:underline;}
 .cv-sub a{color:#2a7ae2;text-decoration:none;}
 .cv-sub a:hover{text-decoration:underline;}
 .patents{margin:6px 0 18px;}
-.patents li{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.patents li{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-left:1.1em;position:relative;}
+.patents li::before{content:"\2022";position:absolute;left:0;top:0;color:#2a2a2a;}
 .patents li a{color:#2a2a2a;text-decoration:none;}
 .patents li a:hover{text-decoration:underline;}
 </style>
