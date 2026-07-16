@@ -65,11 +65,19 @@
       color: #fff;
       background: {{ color }};
     }
+    .site-logo {
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      margin-bottom: 12px;
+      display: block;
+      box-shadow: 0 2px 8px rgba(0,0,0,.18);
+    }
   </style>
 
   <!-- Icons -->
-  <!-- <link rel="apple-touch-icon-precomposed" sizes="144x144" href="{{ site.baseurl }}/public/apple-touch-icon-144-precomposed.png"> -->
-  <!-- <link rel="shortcut icon" href="{{ site.baseurl }}/public/favicon.ico"> -->
+  <link rel="icon" href="{{ site.baseurl }}/public/img/logo.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="{{ site.baseurl }}/public/img/apple-touch-icon.png">
 
   <!-- RSS -->
   <link rel="alternate" type="application/atom+xml" title="{{ site.title }}" href="{{ site.baseurl }}/atom.xml">

@@ -92,9 +92,9 @@ I'm **Jiawei Cui**, a software engineer in Shenzhen. Five years at Tencent build
 ## Patents
 
 <div class="patents" markdown="1">
-- [CN115878098A](https://patents.google.com/patent/CN115878098A/) — Data processing method, device, equipment and storage medium
-- [CN115705465A](https://patents.google.com/patent/CN115705465A/) — Presentation method, device, equipment and storage medium of data analysis result
-- [CN115705142A](https://patents.google.com/patent/CN115705142A/) — Dual-region synchronous presentation method and device, electronic equipment and storage medium
+- [CN115878098A — Data processing method, device, equipment and storage medium](https://patents.google.com/patent/CN115878098A/)
+- [CN115705465A — Presentation method, device, equipment and storage medium of data analysis result](https://patents.google.com/patent/CN115705465A/)
+- [CN115705142A — Dual-region synchronous presentation method and device, electronic equipment and storage medium](https://patents.google.com/patent/CN115705142A/)
 
 </div>
 
