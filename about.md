@@ -6,14 +6,14 @@ title: About
 <style>
 .cv{margin:4px 0 20px;}
 .cv-item{display:flex;align-items:center;gap:14px;margin:14px 0;}
-.cv-logo{width:84px;flex:0 0 84px;display:flex;align-items:center;justify-content:center;margin-top:8px;}
+.cv-logo{width:84px;flex:0 0 84px;display:flex;align-items:center;justify-content:center;margin-top:14px;}
 .cv-logo img{height:50px;width:auto;max-width:84px;object-fit:contain;}
 .cv-body{flex:1;min-width:0;}
 .cv-row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;}
-.cv-title{font-weight:700;font-size:1.04rem;text-decoration:none;color:#2a2a2a;}
+.cv-title{font-weight:700;font-size:1.04rem;line-height:1.25;text-decoration:none;color:#2a2a2a;}
 a.cv-title:hover{text-decoration:underline;}
 .cv-date{color:#9a9a9a;font-size:.84rem;white-space:nowrap;}
-.cv-sub{color:#555;font-size:.92rem;margin-top:2px;}
+.cv-sub{color:#555;font-size:.92rem;line-height:1.3;margin-top:2px;}
 .cv-sub a{color:#2a7ae2;text-decoration:none;}
 .cv-sub a:hover{text-decoration:underline;}
 .patents{margin:6px 0 18px;}
