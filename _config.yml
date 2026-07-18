@@ -27,6 +27,10 @@ description:      >
 # discoverable for "cuijiawei", "kiritocui", and "崔家维" searches.
 keywords:         "cuijiawei, kiritocui, 崔家维, Jiawei Cui, LLM, large language models, deep learning, transformer, machine learning, AI blog, paper deep-dive"
 
+# Default Open Graph / Twitter image (1200x630 share card). Used by head.html
+# when a page has no per-post card. Keep `image` untouched for the sidebar backdrop.
+og_image:          /public/img/og/og-default.png
+
 # The tags listed as entries in the sidebar
 sidebar_tags:     [llm, ai, data, projects, engineering]
 
