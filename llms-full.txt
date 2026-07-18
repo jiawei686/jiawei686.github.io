@@ -1,0 +1,4429 @@
+# cuijiawei.cn
+
+> Full-text mirror of all posts for LLM ingestion. See llms.txt for the curated index.
+
+## Index
+- [Home](https://cuijiawei.cn/)
+- [llms.txt](https://cuijiawei.cn/llms.txt)
+- [Sitemap](https://cuijiawei.cn/sitemap.xml)
+- [Atom feed](https://cuijiawei.cn/atom.xml)
+
+## Large Language Models & AI Papers (25)
+
+### The Transformer: Attention Is All You Need
+URL: https://cuijiawei.cn/2026/03/01/the-transformer-attention-is-all-you-need/
+
+**Paper:** Vaswani et al., *Attention Is All You Need*, NeurIPS 2017. [arXiv:1706.03762](https://arxiv.org/abs/1706.03762)
+
+You've almost certainly used a Transformer today. GPT, LLaMA, Claude, DeepSeek. All of them are the same wager: throw out recurrence and convolutions, keep attention, then scale the hell out of it. In 2017 that was a weird bet. The field ran on RNNs and LSTMs that read tokens one at a time, which meant two things: you couldn't parallelize across the sequence, and anything you needed to "remember" had to survive a long chain of recurrent steps. The Transformer deleted both problems. I'd argue it's still the cleanest architectural move the field has made.
+
+## Reading the math
+
+Attention maps a query `Q` against a set of key–value pairs `(K, V)`:
+
+$$
+\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^\top}{\sqrt{d_k}}\right)V
+$$
+
+`QKᵀ` is just a relevance score: how much each key cares about this query. The `√d_k` in the denominator is the part people skip. As `d_k` grows, the dot products get huge, softmax saturates, and the gradient collapses. Dividing first keeps it tame. Then softmax turns the scores into weights and `V` gets averaged by them.
+
+Multi-head attention runs this `h` times in parallel, each with its own learned projections, then concatenates:
+
+$$
+\text{MultiHead}(Q, K, V) = \text{Concat}(\text{head}_1, \dots, \text{head}_h)W^O
+$$
+
+$$
+\text{head}_i = \text{Attention}(QW_i^Q, KW_i^K, VW_i^V)
+$$
+
+The point of multiple heads isn't elegance, it's coverage. Different heads learn to track different relationships (syntax, coreference, rough word order) at the same time.
+
+## Positional encoding
+
+No recurrence means no built-in sense of order, so they bolt on a fixed sinusoidal signal to the input embeddings:
+
+$$
+PE_{(pos, 2i)} = \sin\left(\frac{pos}{10000^{2i/d_{model}}}\right), \quad
+PE_{(pos, 2i+1)} = \cos\left(\frac{pos}{10000^{2i/d_{model}}}\right)
+$$
+
+What I like about this: because the signal is a fixed function of position, the model can generalize to sequence lengths it never saw in training, and relative positions fall out as linear offsets. Cheap and it works.
+
+## Architecture
+
+A stack of `N = 6` encoder and `N = 6` decoder layers. Base config: `d_model = 512`, `h = 8` heads, `d_k = d_v = 64`, feed-forward dimension `2048`. They trained it on 8 GPUs for about 3.5 days, which at the time was dramatically cheaper than the prior state of the art.
+
+## A minimal PyTorch implementation
+
+```python
+import torch
+import torch.nn.functional as F
+
+def scaled_dot_product_attention(q, k, v, mask=None):
+    d_k = q.size(-1)
+    scores = q @ k.transpose(-2, -1) / d_k ** 0.5
+    if mask is not None:
+        scores = scores.masked_fill(mask == 0, float("-inf"))
+    attn = F.softmax(scores, dim=-1)
+    return attn @ v
+
+class MultiHeadAttention(torch.nn.Module):
+    def __init__(self, d_model=512, h=8):
+        super().__init__()
+        self.h = h
+        self.linears = torch.nn.ModuleList(
+            [torch.nn.Linear(d_model, d_model) for _ in range(4)])
+
+    def forward(self, q, k, v, mask=None):
+        B, T, D = q.shape
+        q, k, v = [lin(x).view(B, -1, self.h, D // self.h).transpose(1, 2)
+                   for lin, x in zip(self.linears[:3], (q, k, v))]
+        out = scaled_dot_product_attention(q, k, v, mask)
+        out = out.transpose(1, 2).contiguous().view(B, -1, D)
+        return self.linears[3](out)
+```
+
+## Results, briefly
+
+- WMT 2014 English–German: **28.4 BLEU**, roughly +2 BLEU over the previous best at about 12× less training cost.
+- WMT 2014 English–French: 41.8 BLEU, again for a fraction of the cost.
+- Quality kept climbing with more layers and heads. The architecture scaled, and that turned out to be the whole story.
+
+## The part that matters for you
+
+Every other post in this series sits on this backbone. Pretraining, RLHF, MoE, efficient attention: none of it exists without the attention math. If your goal is to move past prompting and actually reason about these systems, this is the page to get comfortable with. The Harvard NLP "Annotated Transformer" is the best line-by-line follow-up I know.
+
+## References
+
+- Vaswani et al. (2017). *Attention Is All You Need.* [arXiv:1706.03762](https://arxiv.org/abs/1706.03762)
+- Harvard NLP, *The Annotated Transformer*: an excellent line-by-line implementation.
+
+---
+
+### BERT: Bidirectional Pretraining from Transformers
+URL: https://cuijiawei.cn/2026/03/08/bert-bidirectional-pretraining/
+
+**Paper:** Devlin et al., *BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding*, NAACL 2019. [arXiv:1810.04805](https://arxiv.org/abs/1810.04805)
+
+You've probably used a Transformer encoder today without naming it. The original Transformer was an encoder–decoder built for translation. GPT-style models read left to right, each token predicting the next, so every token only sees what's to its left. That's fine for generation and terrible for classification, question answering, or NER, where a word's meaning comes from both sides. BERT's bet was straightforward: pretrain a deep encoder to read both directions at once, then fine-tune it on whatever you actually want.
+
+## The two objectives
+
+**Masked Language Modeling (MLM).** Randomly mask 15% of input tokens and train the model to reconstruct them.
+
+- 80% replaced with `[MASK]`
+- 10% replaced with a random token
+- 10% left unchanged (to reduce train/serve mismatch)
+
+This forces a bidirectional representation: predicting a masked word pulls from left and right context both.
+
+**Next Sentence Prediction (NSP).** Given sentence A and B, predict whether B actually follows A. This teaches inter-sentence relationships useful for QA and inference.
+
+## The architecture
+
+BERT uses the Transformer **encoder only**:
+
+- **BERT-Base:** 12 layers, `d_model = 768`, 12 heads, 110M params.
+- **BERT-Large:** 24 layers, `d_model = 1024`, 16 heads, 340M params.
+
+Pretrained on BooksCorpus (800M words) + English Wikipedia (2,500M words) for 4 days on 4–16 TPUs.
+
+## Using it (Hugging Face)
+
+```python
+from transformers import AutoTokenizer, AutoModel
+
+tok = AutoTokenizer.from_pretrained("bert-base-uncased")
+model = AutoModel.from_pretrained("bert-base-uncased")
+
+text = "Deep learning shifted Jiawei from software to [MASK]."
+out = model(**tok(text, return_tensors="pt"))
+# out.last_hidden_state[:, 0, :] is the [CLS] pooler representation
+```
+
+The `[CLS]` token's final hidden state is the standard sentence embedding for classification.
+
+## Results, briefly
+
+- GLUE benchmark: **80.5%** (vs 72.6% for prior SOTA), a jump of nearly 8 points.
+- SQuAD v1.1: 86.9 F1 (vs 81.9 human-at-the-time SOTA).
+- BERT-Base alone beat the previous best *ensemble* on several tasks.
+
+## The legacy
+
+BERT locked in the pretrain → fine-tune pattern and showed one bidirectional model could be bent to nearly any NLP task with a small task head. Every encoder model since (RoBERTa, DeBERTa, ModernBERT) descends from it, and the "foundation model" idea is BERT's wager pushed to the extreme. The caveat I'd flag: NSP, which the paper sells as core, turned out to be mostly dead weight. RoBERTa just dropped it and got better. Worth remembering when you read the original's claims about sentence pairs.
+
+## References
+
+- Devlin et al. (2018). *BERT.* [arXiv:1810.04805](https://arxiv.org/abs/1810.04805)
+- Liu et al. (2019). *RoBERTa: A Robustly Optimized BERT Pretraining Approach.* [arXiv:1907.11692](https://arxiv.org/abs/1907.11692)
+
+---
+
+### GPT-3 and Few-Shot Learning at Scale
+URL: https://cuijiawei.cn/2026/03/15/gpt-3-few-shot-learners/
+
+**Paper:** Brown et al., *Language Models are Few-Shot Learners*, NeurIPS 2020. [arXiv:2005.14165](https://arxiv.org/abs/2005.14165)
+
+The experiment GPT-3 ran was simple to state and expensive to pull off. Take a 175 billion parameter model, train it on a giant web corpus, and then never touch its weights for a new task. What do you get? It learns new tasks **in context**, straight from the prompt. Few-shot or zero-shot, with no gradients anywhere.
+
+## The three ways to query it
+
+Given a task, you can condition the model differently:
+
+- **Zero-shot:** `Translate to French: <english>` → answer.
+- **One/few-shot:** prepend 1–N exemplars `(input, output)` pairs, then the real input.
+- **Fine-tuning (baseline):** update weights (not used by GPT-3 at inference).
+
+The part that surprised people: few-shot beat zero-shot every time, and occasionally came close to a fine-tuned model, all with *zero* parameter updates.
+
+## How big, exactly
+
+| Model | Params | Train tokens |
+|-------|--------|--------------|
+| GPT-3 | 175B   | ~300B        |
+
+Trained on CommonCrawl, WebText2, Books, Wikipedia. The architecture is a 96-layer decoder-only Transformer (`d_model = 12288`, 96 heads), essentially GPT-2 scaled ~100×.
+
+## What in-context learning actually is
+
+A model this large has effectively "seen" most task patterns during pretraining. The prompt acts as a retrieval key that flips on the relevant behavior already sitting in its parameters. Modern takes frame in-context learning as implicit Bayesian inference, or as a little algorithm the model runs over the context.
+
+## What it could do
+
+- On many NLP benchmarks, few-shot GPT-3 matched or exceeded task-specific fine-tuned models of the era.
+- TriviaQA, closed-book QA: dramatically better than GPT-2.
+- It could write code, summarize, translate, and do arithmetic unevenly, but without any task training.
+
+## A minimal call
+
+```python
+import openai  # or any OpenAI-compatible endpoint
+
+resp = openai.chat.completions.create(
+    model="gpt-3.5-turbo",  # spiritual successor
+    messages=[
+        {"role": "system", "content": "You are a terse translator."},
+        {"role": "user", "content": "Translate to French: The model learned in context."},
+    ],
+)
+print(resp.choices[0].message.content)
+```
+
+## The shift it caused
+
+GPT-3 moved the field from "train a model per task" to "prompt one giant model." It made **in-context learning** a real capability and set up instruction tuning (InstructGPT) and the ChatGPT moment. If you read one paper about scale, make it this one. The thing I keep coming back to: the model was undertrained relative to its size, and it still worked. That undershoot is exactly why the scaling and Chinchilla posts matter.
+
+## References
+
+- Brown et al. (2020). *Language Models are Few-Shot Learners.* [arXiv:2005.14165](https://arxiv.org/abs/2005.14165)
+
+---
+
+### InstructGPT: Aligning LLMs with Human Preference (RLHF)
+URL: https://cuijiawei.cn/2026/03/22/instructgpt-rlhf-alignment/
+
+**Paper:** Ouyang et al., *Training language models to follow instructions with human feedback (InstructGPT)*, 2022. [arXiv:2203.02155](https://arxiv.org/abs/2203.02155)
+
+GPT-3 could already do the task. What it couldn't do was the task you actually asked for: it was evasive, verbose, and happy to produce content people didn't want. The gap wasn't capability, it was alignment, getting the model to do what the user meant rather than what the next token most likely was. InstructGPT is where the now-standard RLHF recipe shows up, and it's the reason ChatGPT behaves the way it does.
+
+## The recipe, in three stages
+
+**Stage 1: Supervised Fine-Tuning (SFT).** Collect demonstration data: humans write ideal responses to prompts, then fine-tune the base model on those.
+
+**Stage 2: Reward Model (RM).** Now you collect comparison data. Same prompt, several model outputs, humans rank them best to worst. Train a reward model `r_φ(x, y)` to predict the preferred ordering, a Bradley–Terry model over pairwise preferences.
+
+**Stage 3: Reinforcement Learning (PPO).** Optimize the policy to maximize the reward model's score, but hold it near the SFT model with a KL penalty:
+
+$$
+\max_{\pi_\theta}\; \mathbb{E}_{x \sim D,\; y \sim \pi_\theta}\Big[\,r_\phi(x, y) - \beta\,\text{KL}\big(\pi_\theta(y \mid x)\,\|\,\pi_{\text{ref}}(y \mid x)\big)\,\Big]
+$$
+
+The KL term is the load-bearing piece. Drop it and the policy drifts off to exploit whatever loophole the reward model left open, that's reward hacking, and it forgets how to talk. Keep it and you stay in distribution.
+
+## Results, briefly
+
+- A **1.3B** InstructGPT model was preferred over the **175B** GPT-3 on the majority of prompts.
+- Human evaluators preferred InstructGPT outputs **~85%** of the time vs GPT-3.
+- It became markedly more truthful and less toxic without sacrificing capability.
+
+## A PPO sketch
+
+```python
+# Conceptual: optimize policy against a reward model with a KL constraint
+for batch in dataloader:
+    prompts = batch["prompt"]
+    responses = policy.generate(prompts)
+    rewards = reward_model(prompts, responses)
+    kl = kl_divergence(policy, ref_policy, prompts, responses)
+    loss = -(rewards - beta * kl).mean()   # maximize -> negate
+    loss.backward(); optimizer.step()
+```
+
+(Full implementations live in libraries like TRL, OpenRLHF, and Axolotl.)
+
+## The part worth holding onto
+
+RLHF is the bridge between a fluent next-token predictor and a helpful assistant. Nearly every chat model you use today, proprietary or open-weight, runs some variant of this pipeline. The thing I'd keep front of mind: once you understand the reward-model plus KL-penalized PPO loop, the failure modes stop looking like magic. Reward hacking and distribution shift become things you can reason about instead of fears you recite.
+
+## References
+
+- Ouyang et al. (2022). *InstructGPT.* [arXiv:2203.02155](https://arxiv.org/abs/2203.02155)
+- Christiano et al. (2017). *Deep RL from Human Preferences.* [arXiv:1706.03741](https://arxiv.org/abs/1706.03741)
+
+---
+
+### Chain-of-Thought Prompting: Let the Model Think Step by Step
+URL: https://cuijiawei.cn/2026/03/29/chain-of-thought-prompting/
+
+**Paper:** Wei et al., *Chain-of-Thought Prompting Elicits Reasoning in Large Language Models*, 2022. [arXiv:2201.11903](https://arxiv.org/abs/2201.11903)
+
+On multi-step problems, arithmetic, commonsense, symbolic, LLMs were weak when you asked for the answer directly. The fix was almost embarrassingly simple. Prompt the model to show its intermediate reasoning steps before it commits to a final answer. That "chain of thought" (CoT) unlocked a big chunk of reasoning ability that was sitting there the whole time.
+
+## Two ways to do it
+
+**Few-shot CoT.** Give exemplars that include a worked-out reasoning trace, then the question:
+
+```
+Q: Roger has 5 tennis balls. He buys 2 cans of 3. How many now?
+A: Roger started with 5. 2 cans of 3 = 6. 5 + 6 = 11. Answer: 11.
+
+Q: <real question>
+A:
+```
+
+**Zero-shot CoT.** Just append the magic phrase "Let's think step by step." No exemplars needed.
+
+## Why showing your work helps
+
+Spelling out the reasoning gives the model more compute in the literal sense: more sequential steps to break the problem apart, and each step is an easier prediction than a blind leap to the answer. The side benefit is that you can read the reasoning, which makes the model's failures inspectable instead of mysterious.
+
+## Results, briefly
+
+- GSM8K (grade-school math): PaLM 540B jumped from **56%** (direct) to **72%** (CoT).
+- Gains scale with model size. CoT barely helped small models but transformed large ones, which is an emergent property of scale.
+- Improvements across arithmetic, commonsense (StrategyQA), and symbolic reasoning.
+
+## A tiny demo
+
+```python
+prompt = """Solve step by step.
+Q: A shop sells apples at 3 for $2. I buy 12 apples and a $5 bread. Total?
+A: Let's think step by step."""
+# Model returns: 12 apples = 4 sets of 3 -> 4 * $2 = $8. Plus $5 bread = $13. Answer: $13.
+```
+
+## The honest take
+
+CoT is the ancestor of most of what came after. Self-consistency sampling, where you generate many reasoning paths and vote. Tool-use. The explicit reasoning tokens in o1 and R1 style models. The real lesson was that how you ask matters as much as what you ask, and you can pull reasoning out of a model without touching its weights. My honest take: it's a cheap trick that works far better than it has any right to, and we still don't fully know why.
+
+## References
+
+- Wei et al. (2022). *Chain-of-Thought Prompting.* [arXiv:2201.11903](https://arxiv.org/abs/2201.11903)
+- Wang et al. (2022). *Self-Consistency Improves Chain of Thought.* [arXiv:2203.11171](https://arxiv.org/abs/2203.11171)
+
+---
+
+### LoRA: Low-Rank Adaptation of Large Models
+URL: https://cuijiawei.cn/2026/04/05/lora-low-rank-adaptation/
+
+**Paper:** Hu et al., *LoRA: Low-Rank Adaptation of Large Language Models*, ICLR 2022. [arXiv:2106.09685](https://arxiv.org/abs/2106.09685)
+
+You could call LoRA the patch that made the open-weight era possible. Fine-tuning a 175B model the old way meant updating and storing all 175B weights for every task, and that math collapses the moment you want a hundred custom models on one machine. Hu et al. asked the obvious question: do we actually have to touch every weight?
+
+## Freeze the base, learn the delta
+
+A weight update `ΔW` has rank `d` (full). LoRA constrains it to a low-rank decomposition:
+
+$$
+W_0 + \Delta W = W_0 + B A, \qquad B \in \mathbb{R}^{d \times r},\; A \in \mathbb{R}^{r \times k},\; r \ll d
+$$
+
+- `W_0` (pretrained) is **frozen** and never updated.
+- Only `A` and `B` are trained. With `r = 8`, that is `2·d·r` parameters, a tiny fraction.
+- At inference, `BA` can be merged into `W_0` (no extra latency) or kept separate for cheap task-switching.
+
+The bet behind this: the useful direction of adaptation lives in a low-dimensional subspace, so we only need to learn that subspace.
+
+## What it bought on GPT-3 175B
+
+- Trainable params dropped from 175B to **~4.7M** (≈10,000× fewer).
+- Matched or exceeded full fine-tuning on GLUE and on task-specific benchmarks.
+- No additional inference latency (when merged); multiple LoRA adapters can share one base model.
+
+## Wiring it up with PEFT
+
+```python
+from peft import LoraConfig, get_peft_model
+from transformers import AutoModelForCausalLM
+
+model = AutoModelForCausalLM.from_pretrained("meta-llama/Llama-3-8B")
+config = LoraConfig(
+    r=8, lora_alpha=16, lora_dropout=0.05,
+    target_modules=["q_proj", "v_proj"], task_type="CAUSAL_LM")
+model = get_peft_model(model, config)
+model.print_trainable_parameters()  # ~0.1% of total
+```
+
+## Why I still reach for it
+
+LoRA and its descendants (QLoRA, DoRA, AdaLoRA) are what turned fine-tuning into a hobbyist tool. You can train a task-specific 8B model on one consumer GPU and swap adapters like plugins. The thing worth remembering is that the base stays frozen, so if your new task needs knowledge the base never had, low-rank math will not invent it. You are reshaping what is already there, not adding to it.
+
+## References
+
+- Hu et al. (2021). *LoRA.* [arXiv:2106.09685](https://arxiv.org/abs/2106.09685)
+- Dettmers et al. (2023). *QLoRA: 4-bit quantization + LoRA.* [arXiv:2305.14314](https://arxiv.org/abs/2305.14314)
+
+---
+
+### FlashAttention: IO-Aware Exact Attention
+URL: https://cuijiawei.cn/2026/04/12/flashattention-efficient-attention/
+
+**Paper:** Dao et al., *FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness*, NeurIPS 2022. [arXiv:2205.14135](https://arxiv.org/abs/2205.14135)
+
+The bottleneck people missed for years: standard attention materializes the `N × N` attention matrix and ships it to GPU **HBM** (high-bandwidth memory). For sequence length `N`, that matrix is `O(N²)` in memory. The real cost is the round trips, though. GPUs carry a lot of compute and comparatively little memory bandwidth, so the repeated HBM reads and writes, not the arithmetic, gate the runtime. FlashAttention's move is simple to state: never materialize the matrix.
+
+## The trick: tiling + online softmax in SRAM
+
+FlashAttention computes attention in **blocks** that fit in the fast on-chip SRAM, and uses the **online softmax** trick to accumulate partial results without seeing the whole matrix at once.
+
+The softmax over `N` keys can be computed incrementally. For a running max `m` and running sum `l`:
+
+$$
+m^{(i)} = \max(m^{(i-1)},\, \max_j\, q_i k_j^\top), \qquad
+l^{(i)} = e^{m^{(i-1)} - m^{(i)}} l^{(i-1)} + \sum_j e^{q_i k_j^\top - m^{(i)}}
+$$
+
+Because softmax is *shift-invariant*, correcting by `e^{m^{(i-1)} - m^{(i)}}` lets you merge blocks correctly. The output `O` accumulates `softmax(QKᵀ)V` block by block, never forming the `N × N` map.
+
+## Results, briefly
+
+- **2–4×** faster training than standard attention at the time.
+- **5–20×** less memory (no `N × N` matrix), enabling **much longer contexts** (the foundation for long-context models).
+- Exact (not approximate) attention. Same math, just a smarter schedule.
+
+Later versions (FlashAttention-2, -3) pushed further with better parallelism and FP8/attention-specific hardware.
+
+## The part that matters
+
+FlashAttention is invisible plumbing, but it's the reason modern LLMs can run 128K–1M token contexts and still train. It's the textbook case of **IO-aware algorithm design**: the number that matters isn't FLOPs, it's memory traffic. If you serve or train models, this is the line between "won't fit" and "scales." My open question is whether the SRAM-tiling win, which assumes the A100's specific SRAM/HBM split, carries as cleanly onto hardware that doesn't match that hierarchy. I wouldn't bet on it being free.
+
+## References
+
+- Dao et al. (2022). *FlashAttention.* [arXiv:2205.14135](https://arxiv.org/abs/2205.14135)
+- Dao (2023). *FlashAttention-2.* [arXiv:2307.08691](https://arxiv.org/abs/2307.08691)
+
+---
+
+### LLaMA: The Open-Weight Catalyst
+URL: https://cuijiawei.cn/2026/04/19/llama-open-weights-revolution/
+
+**Paper:** Touvron et al., *LLaMA: Open and Efficient Foundation Language Models*, 2023. [arXiv:2302.13971](https://arxiv.org/abs/2302.13971) — followed by *LLaMA 2* (arXiv:2307.09288) and *LLaMA 3* (2024).
+
+## What Meta actually shipped
+
+In 2023 the best models were closed and gigantic. Meta did something different: they released **LLaMA**, a family of 7B, 13B, 33B, and 65B models trained *only on public data*, and a well-trained 13B could beat models many times its size. The bet behind it was simple. Data quality and compute efficiency beat raw parameter count.
+
+## The ingredients
+
+- **Public, heavily deduplicated data**, ~1.4T tokens, with a strong emphasis on high-quality sources.
+- Standard Transformer decoder with a few modern tweaks: **pre-normalization** (RMSNorm), **SwiGLU** activations, and **rotary positional embeddings (RoPE)** instead of absolute/sinusoidal encodings.
+- Compute-optimal scaling: train smaller models on *more* tokens than prior art.
+
+## What it proved
+
+- LLaMA-13B **outperformed GPT-3 (175B)** on most benchmarks.
+- LLaMA-65B was competitive with Chinchilla-70B and PaLM-540B.
+- Released (with a research license) as *weights*, not just a paper.
+
+## Why this one stuck
+
+Before LLaMA, training a frontier model was a tolerated industry secret. After it, the weights were a thing you could download, and the open community ran with them. Within weeks Alpaca, Vicuna, and WizardLM appeared, then the whole open-weight lineage (Mistral, Mixtral, Qwen, DeepSeek, Phi) followed. This is the point where open source stopped being a hobbyist afterthought and became a real lane.
+
+## Using a LLaMA-family model
+
+```python
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
+model_id = "meta-llama/Llama-3-8B-Instruct"
+tok = AutoTokenizer.from_pretrained(model_id)
+model = AutoModelForCausalLM.from_pretrained(model_id)
+
+messages = [{"role": "user", "content": "Explain RoPE in one sentence."}]
+inputs = tok.apply_chat_template(messages, return_tensors="pt")
+out = model.generate(inputs, max_new_tokens=128)
+print(tok.decode(out[0]))
+```
+
+## References
+
+- Touvron et al. (2023). *LLaMA.* [arXiv:2302.13971](https://arxiv.org/abs/2302.13971)
+- Touvron et al. (2023). *LLaMA 2.* [arXiv:2307.09288](https://arxiv.org/abs/2307.09288)
+
+---
+
+### Mixtral of Experts: Sparse Mixture of Experts
+URL: https://cuijiawei.cn/2026/04/26/mixtral-mixture-of-experts/
+
+**Paper:** Jiang et al., *Mixtral of Experts*, 2024. [arXiv:2401.04088](https://arxiv.org/abs/2401.04088)
+
+## The cost problem nobody could dodge
+
+Bigger models get smarter, but every token used to pay for every parameter, all of them, every time. **Mixture of Experts (MoE)** cuts that knot. You keep a giant pool of weights and wake up only a small slice per token. Mixtral is the version that made the idea practical and, just as important, open.
+
+## What's inside the layers
+
+Mixtral 8×7B is a Transformer where each **feed-forward layer** is replaced by `8` expert FFNs plus a router:
+
+- For every token, a router (a small linear layer) scores the experts and selects the **top-2**.
+- The output is the weighted combination of those two experts.
+
+$$ y = \sum_{i \in \text{top-2}} \text{softmax}(\text{gate}(x))_i \cdot E_i(x) $$
+
+- **Total parameters:** ~47B.
+- **Active parameters per token:** ~13B (only 2 of 8 experts run).
+- Context length 32K; trained on 1T tokens.
+
+## Why the routing is the whole point
+
+Only 2 experts fire per token, so the bill you pay at inference is the *active* 13B, not the full 47B. The model's *capacity*, what it can actually represent, is still that of a 47B model. That is the trick in one sentence: full-size quality, small-size latency.
+
+## What it scored
+
+- Outperformed **Llama-2 70B** and **GPT-3.5** on most benchmarks.
+- Especially strong on math, code, and multilingual tasks.
+- Fast to serve (active params ≈ 13B) despite large total size.
+
+## A tiny router sketch
+
+```python
+import torch, torch.nn.functional as F
+
+def moe(x, experts, gate, k=2):
+    logits = gate(x)                       # [tokens, num_experts]
+    w, idx = torch.topk(logits, k, dim=-1) # pick top-k experts
+    w = F.softmax(w, dim=-1)
+    out = torch.zeros_like(x)
+    for j in range(k):
+        e = idx[:, j]
+        out += w[:, j].unsqueeze(-1) * experts[e](x)
+    return out
+```
+
+## The thing I'd flag before you copy it
+
+MoE is how a lot of frontier models (Gemini, Grok, DeepSeek, Qwen-MoE) reach absurd parameter counts without proportional serving cost. The part people underestimate is routing: if you get it wrong, *expert collapse* sets in and some experts never get picked. Worth reading up on if you ever design one of these yourself.
+
+## References
+
+- Jiang et al. (2024). *Mixtral of Experts.* [arXiv:2401.04088](https://arxiv.org/abs/2401.04088)
+- Shazeer et al. (2017). *Outrageously Large Neural Networks: MoE.* [arXiv:1701.06538](https://arxiv.org/abs/1701.06538)
+
+---
+
+### DeepSeek-R1: Reasoning via Reinforcement Learning
+URL: https://cuijiawei.cn/2026/05/03/deepseek-r1-reasoning-rl/
+
+**Paper:** DeepSeek-AI, *DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning*, 2025. [arXiv:2501.12948](https://arxiv.org/abs/2501.12948)
+
+DeepSeek-R1 matched OpenAI-o1-1217 on math and reasoning benchmarks, and it was fully open-weight. The finding that surprised me most: you can get strong reasoning purely from reinforcement learning, with no supervised reasoning data at all.
+
+## Two models, one idea
+
+**DeepSeek-R1-Zero** starts from the base model and applies RL directly. With only a simple rule-based reward (correct answer + proper format), the model *spontaneously* develops:
+
+- long chains of thought,
+- self-verification ("let me check…"),
+- and exploration of alternatives.
+
+No one trained those behaviors explicitly. They *emerged* from optimizing for correct answers.
+
+**DeepSeek-R1** adds a cold-start + multi-stage pipeline (a small SFT seed, reasoning-oriented RL, rejection sampling to generate training data, then a final RL stage covering reasoning *and* helpfulness) for a more readable, general model.
+
+## The algorithm: GRPO, no critic
+
+R1 uses **Group Relative Policy Optimization**. Instead of training a separate value network (as PPO does), it samples a *group* of `G` outputs for the same prompt and normalizes rewards within the group:
+
+$$
+\hat{A}_i = \frac{r_i - \mathrm{mean}(r_1, \dots, r_G)}{\mathrm{std}(r_1, \dots, r_G)}
+$$
+
+The policy is then updated to increase the probability of higher-advantage outputs. Rewards are **rule-based**: an accuracy verifier (e.g., does the math answer match?) plus a format reward (wrap reasoning in `<think:6124c78e>…</think:6124c78e>`).
+
+## Results, briefly
+
+- **AIME 2024:** 79.8% (R1) vs 79.2% (o1-1217).
+- **MATH-500:** 97.3%.
+- **Codeforces** percentile in the top tier.
+- Distilled versions (1.5B–70B) bring reasoning to small models at low cost.
+
+## My read
+
+R1 is the clearest proof that **reasoning can be grown with RL, not just prompted or distilled**. It made frontier reasoning models open and reproducible, and it changed how the field thinks about post-training: less reliance on expensive human-labeled traces, more on verifiable rewards and emergent behavior. The caveat I'd keep in mind is that the headline numbers come from a narrow band of math and code benchmarks, and "reasoning" here is defined by those. If you build agents that must think, this is the paper defining the current frontier, but don't read it as solved.
+
+## References
+
+- DeepSeek-AI (2025). *DeepSeek-R1.* [arXiv:2501.12948](https://arxiv.org/abs/2501.12948)
+- Shao et al. (2024). *GRPO (DeepSeekMath).* [arXiv:2402.03300](https://arxiv.org/abs/2402.03300)
+
+---
+
+### RAG: Retrieval-Augmented Generation
+URL: https://cuijiawei.cn/2026/05/10/rag-retrieval-augmented-generation/
+
+**Paper:** Lewis, Perez, Piktus, Petroni, Karpukhin, Goyal, Küttler, Lewis, Yih, Rocktäschel, Riedel, Kiela, *Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks*, NeurIPS 2020. [arXiv:2005.11401](https://arxiv.org/abs/2005.11401)
+
+Before RAG, an LLM kept all its knowledge in its weights, that is the parametric memory. To add a fact you had to retrain or fine-tune. To answer "what changed yesterday" you were stuck. RAG marries a **parametric** generative model with a **non-parametric** external knowledge index. The model can look things up. That one idea is the seed of nearly every production LLM app that "knows your data": enterprise search, support bots, coding assistants over private repos. If you build agents, you will almost certainly use RAG.
+
+## Two kinds of memory
+
+- **Retriever**: Dense Passage Retrieval (DPR). A query encoder `E_Q` and a passage encoder `E_P` embed into the same space; the top-k passages are pulled from a FAISS index.
+- **Generator**: a BART-large seq2seq model that conditions on the retrieved passages to produce the answer.
+
+The model marginalizes over the retrieved documents instead of committing to one:
+
+$$
+p_{\theta,\eta}(y \mid x) = \sum_{z \in \text{top-k } \mathcal{Z}} p_\eta(z \mid x)\; p_\theta(y \mid x, z)
+$$
+
+where `p_η(z|x)` is the retriever's distribution over documents and `p_θ` is the generator.
+
+## RAG-Sequence vs RAG-Token
+
+Two inference schemes differ in how "global" the retrieval is:
+
+- **RAG-Sequence** uses a *single* retrieved document to generate the whole output.
+- **RAG-Token** picks a (possibly different) document for *every* output token. It's a mixture-of-experts over the top-k, where each expert is one passage:
+
+$$
+p_\theta(y_i \mid x, y_{<i}) = \sum_{z} p_\eta(z \mid x, y_{<i})\; p_\theta(y_i \mid x, z, y_{<i})
+$$
+
+RAG-Token shines when the answer needs facts drawn from several sources at once.
+
+## Training and a minimal retriever sketch
+
+Retriever and generator are optimized **end-to-end** by maximizing the marginal likelihood above; the DPR encoder is fine-tuned alongside BART. A minimal retrieve step looks like this:
+
+```python
+import numpy as np
+from sentence_transformers import SentenceTransformer
+
+model = SentenceTransformer("facebook/dpr-question_encoder-single-nq-base")
+index = load_faiss_index("wiki_passages")   # pre-encoded corpus
+
+def retrieve(query, k=5):
+    q = model.encode(query)
+    scores, ids = index.search(q, k)        # nearest neighbours
+    return [passages[i] for i in ids]
+```
+
+The modern stack (embeddings + vector DB + reranker + generator) is a direct descendant of this.
+
+## Results, briefly
+
+- State of the art on Natural Questions (open-domain), WebQuestions, TriviaQA, MS-MARCO NLG, and Jeopardy at the time.
+- Beat both purely parametric seq2seq models and task-specific retrievers.
+- Less hallucination, and the practical kicker: knowledge can be **updated by swapping the index. No retraining**.
+
+## Where this actually lands
+
+RAG is the default pattern for grounding LLMs in private or up-to-date data. The Sequence/Token distinction maps to a real production choice: cite per-document (Sequence) versus cite per-sentence (Token). Pair this with the ReAct and Toolformer posts and you have the three pillars of a grounded agent, which are retrieve, reason, act. The thing I'd flag: most production RAG today barely resembles this 2020 setup, and chunking plus reranking matters far more than the BART generator ever did.
+
+## References
+
+- Lewis et al. (2020). *Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks.* [arXiv:2005.11401](https://arxiv.org/abs/2005.11401)
+- Karpukhin et al. (2020). *Dense Passage Retrieval for Open-Domain QA.* [arXiv:2004.04906](https://arxiv.org/abs/2004.04906)
+
+---
+
+### ReAct: Reasoning + Acting in Language Models
+URL: https://cuijiawei.cn/2026/05/17/react-reasoning-acting/
+
+**Paper:** Yao, Zhao, Yu, Du, Shafran, Narasimhan, Cao, *ReAct: Synergizing Reasoning and Acting in Language Models*, ICLR 2023. [arXiv:2210.03629](https://arxiv.org/abs/2210.03629)
+
+A raw LLM can reason (that's Chain-of-Thought) or act (that's calling a tool), but it does neither well when forced to pick one. CoT reasons in a vacuum: it can't fetch a fact it doesn't know, so it makes one up. Act-only agents run tools but leave no trail of why, so they fall apart on anything multi-step. ReAct just interleaves the two: think out loud, act, see what happened, keep going. That Thought → Action → Observation loop is, in practice, what people mean when they say "LLM agent."
+
+## How the trajectories look
+
+A ReAct prompt hands the model a few examples shaped like this:
+
+```
+Thought: I need the population of the capital of Romania.
+Action: Search[Romania capital]
+Observation: Bucharest
+Thought: Now look up Bucharest's population.
+Action: Search[Bucharest population]
+Observation: 1.8 million
+Answer: 1.8 million
+```
+
+The agent is a policy: given the trajectory `τ` so far, it emits the next `(Thought, Action)`. The environment runs the `Action`, tacks on the `Observation`, and you loop until a `Finish` action shows up.
+
+## Why mixing them beats either alone
+
+| Style | Reasons? | Uses tools? | Failure mode |
+|-------|----------|-------------|--------------|
+| CoT   | yes      | no          | hallucinates unknown facts |
+| Act-only | no    | yes         | no multi-step planning |
+| **ReAct** | **yes** | **yes**   | grounded, debuggable |
+
+The explicit `Thought` gives the model a scratchpad to break the problem down. The `Observation` yanks it back to reality. You can also drop a human into the loop mid-run, which closes a lot of the dumb errors.
+
+## A minimal loop
+
+```python
+def react(question, max_steps=6):
+    traj = f"Question: {question}\n"
+    for _ in range(max_steps):
+        out = llm(traj + "\nThought:")          # model emits Thought + Action
+        thought, action = parse(out)
+        obs = env.step(action)                  # e.g. Search / Wikipedia / Calc
+        traj += f"Thought: {thought}\nAction: {action}\nObservation: {obs}\n"
+        if action.startswith("Finish"):
+            return obs
+    return traj
+```
+
+## What they showed
+
+- On multi-hop QA (**HotpotQA**) and fact-checking (**FEVER**), ReAct on PaLM-540B beat both the CoT and Act-only baselines.
+- On interactive tasks (**AlfWorld**, **WebShop**), it pulled well ahead of agents trained with imitation or RL.
+- Adding a human to the loop cleaned up most of what was left.
+
+## Where this actually shows up
+
+Most "agent" frameworks, LangChain and LlamaIndex included, are ReAct wearing a different jacket. The Reflexion and Tree-of-Thoughts posts build straight on top of it: ReAct gives you the loop, those add memory and search. The thing I'd push back on: the paper makes it look clean, but in production the real failure mode is the loop going in circles, and nothing in the original fixes that.
+
+## References
+
+- Yao et al. (2023). *ReAct: Synergizing Reasoning and Acting in Language Models.* [arXiv:2210.03629](https://arxiv.org/abs/2210.03629)
+- Wei et al. (2022). *Chain-of-Thought Prompting.* [arXiv:2201.11903](https://arxiv.org/abs/2201.11903)
+
+---
+
+### Toolformer: Language Models That Teach Themselves to Use Tools
+URL: https://cuijiawei.cn/2026/05/24/toolformer-tools/
+
+**Paper:** Schick, Dwivedi-Yu, Dessì, Raileanu, Lomeli, Zettlemoyer, Cancedda, Goyal, Lewis, *Toolformer: Language Models Can Teach Themselves to Use Tools*, NeurIPS 2023. [arXiv:2302.04761](https://arxiv.org/abs/2302.04761)
+
+Instead of hand-engineering every tool integration, the Toolformer question is blunt: can a model teach itself to use tools from plain unlabeled text? For a 6B model the answer was yes. A handful of demonstrations per API, and it learned to call a calculator, a Q&A system, a search engine, a calendar, and a translator, then matched or beat 175B GPT-3 on the tasks where those tools actually help. This paper is the conceptual ancestor of native function-calling in GPT-4 and Claude.
+
+## The trick: sample, execute, keep what helps
+
+Toolformer treats tool use as a data-filtering problem, not a training-objective problem.
+
+1. **Demonstrate.** Provide few-shot examples of each API wrapped in special tokens: `<API> query </API> → result`.
+2. **Sample.** Let the LM continue the text; whenever it emits an API call, *execute* it against the real tool and insert the returned result.
+3. **Filter.** For each candidate call, compare the LM's loss on the surrounding text *with* the call+result versus *without* it. Keep only calls that **reduce the loss**, meaning calls that genuinely help predict the continuation.
+4. **Fine-tune.** Train the LM on the filtered, tool-augmented corpus.
+
+The model never sees a task-specific reward; it just learns "this call makes the text more predictable."
+
+## What actually shows up
+
+- **Calculator** → exact arithmetic it could never do from weights alone.
+- **Wikipedia / search** → factual grounding on open-domain QA.
+- **Translator / calendar** → composed, multi-tool behavior.
+
+Because the selection signal is "does this reduce my loss," the model learns *when* a tool is worth calling and *when* to just answer directly.
+
+## Results, briefly
+
+- A 6B Toolformer matched or exceeded 175B GPT-3 on several QA and math benchmarks by selectively invoking tools.
+- Tool use is **emergent** from the filtering procedure. No RL, no task labels.
+- Ablations confirmed the loss-reduction filter is what separates useful calls from noise.
+
+## Where this lands now
+
+Toolformer reframed tool use as a self-supervised capability: show the model the shape of an API, let it practice, keep what helps. Every function-calling model since then is doing a more industrialized version of exactly this. It pairs naturally with ReAct, which decides what to do. Toolformer is about teaching the model how to call. The bit I'd flag: the whole loop is gated on being able to actually execute the tool and read a result back, so you need real APIs wired up, not just a clever prompt.
+
+## References
+
+- Schick et al. (2023). *Toolformer: Language Models Can Teach Themselves to Use Tools.* [arXiv:2302.04761](https://arxiv.org/abs/2302.04761)
+- Parisi et al. (2022). *Taskmatic Programming.* (earlier tool-use direction)
+
+---
+
+### Reflexion: Verbal Reinforcement Learning for Language Agents
+URL: https://cuijiawei.cn/2026/05/31/reflexion-verbal-rl/
+
+**Paper:** Shinn, Cassano, Berman, Gopinath, Moss, Labash, *Reflexion: Language Agents with Verbal Reinforcement Learning*, NeurIPS 2023. [arXiv:2303.11366](https://arxiv.org/abs/2303.11366)
+
+Most agents get better by updating weights, which is RL. Reflexion shows you can improve an agent without any weight update at all, just by having it write down what went wrong and remember it. That is cheap, works with any black-box LLM, and became the basis of the critic / self-reflect loop now standard in agent stacks. It is a direct extension of the ReAct loop: same acting, plus a memory of mistakes.
+
+## Three modules, no gradient
+
+- **Actor:** produces actions in an environment (ReAct-style), receiving a reward / feedback signal `r`.
+- **Evaluator:** scores the trajectory (binary success, or a scalar).
+- **Self-Reflection:** an LLM reads the full trajectory plus the feedback and writes a short natural-language reflection of what failed and what to try next. This text is stored in an **episodic memory buffer** `M`.
+
+On the next attempt the actor conditions on `M`:
+
+$$
+M_t = M_{t-1} \cup \{\,\text{reflect}(\tau_t, r_t)\,\}
+$$
+
+$$
+a_t \sim \pi(a \mid \tau_t, M_{t-1})
+$$
+
+The "reinforcement" is purely verbal. The gradient stays at zero; learning happens in the prompt, not the weights.
+
+## Why words beat a score
+
+A scalar reward ("failed, score 0.2") carries almost no information about how to improve. A sentence like *"I searched the wrong entity; the answer required the company's headquarters, not its CEO"* is a dense, actionable gradient in natural language. The agent literally tells its future self what to do differently.
+
+## Results, briefly
+
+- **AlfWorld** (embodied tasks): success rose from ~63% (no reflection) to ~97% with reflection.
+- **HumanEval** (code generation): clear gains from reflecting on failing tests.
+- **HotpotQA**: notable improvements over non-reflective baselines.
+- Outperformed replay and RL baselines at equal sample budgets.
+
+## The memory pattern in the wild
+
+Reflexion is the memory plus self-critique pattern behind iterative coding agents, the "agent evaluates its own output" loop, and plenty of multi-step pipelines. It also dovetails with the Generative Agents post, where reflection becomes the mechanism for turning raw experience into higher-level insight. The honest caveat: the reflection is only as good as the LLM writing it, and nothing guarantees the self-critic is right, only that it sounds plausible. Tree-of-Thoughts, next, adds search on top of this kind of deliberation.
+
+## References
+
+- Shinn et al. (2023). *Reflexion: Language Agents with Verbal Reinforcement Learning.* [arXiv:2303.11366](https://arxiv.org/abs/2303.11366)
+- Yao et al. (2023). *ReAct.* [arXiv:2210.03629](https://arxiv.org/abs/2210.03629)
+
+---
+
+### Generative Agents: Believable Simulacra of Human Behavior
+URL: https://cuijiawei.cn/2026/06/07/generative-agents/
+
+**Paper:** Park, Chan, Roh, Zito, Fried, Bernstein, *Generative Agents: Interactive Simulacra of Human Behavior*, UIST 2023. [arXiv:2304.03442](https://arxiv.org/abs/2304.03442)
+
+How do you give an LLM an ongoing life across time, with memory, consistency, and believable social behavior? This paper built a town of 25 agents in a sandbox called Smallville and showed emergent social dynamics: information spread, relationships formed, a party got organized. It is the reference architecture for agent memory and gets reused in simulations, games, and user modeling. Think of it as Reflexion's reflection idea productized into a full cognitive loop.
+
+## Memory, retrieval, reflection, planning
+
+Each agent maintains:
+
+- **Memory stream:** a log of observed experiences, each stamped with a timestamp and weighted by **recency**, **relevance**, and **importance**.
+- **Retrieval:** given a query (e.g., "what should I do now?"), memories are scored and the top-k feed the LLM as context:
+
+$$
+\text{score}(m, q) = \alpha \cdot \text{recency}(m) + \beta \cdot \text{relevance}(m, q) + \gamma \cdot \text{importance}(m)
+$$
+
+- **Reflection:** periodically the agent synthesizes many low-level observations into a few higher-level insights ("Klaus is a professor who cares about teaching"). Reflections are themselves memories and can be reflected upon recursively.
+- **Planning:** goals are expanded into a tree of actions with estimated start times; plans can be interrupted when new observations arrive.
+
+## Why the three modules earn their place
+
+- **Retrieval** keeps context bounded and relevant instead of dumping the whole history into the prompt.
+- **Reflection** turns raw experience into durable beliefs, so behavior is consistent across days.
+- **Planning** makes actions goal-directed rather than purely reactive.
+
+## Results, briefly
+
+In Smallville, agents:
+- shared information through conversations (a fact told to one agent reached others),
+- formed and remembered relationships,
+- autonomously coordinated a Valentine's Day party with believable attendance.
+
+Human evaluators rated the agents' behavior more believable than ablations **without** reflection or **without** planning, which confirms both modules earn their place.
+
+## The backbone of agent inner life
+
+The memory, retrieval, reflection, planning stack is the backbone of an agent's inner life. Almost every long-running agent, from coding assistants that remember your repo norms to game NPCs and digital twins, is some variant of this. Paired with ReAct for acting and Reflexion for verbal feedback, it completes the picture of a persistent agent. My take: the scoring weights are hand-tuned and the whole thing leans hard on the LLM not drifting, so the believable part is fragile the moment you swap models.
+
+## References
+
+- Park et al. (2023). *Generative Agents: Interactive Simulacra of Human Behavior.* [arXiv:2304.03442](https://arxiv.org/abs/2304.03442)
+- Shinn et al. (2023). *Reflexion.* [arXiv:2303.11366](https://arxiv.org/abs/2303.11366)
+
+---
+
+### AutoGen: Multi-Agent Conversation as Computation
+URL: https://cuijiawei.cn/2026/06/14/autogen-multi-agent/
+
+**Paper:** Wu, Bansal, Zhang, Wu, Zhang, Zhu, Li, Jiang, Zhang, Wang, Krishna, Wu, *AutoGen: Enabling Next-Gen LLM Applications via Multi-Agent Conversation*, 2023. [arXiv:2308.08155](https://arxiv.org/abs/2308.08155)
+
+ReAct and Reflexion give you a single-agent loop. Real jobs need roles: a coder, a critic, a person, a tool, all talking to each other. AutoGen makes that conversation the program. It is the seed idea behind CrewAI, MetaGPT, and most of the orchestration frameworks people actually deploy.
+
+## The one abstraction: ConversableAgent
+
+AutoGen's unit is the **ConversableAgent**: any participant that can send and receive messages, backed by one of:
+
+- an **LLM** (reasons / writes),
+- a **human** (approves or answers),
+- a **tool / code executor** (runs code, returns output).
+
+Each agent is customizable via a system message, an LLM config, a human-input mode, and a max-consecutive-auto-replies. A **GroupChat** manager broadcasts each message to the group; agents respond until a termination condition is met.
+
+## The pattern worth stealing: Assistant + UserProxy
+
+```python
+assistant = ConversableAgent("assistant", llm_config={"model": "gpt-4"})
+user_proxy = ConversableAgent("user_proxy",
+                              human_input_mode="NEVER",
+                              code_execution_config={"work_dir": "coding"})
+
+user_proxy.initiate_chat(
+    assistant,
+    message="Plot a sine wave and save it as sine.png"
+)
+# assistant writes the code -> user_proxy executes it -> errors (if any)
+# flow back -> assistant fixes -> loop until done
+```
+
+The user proxy autonomously runs generated code and feeds stdout and tracebacks back. That is a Reflexion-style self-correction loop, just split across two agents instead of one: the assistant sees its own errors and patches them.
+
+## What the paper showed
+
+- Substantially less engineering effort than wiring single-agent prompts by hand.
+- On coding and math benchmarks, multi-agent conversation outperformed single-agent prompting.
+- Human-in-the-loop modes let a person gate risky actions (e.g., before executing code).
+
+## Where I'd actually use it
+
+Complex agent pipelines are almost never one model in a loop. They are teams: a planner, a worker, a critic, a retriever, a user. AutoGen's "conversation-as-computation" model is the mental framework I reach for when I design them, and it composes cleanly with RAG (retriever agent), ReAct (worker), and Reflexion (critic). The part I'd flag: the paper shows the happy path, but a chatty group of agents is also where cost and latency quietly blow up, and nothing here tells you when to stop talking. Next in the series, Tree-of-Thoughts adds structured search to this deliberation.
+
+## References
+
+- Wu et al. (2023). *AutoGen: Enabling Next-Gen LLM Applications via Multi-Agent Conversation.* [arXiv:2308.08155](https://arxiv.org/abs/2308.08155)
+
+---
+
+### Tree of Thoughts: Deliberate Problem Solving
+URL: https://cuijiawei.cn/2026/06/21/tree-of-thoughts/
+
+**Paper:** Yao, Yu, Zhao, Shafran, Griffiths, Cao, Narasimhan, *Tree of Thoughts: Deliberate Problem Solving with Large Language Models*, NeurIPS 2023. [arXiv:2305.10601](https://arxiv.org/abs/2305.10601)
+
+Chain-of-Thought is one left-to-right path. Take a wrong step early and it's stuck, because there's no lookahead and no way back. Tree of Thoughts (ToT) reframes reasoning as a search over a tree of partial solutions, so the model can explore, judge, and backtrack. That's the gap between guessing the next word and actually solving something. It's a core piece of the agentic reasoning trend, and you can see the same search instinct in o1 style models.
+
+## Thoughts become nodes
+
+- A **thought** is a coherent intermediate step, a sentence or a few lines of reasoning.
+- ToT keeps a tree of states `s`, and each state has candidate next thoughts `T(s)`.
+- Three LLM roles drive the search:
+  - **Propose** generates candidate next thoughts from a state.
+  - **Evaluate / Value** scores each state, either a confidence score or a vote across samples, to steer the search.
+  - **Search** uses BFS to keep the top-`b` states per step, or DFS to descend and backtrack when a state looks dead.
+
+The final answer comes from the best leaf found.
+
+## The BFS version, in one line
+
+At each depth, keep only the `b` highest-valued states (say `b = 5`), expand those, and repeat. It explores systematically before committing, which is the opposite of CoT committing on the spot.
+
+## Results, briefly
+
+- **Game of 24** (combine 4 numbers into 24): CoT scored ~4% success; ToT reached **~74%**. The task needs planning a few steps ahead, exactly where CoT fails.
+- Gains on **creative writing** (where a global plan matters) and **mini crosswords** (local search helps).
+- The evaluation step (voting / scoring) was essential. Generation alone was not enough.
+
+## Where it pays off, and where it wobbles
+
+ToT is deliberate problem solving. It layers lookahead and backtracking on top of the ReAct loop (acting) and Reflexion (learning from failure). When an agent hits a task with a verifiable goal, math, code, puzzles, or multi-step planning, a search over thoughts beats a straight shot. Modern reasoning models are ToT at scale with a learned verifier, in spirit. The part I'd flag: the search is only as good as the value function, and a weak scorer turns the tree into an expensive way to wander.
+
+## References
+
+- Yao et al. (2023). *Tree of Thoughts: Deliberate Problem Solving with Large Language Models.* [arXiv:2305.10601](https://arxiv.org/abs/2305.10601)
+- Wei et al. (2022). *Chain-of-Thought Prompting.* [arXiv:2201.11903](https://arxiv.org/abs/2201.11903)
+
+---
+
+### Scaling Laws for Neural Language Models
+URL: https://cuijiawei.cn/2026/06/28/scaling-laws/
+
+**Paper:** Kaplan, J., et al., *Scaling Laws for Neural Language Models*, 2020. [arXiv:2001.08361](https://arxiv.org/abs/2001.08361)
+
+Before this paper, "how big should the model be?" got answered by vibes and budget. Kaplan et al. found something almost too clean to trust. Across **six orders of magnitude** of model size, the test loss of a Transformer language model lands on a straight line in log-log space. Performance is not magic. It is a predictable function of compute, data, and parameters. That one plot turned scaling from folklore into an engineering discipline and gave the "just make it bigger" bet its receipts.
+
+If you are about to spend a cluster, this is the paper that tells you what you get back.
+
+## Three power laws
+
+The cross-entropy loss $L$ obeys a power law in each resource, when the others are not the bottleneck:
+
+$$
+L(N) \approx \left(\frac{N_c}{N}\right)^{\alpha_N}, \quad
+L(D) \approx \left(\frac{D_c}{D}\right)^{\alpha_D}, \quad
+L(C) \approx \left(\frac{C_c}{C}\right)^{\alpha_C}
+$$
+
+with fitted exponents roughly $\alpha_N \approx 0.076$, $\alpha_D \approx 0.095$, $\alpha_C \approx 0.050$ (parameters / data / compute, excluding embedding params for $N$).
+
+Two things about this are worth holding onto:
+
+- **Smoothness.** No sharp "phase transition" appears in the studied range. You can fit a small model and *extrapolate* to a 1000× larger one with reasonable confidence.
+- **Cross-domain transfer.** The slope holds even when train and test distributions differ. Only the intercept shifts. A model that generalizes on the training mix also tends to generalize out of distribution.
+
+## How to spend a fixed compute budget
+
+With a fixed compute budget $C$, the paper found optimal parameters and data scale as:
+
+$$
+N_{\text{opt}} \propto C^{0.73}, \qquad D_{\text{opt}} \propto C^{0.27}
+$$
+
+In plain terms, parameters buy more than data at fixed compute. That "params-first" reading is what pushed GPT-3 to 175B parameters trained on "only" ~300B tokens.
+
+## The results that mattered
+
+- Smooth power-law scaling holds from 768 params to 1.5B, and predicts larger runs.
+- Bigger models are *sample-efficient*: a large model reaches a given loss with fewer optimization steps and less data than a small one.
+- Drove the empirical strategy of training very large models and undertraining them relative to their capacity.
+
+## The caveat that Chinchilla fixed
+
+Scaling laws are the bedrock under everything since. The interesting part is not the law itself but the argument it started: Chinchilla (next post) *disagreed* and won. What was in dispute was the allocation exponent, not whether the law holds. Read the two together. One establishes the empirical law, the other corrects the recipe, and that correction is the part people actually misremember.
+
+## References
+
+- Kaplan et al. (2020). *Scaling Laws for Neural Language Models.* [arXiv:2001.08361](https://arxiv.org/abs/2001.08361)
+- Henighan et al. (2020). *Scaling Laws for Autoregressive Generative Modeling.* [arXiv:2010.14701](https://arxiv.org/abs/2010.14701)
+
+---
+
+### RoPE: Rotary Position Embedding
+URL: https://cuijiawei.cn/2026/07/03/rope/
+
+**Paper:** Su, J., et al., *RoFormer: Enhanced Transformer with Rotary Position Embedding*, 2021. [arXiv:2104.09864](https://arxiv.org/abs/2104.09864)
+
+Position encoding is the quiet mechanism that tells a Transformer what order means. Absolute encodings, the original sine/cosine and learned vectors, do the job but they hide relative position. Relative position is what language actually cares about, since a word's meaning leans on its neighbors rather than on whether it's token 42 or 420. RoPE fixes this with a trick I still think is elegant: it rotates the query and key vectors by an angle tied to their position, so the attention dot product ends up depending only on the distance between two positions. It's the default now in LLaMA, Mistral, Qwen, DeepSeek, and most open-weight models. Read a modern model card and you're looking at RoPE.
+
+## The move: rotate instead of add
+
+For a pair of dimensions $(2i, 2i+1)$ of a vector at position $m$, RoPE applies a rotation by angle $m\theta_i$ with $\theta_i = 10000^{-2i/d}$:
+
+$$
+R_m =
+\begin{bmatrix}
+\cos m\theta_i & -\sin m\theta_i \\
+\sin m\theta_i & \cos m\theta_i
+\end{bmatrix}, \qquad
+f(q, m) = R_m\, q
+$$
+
+Apply the same to the key: $\tilde{k}_n = R_n\, k$. The attention score between positions $m$ and $n$ becomes:
+
+$$
+\tilde{q}_m^\top \tilde{k}_n
+= q^\top R_{m-n}\, k
+$$
+
+The property that matters: the score depends on $m$ and $n$ **only through their difference $m-n$**. Relative position drops out of the algebra for free, while the absolute position stays baked into each rotated vector.
+
+## Extending past the training length
+
+Because positions enter as rotations, you can stretch to longer contexts than you trained on by adjusting the base (NTK-aware scaling, used by LLaMA 2/3 and others) instead of re-training. This is why "bump context to 32k/128k" is usually a RoPE-base tweak, not a fresh pretrain.
+
+## Results, briefly
+
+- Matches or beats absolute and relative positional embeddings on BERT-style and autoregressive tasks.
+- Enables clean relative-position attention without extra bias terms.
+- Became the de-facto standard for long-context open models.
+
+## The part that matters
+
+Every "128k context" label on an open model is RoPE plus its NTK variants letting it stretch without a from-scratch retrain. Read it next to the Transformer post: RoPE is the position-encoding answer to "how does attention know word order?" My one gripe is that the relative-position story is clean on paper, but the moment you start bending the base for extrapolation you trade off how well the model reasons about the positions it actually saw. That tension is still unsolved.
+
+## References
+
+- Su et al. (2021). *RoFormer: Enhanced Transformer with Rotary Position Embedding.* [arXiv:2104.09864](https://arxiv.org/abs/2104.09864)
+- Vaswani et al. (2017). *Attention Is All You Need.* [arXiv:1706.03762](https://arxiv.org/abs/1706.03762)
+
+---
+
+### Chinchilla: Training Compute-Optimal Large Language Models
+URL: https://cuijiawei.cn/2026/06/30/chinchilla/
+
+**Paper:** Hoffmann, J., et al. (DeepMind), *Training Compute-Optimal Large Language Models*, 2022. [arXiv:2203.15556](https://arxiv.org/abs/2203.15556)
+
+## The field was oversizing models
+
+Kaplan's earlier scaling laws (previous post) boiled down to "make the model as big as possible and feed it whatever data you have." DeepMind went back and did the analysis properly, with over 400 training runs, and concluded the field had been **wasting compute**. Under a fixed budget, parameters and training tokens should grow in equal proportion, not lopsidedly toward size. Their 70B Chinchilla, trained on 1.4T tokens, beat Gopher at 280B and held its own against models 4× bigger. If you have a training budget to spend today, this is the recipe.
+
+## The math, briefly
+
+Write the loss as a sum of power-law terms in parameters $N$ and data $D$:
+
+$$
+L(N, D) = \frac{A}{N^{\alpha}} + \frac{B}{D^{\beta}} + E
+$$
+
+Fit over the 400+ runs and you get $\alpha \approx 0.34$, $\beta \approx 0.28$. Both exponents are much larger than Kaplan's, which means scaling helps more than anyone had assumed. Minimize under the compute constraint $C \approx 6 N D$ and the optimum lands at:
+
+$$
+N_{\text{opt}} \propto C^{0.5}, \qquad D_{\text{opt}} \propto C^{0.5}
+$$
+
+The line everyone memorizes: **train on roughly 20× as many tokens as parameters** ($D \approx 20 N$).
+
+## Who was off the mark
+
+At the time, the big flagship models were all on the wrong side of the curve:
+
+- **GPT-3** (175B, ~300B tokens), undertrained.
+- **Gopher** (280B, 300B tokens), undertrained.
+- **MT-NLG** (530B), severely over-parameterized.
+
+Chinchilla's point was blunt: match or beat them with far fewer parameters, just give the model more data.
+
+## What it delivered
+
+- Chinchilla (70B, 1.4T tokens) outperformed Gopher (280B) on MMLU, reading comprehension, and closed-book QA.
+- Massively cheaper inference (70B vs 280B) for equal or better quality.
+- Established the "more data, smaller model" training paradigm now used across the industry.
+
+## The part that actually persists
+
+Every serious training run since 2022 sizes its corpus from Chinchilla's math, not Kaplan's. The 1:20 intuition carries over to vision and multimodal work too, with caveats. Read it alongside the Scaling Laws post and you have the "how big, how much data" chapter of any LLM course. The open question for me is whether the 20× rule still holds now that we are scraping the bottom of the high-quality-data barrel.
+
+---
+
+### RLHF: Deep Reinforcement Learning from Human Preferences
+URL: https://cuijiawei.cn/2026/07/05/rlhf-from-human-preferences/
+
+**Paper:** Christiano, P., et al., *Deep Reinforcement Learning from Human Preferences*, NeurIPS 2017. [arXiv:1706.03741](https://arxiv.org/abs/1706.03741)
+
+Modern alignment starts here. The reason ChatGPT is helpful rather than a raw next-token predictor traces back to this loop. You can't hand-write a reward function for "good behavior" on a complex task, so Christiano et al. did something simpler: show a human two behaviors, let them pick, learn a reward model from those preferences, then optimize with RL. Learn the reward, then optimize it. That's the whole InstructGPT pipeline in embryo, and the root of the RLHF subtree.
+
+## The loop: preferences → reward → policy
+
+**1. Collect preferences.** A human is shown two trajectories (or, for language, two completions) and picks the better one: $(x, y_w) \succ (x, y_l)$.
+
+**2. Train a reward model** by maximum likelihood under the Bradley–Terry model:
+
+$$
+\mathcal{L}(\phi) = -\,\mathbb{E}\left[\log \sigma\!\big(r_\phi(x, y_w) - r_\phi(x, y_l)\big)\right]
+$$
+
+**3. Optimize the policy** with RL (TRPO/PPO) to maximize reward while staying close to the initial policy:
+
+$$
+\max_{\pi_\theta}\; \mathbb{E}_{x,\,y\sim\pi_\theta}\big[r_\phi(x, y)\big] - \beta\, \mathrm{KL}\!\big[\pi_\theta(\cdot\mid x)\,\|\,\pi_{\text{ref}}(\cdot\mid x)\big]
+$$
+
+The KL term stops the policy from collapsing into reward exploitation, which is the same failure mode InstructGPT has to guard against years later.
+
+## What they actually showed
+
+- Agents learned complex behaviors (simulated robotics, Atari) from **a few hundred** preference labels, with no hand-coded reward.
+- The human-in-the-loop *comparison* interface is far cheaper than demonstrating full trajectories.
+- The reward model, though imperfect, was good enough to drive real learning.
+
+## Where this sits
+
+This is chapter one of how models learn what we want. InstructGPT picks up at step two, DPO takes step three and throws away the RL, Constitutional AI swaps the human labels for principles. The seed is this one: learn a reward from comparisons. My caveat is that preference data is only as honest as the humans labeling it, and a reward model trained on thin data will happily certify behavior nobody actually wanted.
+
+## References
+
+- Christiano et al. (2017). *Deep Reinforcement Learning from Human Preferences.* NeurIPS 2017. [arXiv:1706.03741](https://arxiv.org/abs/1706.03741)
+- Ouyang et al. (2022). *Training language models to follow instructions with human feedback (InstructGPT).* [arXiv:2203.02155](https://arxiv.org/abs/2203.02155)
+
+---
+
+### DPO: Direct Preference Optimization
+URL: https://cuijiawei.cn/2026/07/07/dpo/
+
+**Paper:** Rafailov, R., et al., *Direct Preference Optimization: Your Language Model is Secretly a Reward Model*, NeurIPS 2023. [arXiv:2305.18290](https://arxiv.org/abs/2305.18290)
+
+RLHF works, but it's a chore: train a reward model, then run fragile, sample-hungry RL (PPO) on top. DPO collapses that two-stage pipeline into **one supervised-style loss**. The trick is that the optimal policy of KL-constrained RLHF has a closed form, and once you plug it into the Bradley–Terry model the whole problem becomes a classification objective. No reward model, no RL sampling, no value network. It's the default open-weight alignment method now, and if you fine-tune a model to behave you probably reach for DPO first.
+
+## The move: the LM *is* the reward model
+
+Start from the standard RLHF objective (maximize reward, stay near a reference $\pi_{\text{ref}}$ via KL). Its optimal policy has the closed form:
+
+$$
+\pi^*(y \mid x) = \frac{1}{Z(x)}\,\pi_{\text{ref}}(y \mid x)\,\exp\!\Big(\tfrac{1}{\beta} r(x, y)\Big)
+$$
+
+Solve this for the reward: $r(x,y) = \beta \log \frac{\pi^*(y\mid x)}{\pi_{\text{ref}}(y\mid x)} + \beta \log Z(x)$. Substitute into Bradley–Terry and the reward model disappears, leaving a loss over preference pairs $(y_w \succ y_l)$:
+
+$$
+\mathcal{L}_{\text{DPO}} = -\,\mathbb{E}\left[\log \sigma\!\left(
+\beta \log \frac{\pi_\theta(y_w\mid x)}{\pi_{\text{ref}}(y_w\mid x)}
+- \beta \log \frac{\pi_\theta(y_l\mid x)}{\pi_{\text{ref}}(y_l\mid x)}
+\right)\right]
+$$
+
+Only $\pi_\theta$ and a **frozen** $\pi_{\text{ref}}$ appear. Updating $\pi_\theta$ to push the chosen log-ratio above the rejected one is the whole training step, nothing else runs.
+
+## Why people actually use it
+
+- **Stable:** one classification loss, no RL rollouts, no critic.
+- **Cheap:** two forward passes per sample (policy + reference), like SFT.
+- **Effective:** matches or beats PPO-based RLHF on sentiment, summarization, and dialogue.
+
+## Results, briefly
+
+- On the TL;DR summarization benchmark, DPO controlled output sentiment better than PPO-RLHF and matched it on quality.
+- Demonstrated that a simple, well-justified reparameterization removes the need for explicit reward modeling in most setups.
+
+## Where it sits
+
+DPO is the bridge between "I have preference data" and "I have an aligned model." It's the practical answer to the two RLHF posts, and you need it before the direct-alignment variants make sense (IPO, KTO, ORPO). My take: it trades the explicit reward model's debuggability for convenience. When a DPO model misbehaves you can't inspect the reward, you can only stare at log-ratios and guess.
+
+## References
+
+- Rafailov et al. (2023). *Direct Preference Optimization: Your Language Model is Secretly a Reward Model.* NeurIPS 2023. [arXiv:2305.18290](https://arxiv.org/abs/2305.18290)
+- Christiano et al. (2017). *Deep Reinforcement Learning from Human Preferences.* [arXiv:1706.03741](https://arxiv.org/abs/1706.03741)
+- Ouyang et al. (2022). *InstructGPT.* [arXiv:2203.02155](https://arxiv.org/abs/2203.02155)
+
+---
+
+### Constitutional AI: Harmlessness from AI Feedback
+URL: https://cuijiawei.cn/2026/07/09/constitutional-ai/
+
+**Paper:** Bai, Y., et al. (Anthropic), *Constitutional AI: Harmlessness from AI Feedback*, 2022. [arXiv:2212.08073](https://arxiv.org/abs/2212.08073)
+
+RLHF leans on human labelers to decide which reply is better. That work includes reading toxic, harmful, or just unsettling content all day. It's a grim job and it doesn't scale. Constitutional AI swaps most of that labor for a constitution: a short list of principles, the paper's own example being "choose the response that is least likely to cause harm," that the model uses to critique and revise its own outputs. Those AI-written preferences become the training signal. The authors call this RLAIF, Reinforcement Learning from AI Feedback, and it's the backbone for safety tuning that doesn't depend on a roomful of raters.
+
+## The recipe: critique yourself, then train on it
+
+Two phases:
+
+**Phase 1 (Supervised, CAI-SFT).** Given a prompt, the model drafts a response, then critiques it against the constitution, and revises. The revised responses become supervised fine-tuning data. A minimal sketch:
+
+```python
+draft = model.generate(prompt)
+critique = model.generate(f"Critique this against principle {p}: {draft}")
+revised = model.generate(f"Revise per critique: {draft}\n{critique}")
+# use `revised` as the SFT target
+```
+
+**Phase 2 (RL from AI feedback).** Sample pairs of responses and have the model rank them using the constitution, with no human in the loop. You train a preference/reward model on those AI labels, then run RL (PPO) against it. Same loop as RLHF, except the preference signal is machine-generated.
+
+## Why write the principles down
+
+Writing the principles down makes behavior auditable and adjustable. Want a different idea of harmlessness? Change the constitution instead of retraining the labeling workforce. It also keeps human raters away from the worst content, which was the whole point.
+
+## Results, briefly
+
+- A model trained with RLAIF alone was preferred over a model trained with harmfulness RLHF that relied on human labels for the same axis.
+- Harmlessness improved with little or no cost to helpfulness, which is the classic helpfulness/safety trade-off.
+- Demonstrated that self-critique can produce useful training signal at scale.
+
+## The part I'd flag
+
+This is the "how do we align without burning out human raters" paper. It sits right next to the RLHF and DPO posts: same optimization machinery, but the preference labels come from principles instead of people. My caveat is that a constitution only ever encodes what you remembered to write down, and the model's idea of "harm" is whatever the principles happen to cover. Most safety-tuned models today borrow this recipe, and the open question is whether the principles can keep up with the edge cases users invent.
+
+## References
+
+- Bai et al. (2022). *Constitutional AI: Harmlessness from AI Feedback.* [arXiv:2212.08073](https://arxiv.org/abs/2212.08073)
+- Ouyang et al. (2022). *InstructGPT.* [arXiv:2203.02155](https://arxiv.org/abs/2203.02155)
+- Rafailov et al. (2023). *DPO.* [arXiv:2305.18290](https://arxiv.org/abs/2305.18290)
+
+---
+
+### Self-Consistency: Improving Chain-of-Thought Reasoning
+URL: https://cuijiawei.cn/2026/07/10/self-consistency/
+
+**Paper:** Wang, X., et al., *Self-Consistency Improves Chain-of-Thought Reasoning in Language Models*, ICLR 2023. [arXiv:2203.11171](https://arxiv.org/abs/2203.11171)
+
+CoT showed that asking a model to think step by step unlocks reasoning. But a single greedy path is brittle. One bad step and the whole answer goes off the rails. Self-Consistency fixes this with a change so small it feels like a cheat: sample a bunch of reasoning paths, then take the majority vote on the final answer. No training, no verifier. It lifted accuracy on math and commonsense benchmarks by double digits. If you do any reasoning with LLMs, this is the cheapest win available.
+
+## Marginalizing over paths
+
+A reasoning problem usually has many valid chains that reach the same answer but few that reach a wrong one. Greedily picking one path throws that away. Instead:
+
+1. Sample $k$ diverse CoT paths $\{z_1, \dots, z_k\}$ with temperature $> 0$.
+2. Parse the final answer $a_i$ from each path.
+3. Aggregate by majority vote (or weighted by path probability):
+
+$$
+\hat{a} = \operatorname*{argmax}_{a} \sum_{i:\, \text{ans}(z_i) = a} p(z_i \mid x)
+$$
+
+The intuition is that the correct answer is a fixed point. Sample the model many times and the right answer keeps showing up, while the wrong ones scatter.
+
+## The six-line version
+
+```python
+paths = [model.generate(prompt, temperature=0.7) for _ in range(20)]
+answers = [parse_answer(p) for p in paths]
+final = max(set(answers), key=answers.count)   # majority vote
+```
+
+No extra training, no verifier model required.
+
+## Results, briefly
+
+- GSM8K: ~70% → ~78% (and higher with more samples) for PaLM 540B.
+- Large gains on MATH, StrategyQA, ARC-challenge, and other multi-step tasks.
+- Near or surpassing supervised verifier methods at the time, with zero additional supervision.
+
+## The part worth keeping
+
+Self-Consistency is the practical companion to the CoT post. CoT hands the model a reasoning process; self-consistency makes that process hold up. It's also the ancestor of the "sample many thoughts at test time" idea that reasoning models and Tree-of-Thought search lean on. The catch I'd flag: you pay for it in tokens, and on a question with no real path to a fixed point, more samples just buy you more confident noise.
+
+## References
+
+- Wang et al. (2022). *Self-Consistency Improves Chain-of-Thought Reasoning in Language Models.* ICLR 2023. [arXiv:2203.11171](https://arxiv.org/abs/2203.11171)
+- Wei et al. (2022). *Chain-of-Thought Prompting Elicits Reasoning in Large Language Models.* [arXiv:2201.11903](https://arxiv.org/abs/2201.11903)
+
+---
+
+### CLIP: Learning Transferable Visual Models From Language Supervision
+URL: https://cuijiawei.cn/2026/07/11/clip/
+
+**Paper:** Radford, A., et al. (OpenAI), *Learning Transferable Visual Models From Natural Language Supervision*, ICML 2021. [arXiv:2103.00020](https://arxiv.org/abs/2103.00020)
+
+CLIP changed what "understanding an image" costs. Instead of hiring people to label millions of pictures with fixed classes, OpenAI pulled **400 million (image, text) pairs** off the internet and trained a model to match an image to its caption. The payoff is a visual representation that transfers to *any* downstream task through natural language, with **zero task-specific training**. It is also the image encoder behind DALL·E, Stable Diffusion, and nearly every vision-language model worth mentioning. For the LLM era, it is the bridge from text to pixels.
+
+## The trick: contrastive pretraining
+
+Two encoders, an image tower $I(\cdot)$ and a text tower $T(\cdot)$, embed into a shared space. For a batch of $N$ pairs, pull the matching (image, text) closer and push the $N^2 - N$ non-matching pairs apart with the InfoNCE contrastive loss:
+
+$$
+\mathcal{L} = -\frac{1}{N}\sum_{i=1}^{N}
+\left[
+\log \frac{e^{\,\mathrm{sim}(I_i, T_i)/\tau}}{\sum_{j=1}^{N} e^{\,\mathrm{sim}(I_i, T_j)/\tau}}
++
+\log \frac{e^{\,\mathrm{sim}(T_i, I_i)/\tau}}{\sum_{j=1}^{N} e^{\,\mathrm{sim}(T_i, I_j)/\tau}}
+\right]
+$$
+
+where $\mathrm{sim}$ is cosine similarity and $\tau$ a temperature. There is no fixed label set. Supervision is just the caption.
+
+## Zero-shot transfer
+
+Because text is the classifier, you never retrain. For a new task you write prompts ("a photo of a {label}") and pick the label whose text embedding is closest to the image embedding:
+
+```python
+image_emb = I(image)
+label_embs = T([f"a photo of a {c}" for c in classes])
+pred = classes[argmax(image_emb @ label_embs.T)]
+```
+
+## Results, briefly
+
+- Zero-shot CLIP matched a fully supervised ResNet-50 on ImageNet, without ever seeing the ImageNet labels.
+- Strong transfer across OCR, action recognition, geo-localization, and more.
+- Became the de-facto image encoder for generative and multimodal systems.
+
+## The bit that stuck with me
+
+CLIP is the "text meets vision" layer the LLM world got built on. When a model "sees," it usually does so through a CLIP-family encoder. Read it with the Transformer and RAG posts: it pushes the representation-learning playbook from text onto the joint image-text manifold, and it is the reason "describe this image" just works. The caveat I keep returning to: those 400 million pairs were scraped, so whatever the web believed in 2021, the encoder swallowed it too.
+
+## References
+
+- Radford et al. (2021). *Learning Transferable Visual Models From Natural Language Supervision (CLIP).* ICML 2021. [arXiv:2103.00020](https://arxiv.org/abs/2103.00020)
+- Vaswani et al. (2017). *Attention Is All You Need.* [arXiv:1706.03762](https://arxiv.org/abs/1706.03762)
+
+---
+
+## Software Engineering (17)
+
+### IPv6技术
+URL: https://cuijiawei.cn/2016/12/20/IPv6%E6%8A%80%E6%9C%AF/
+
+##### IPv6报头结构
+
+##### IPv6地址技术
+
+IPv6地址长度是128位，所以理论上IPv6地址一共有$2^{128}$个。
+
+- **首选格式**
+
+  把128位分成8段，每段16位，用4个十六进制数（一个占4位）表示，并用冒号等间距分隔。
+
+- **压缩格式**
+
+  如果地址包含了长串的“0”，则可以用冒号来取代。
+
+  比如`1623:0:0:0:6330:20BC:411A`可以用`1623::8:6330:20BC:411A`来代替。但是为了避免出现地址表示不清晰，一个地址中只能出现一次冒号压缩。
+
+- 内嵌IPv4的IPv6地址
+
+  在当下网络还没有全部从IPv4过渡到IPv6，就可能出现某些设备既连接了IPv4网络，又连接了IPv6网络。对于这样的情况，就需要一个地址即可以表示IPv4地址，又可以表示IPv6地址。
+
+  IPv4地址分为四段，每段0-255是8位，总共32位。而IPv6地址总共128位，所以将IPv4地址扩展成IPv6地址要在前面加上96个0。比如`0:0:0:0:0:0:172.18.1.1`或者压缩为`::172.18.1.1` 
+
+- “地址／前缀长度”表示法
+
+  例如`2001:A304:6101:1::E0:F726:4E58/64`表示一个子网前缀，64位也就是前4段用来表示结点所在的单个子网。
+
+  ​
+
+---
+
+### Advanced Javascript题目
+URL: https://cuijiawei.cn/2017/03/16/Learning Advanced Javascript/
+
+**#2: Goal: To be able to understand this function:**
+
+{% highlight javascript linenos %}
+// The .bind method from Prototype.js 
+Function.prototype.bind = function(){ 
+  var fn = this, args = Array.prototype.slice.call(arguments), object = args.shift(); 
+  return function(){ 
+    return fn.apply(object, 
+      args.concat(Array.prototype.slice.call(arguments))); 
+  }; 
+};
+{% endhighlight %}
+
+
+要理解这段代码，首先要了解*javascript*的数组如下基本操作。
+
+- slice() 操作截取数组的一段， slice(start,end)则表示截取数组的start到end的一段，默认时为数组从头到尾。
+- shift()返回数组的第一个元素并删除。
+- concat()数组拼接
+
+涉及到一点函数知识，比如call与apply的区别。其实，call与apply的作用没有区别，都是给函数绑定对象，只不过call传递的是参数，apply传递的是数组。
+
+{% highlight javascript linenos %}
+func.call(this, arg1, arg2);
+func.apply(this, [arg1, arg2])
+{% endhighlight %}
+
+到此时，这段代码就可以基本读懂了。arguments不是数组，将其变成数组用了一步巧妙的`args = Array.prototype.slice.call(arguments)`因为arguments不是array，所以原本没有slice方法，不过Array.prototype有。随后用call将其绑定于arguments。
+
+到后面有一步concat，是把bind()可能带有的参数加进去，这段代码也就解释清楚了。
+
+
+
+**#11 the name of a function--匿名函数**
+
+{% highlight javascript linenos %}
+var ninja = function myNinja(){ 
+  assert( ninja == myNinja, "This function is named two things - at once!" ); 
+}; 
+ninja(); 
+assert( typeof myNinja == "undefined", "But myNinja isn't defined outside of the function." ); 
+log( ninja );
+{% endhighlight %}
+
+这段代码的输出结果为
+
+```
+PASS This function is named two things - at once!
+PASS But myNinja isn't defined outside of the function.
+LOG function myNinja(){ assert( ninja == myNinja, "This function is named two things - at once!" ); }
+```
+
+说明匿名函数在函数外可以看作undefined，而实名函数则不会。
+
+
+
+**#12: We can even do it if we're an anonymous function that's an object property.**
+
+{% highlight javascript linenos %}
+var ninja = { 
+  yell: function(n){ 
+    return n > 0 ? ninja.yell(n-1) + "a" : "hiy"; 
+  } 
+}; 
+assert( ninja.yell(4) == "hiyaaaa", "A single object isn't too bad, either." );
+{% endhighlight %}
+
+根据输出我们发现ninja.yell虽然定义在对象ninja内，仍然可以在对象外部调用它。
+
+
+
+**#13: But what happens when we remove the original object?**
+
+{% highlight javascript linenos %}
+var ninja = { 
+  yell: function(n){ 
+    return n > 0 ? ninja.yell(n-1) + "a" : "hiy"; 
+  } 
+}; 
+assert( ninja.yell(4) == "hiyaaaa", "A single object isn't too bad, either." ); 
+
+var samurai = { yell: ninja.yell }; 
+var ninja = null; 
+
+try { 
+  samurai.yell(4); 
+} catch(e){ 
+  assert( false, "Uh, this isn't good! Where'd ninja.yell go?" ); 
+}
+{% endhighlight %}
+
+通过输出结果
+
+```
+PASS A single object isn't too bad, either.
+FAIL Uh, this isn't good! Where'd ninja.yell go?
+```
+
+发现原来对象的赋值实际上是指针，指向了原来的对象，所以在删除了原来对象的时候，没有办法调用到这个函数。
+
+
+
+**#14: Let's give the anonymous function a name!**
+
+{% highlight javascript linenos %}
+var ninja = { 
+  yell: function yell(n){ 
+    return n > 0 ? yell(n-1) + "a" : "hiy"; 
+  } 
+}; 
+assert( ninja.yell(4) == "hiyaaaa", "Works as we would expect it to!" ); 
+
+var samurai = { yell: ninja.yell }; 
+var ninja = {}; 
+assert( samurai.yell(4) == "hiyaaaa", "The method correctly calls itself." );
+{% endhighlight %}
+
+通过比较之前的代码，我们发现如果不给匿名函数命名，我们即便是在函数里调用这个函数也要用对象的方法`ninja.yell(n-1)`，命名之后我们就可以直接通过`yell(n-1)`来直接调用了。如果我们不想给它命名，也可以通过`arguments.callee(n-1)`来调用。
+
+
+
+**#19: Is it possible to cache the return results from a function?**
+
+{% highlight javascript linenos %}
+function getElements( name ) { 
+  var results; 
+
+  if ( getElements.cache[name] ) { 
+    results = getElements.cache[name]; 
+  } else { 
+    results = document.getElementsByTagName(name); 
+    getElements.cache[name] = results; 
+  } 
+
+  return results; 
+} 
+getElements.cache = {}; 
+
+log( "Elements found: ", getElements("pre").length ); 
+log( "Cache found: ", getElements.cache.pre.length );
+{% endhighlight %}
+
+可以通过cache的方式将函数运行的结果存储起来。
+
+
+
+**#20: QUIZ: Can you cache the results of this function?**
+
+{% highlight javascript linenos %}
+function isPrime( num ) {
+  var prime = num != 1; // Everything but 1 can be prime
+  for ( var i = 2; i < num; i++ ) {
+    if ( num % i == 0 ) {
+      prime = false;
+      break;
+    }
+  }
+  return prime;
+}
+
+assert( isPrime(5), "Make sure the function works, 5 is prime." );
+assert( isPrime.cache[5], "Is the answer cached?" );
+{% endhighlight %}
+
+
+
+首先，看一道前端面试题目
+
+{% highlight javascript linenos %}
+var a = {n:1};  
+var b = a; // 持有a，以回查  
+a.x = a = {n:2};  
+alert(a.x);// --> undefined  
+alert(b.x);// --> {n:2}
+{% endhighlight %}
+
+它的结果为什么是这样。
+
+对于这个问题，segmentfault上面一位用户给出了详尽的解答
+
+> 同意3楼和4楼同学说的。连等是先确定**所有**变量的指针，再让指针指向那个赋值（`{n:3}`)。
+>
+> 对于 `a.x = a = {n:2}`，楼主原先的思路应该是：
+>
+> 1. 先把 `{n:2}` 赋值给 a
+> 2. 然后再创建 a.x，将 `{n:2}` 再赋值给 a.x
+>
+> 这样似乎确实说不通 a.x 的值是 undefined，因为 a.x 确实是被赋值了的啊。 可是事实上，a.x 的值却是 undefined。
+>
+> 再来看一下这个： `a = a.x = {n:2}`的话，按楼主原先的思路应该是：
+>
+> 1. 先把 `{n:2}` 赋值给 a.x，那么也就相当于 `b.x = {n:2}` 啦
+> 2. 再把 a 重新指向 `{n:2}`。那么这是后 a.x 的值确实是 undefined，a 对象 `{n:2}` 中就没有 x 属性嘛。
+>
+> 按楼主的思路，上述两种方式的结果应该是不同的。但事实却是`a = a.x = {n:2}`和`a.x = a = {n:2}`的结果是一致的。所以楼主的那种赋值的思路是不对的。
+>
+> 事实上，解析器在接受到 `a = a.x = {n:2}` 这样的语句后，会这样做：
+>
+> 1. 找到 a 和 a.x 的指针。如果已有指针，那么不改变它。如果没有指针，即那个变量还没被申明，那么就创建它，指向 null。
+>    a 是有指针的，指向 `{n:1}`；a.x 是没有指针的，所以创建它，指向 null。
+> 2. 然后把上面找到的指针，都指向最右侧赋的那个值，即 `{n:2}`。
+>
+> 所以执行以后，就有了如下的变量关系图。楼主可以慢慢体会下，想通了就很简单的。
+
+ ![image](https://segmentfault.com/img/bVleKD) 
+
+
+
+其实这道题目并不需要这些知识就可以解决，我们只是借用它去理解prime = num != 1来判断当num == 1时的prime值。
+
+正确答案如下：
+
+{% highlight javascript linenos %}
+function isPrime( num ) {
+  if(isPrime.cache[num]) return isPrime.cache[num];
+  else {
+      var prime = num != 1; // Everything but 1 can be prime
+      for ( var i = 2; i < num; i++ ) {
+        if ( num % i == 0 ) {
+          prime = false;
+          break;
+        }
+      }
+      isPrime.cache[num] = prime;
+      return prime;   
+  }
+
+}
+
+isPrime.cache = {};
+
+assert( isPrime(5), "Make sure the function works, 5 is prime." );
+assert( isPrime.cache[5], "Is the answer cached?" );
+{% endhighlight %}
+
+
+
+**#27: QUIZ: How can we implement looping with a callback?**
+
+{% highlight javascript linenos %}
+function loop(array, fn){
+  for ( var i = 0; i < array.length; i++ ) {
+    // Implement me!
+  }
+}
+var num = 0;
+loop([0, 1, 2], function(value){
+  assert(value == num++, "Make sure the contents are as we expect it.");
+  assert(this instanceof Array, "The context should be the full array.");
+});
+{% endhighlight %}
+
+一开到这个问题还有点头晕，不过想到是context里面的题目，于是想到solution
+
+{% highlight javascript linenos %}
+function loop(array, fn){
+  for ( var i = 0; i < array.length; i++ )
+    fn.call( array, array[i], i );
+}
+var num = 0;
+loop([0, 1, 2], function(value, i){
+  assert(value == num++, "Make sure the contents are as we expect it.");
+  assert(this instanceof Array, "The context should be the full array.");
+});
+{% endhighlight %}
+
+```
+本页为原创内容，转载请注明出处{{page.url | absolute_url}}
+```
+
+---
+
+### wget工具的安装及使用
+URL: https://cuijiawei.cn/2017/04/24/wget%E5%B7%A5%E5%85%B7%E7%9A%84%E5%AE%89%E8%A3%85%E5%8F%8A%E4%BD%BF%E7%94%A8/
+
+#### Mac下wget工具的安装
+
+- 使用homebrew
+
+  ```shell
+  sudo brew install wget
+  ```
+
+- 使用mac ports
+
+  ```shell
+  sudo port install wget
+  ```
+
+  ​
+
+#### 使用wget爬取全站数据
+
+- 确定需要爬取的网站URL$Route_{remote}$ ，需要放置的本地路径$Route_{local}$
+
+- 输入命令
+
+  ```shell
+  wget -r -p -np -k -P ~/usr/web/ https://jiawei1996.github.io
+  ```
+
+- 其中
+
+  - -P 表示下载到哪个目录
+  - -r 表示递归下载
+  - -np 表示不下载旁站连接.
+  - -k 表示将下载的网页里的链接修改为本地链接.
+  - -p 获得所有显示网页所需的元素
+
+---
+
+### MySQL安装方法
+URL: https://cuijiawei.cn/2017/05/02/MySQL%E5%AE%89%E8%A3%85%E6%96%B9%E6%B3%95/
+
+##### MySQL for MAC
+
+- 从 https://dev.mysql.com/downloads/ 也就是官方地址，选择MySQL Community Server 一项来下载MySQL。可以下载不同方式安装的版本，我则选择的是.dmg（最方便）。
+
+- 下载安装后，不能使用mysql命令，或是mysqladmin。在命令行里面用where、which、whereis都找不到。但是在偏好设置里面明明看到了可以开启MySQL Server。于是寻找教程，发现要手动配置环境变量。在命令行里输入
+
+  ```shell 
+  alias mysql=/usr/local/mysql/bin/mysql
+  alias mysqladmin=/usr/local/mysql/bin/mysqladmin
+  ```
+
+  于是就可以通过命令启动mysql了，然而每次重启命令行还是要设置。所以下面我们想办法设置环境变量使得每一次重启命令行不用再配置alias。
+
+- 环境变量
+
+  - 修改etc/paths 无效
+
+  - 有效方法
+
+    ```shell
+    vim ~/.zshrc //打开zsh配置文件
+
+    在其中添加
+    alias mysql=/usr/local/mysql/bin/mysql
+    alias mysqladmin=/usr/local/mysql/bin/mysqladmin
+    ```
+
+    ​
+
+---
+
+### Git初始化操作
+URL: https://cuijiawei.cn/2017/05/12/Gitlab Commands/
+
+|总是忘记，写在这里没事看一看
+
+### Command line instructions
+
+##### Git global setup
+
+`git config --global user.name "Cui Jiawei"`
+
+`git config --global user.email "892001108@qq.com"`
+
+##### Create a new repository
+
+`git clone git@gitlab.com:We-InvoiceHelper/WeInvoiceHelper.git`
+
+`cd WeInvoiceHelper`
+
+`touch README.md`
+
+`git add README.md`
+
+`git commit -m "add README"`
+
+`git push -u origin master`
+
+##### Existing folder
+
+`cd existing_folder`
+
+`git init`
+
+`git remote add origin git@gitlab.com:We-InvoiceHelper/WeInvoiceHelper.git`
+
+`git add .`
+
+`git commit -m "Initial commit"`
+
+`git push -u origin master`
+
+##### Existing Git repository
+
+`cd existing_repo`
+
+`git remote rename origin old-origin`
+
+`git remote add origin git@gitlab.com:We-InvoiceHelper/WeInvoiceHelper.git`
+
+`git push -u origin --all`
+
+`git push -u origin --tags`
+
+---
+
+### 面向连接的运输：TCP
+URL: https://cuijiawei.cn/2017/05/18/面向连接的运输：TCP/
+
+#### 面向连接的运输：TCP
+
+##### 3.5.1 TCP连接
+
+​	TCP连接是**面向连接**的，因为一个应用进程可以开始向另一个应用进程发送数据之前，这两个进程必须先相互“握手”。（相互发送某些预备报文段，以建立确保数据传输的参数）
+
+​	**全双工服务** ： A和B之间如果存在一条TCP连接，则应用层数据从A流向B的同时，就有数据从B流向A
+
+​	**点对点**： 单个发送只能有一个接收方
+
+​	**MSS：最大报文长度**（Maximum Segment Size）
+
+
+
+##### 3.5.2 TCP报文段结构
+
+​	序号和确认号
+
+​	
+
+##### 3.5.3 往返时间的估计与超时
+
+​	**估计往返时间**(RTT)：一旦获得一个新的SampleRTT时，TCP就会根据$$ EstimatedRTT = (1-\alpha)EstimatedRTT + \alpha SampleRTT \nonumber $$ 重新计算估计往返时间。
+
+​	**设置和管理重传超时间隔**：DevRTT为RTT的偏差，用于估算SampleRTT一般会偏离EstimatedRTT的程度，根据$$DevRTT = (1-\beta)DevRTT + \beta | SampleRTT - EstimatedRTT |   \nonumber$$ 
+
+​	重传间隔应该大于或等于EstimatedRTT，否则会造成不必要的重传。但是设置过大当数据丢失时不能及时重传。计算公式为$$ TimeoutInterval = EstimatedRTT + 4*DevRTT  \nonumber$$
+
+
+
+##### 3.5.4 可靠数据传输
+
+​	**超时间隔加倍**：定时器时限过期后超时间隔的长度，会在每次重传后设置为之前的两倍
+
+
+
+##### 3.5.5流量控制
+
+​	**流量控制服务**：以消除发送的方式降低接收方缓存溢出的可能性。流量控制因此是一个速度匹配服务，即发送方的发送速率与接收方应用程序的读取速率相匹配。
+
+​	**拥塞控制**：因为IP网络的拥塞而被遏制的解决办法
+
+​	
+
+​	**接收窗口(rwnd)**：用于给发送方一个指示，该接收方还有多少可用的缓存空间
+
+​	**拥塞窗口(cwnd)**: 	一个发送方中未被确认的数据不能超过min{cwnd, rwnd}
+
+
+
+
+
+#### 3.6 拥塞控制原理
+
+
+
+##### 3.6.1 拥塞原因与代价
+
+
+
+##### 3.6.2 拥塞控制方法
+
+​	**端到端拥塞控制**：对网络层进行观察推测
+
+​	**网络辅助的拥塞控制**：不能实现，因为IP层不能向端系统提供显式的网络拥塞反馈
+
+​	**慢启动**：cwnd的值通常初始设置为一个MSS的较小值
+
+---
+
+### 罗朗展式及孤立奇点
+URL: https://cuijiawei.cn/2017/06/14/%E7%BD%97%E6%9C%97%E5%B1%95%E5%BC%8F%E5%8F%8A%E5%AD%A4%E7%AB%8B%E5%A5%87%E7%82%B9/
+
+#### 罗朗展式及孤立奇点
+
+#####  4.3.1 罗朗展式
+
+罗朗展式是幂级数的一个推广，是“双向”幂级数，当所有负幂项系数为零时就是幂级数
+
+$$ f(z) = \sum_{n=-\infty}^{+\infty} \alpha_n (z-z_0)^n \nonumber$$
+
+上式称为f(z)在z0处的**罗朗展式**，右端的级数称为f(z)的**罗朗级数**，$\alpha_n$称为f(z)的**罗朗系数**
+
+##### 4.3.3 解析函数的孤立奇点
+
+**定义**
+
+对于在$z_0$点的罗朗展式
+
+1. 若其中不含有负幂项，则称$z_0$为f的**可去奇点**
+2. 若其中含有有限个负幂项，则称$z_0$为**极点**
+   - 单极点、**m阶极点**
+3. 若其中含有无穷多个负幂项，则称$z_0$为f的**本性奇点**
+
+
+
+若$z_0$为f的孤立奇点，则下列三个条件等价
+
+1. $z_0$是f的**可去奇点**
+2. $$ lim_{z\to z_0} f(z) = \alpha_0 \nonumber $$ (有限)
+3. f在$z_0$的某空心邻域有界
+
+---
+
+### 经济学原理
+URL: https://cuijiawei.cn/2017/06/26/曼昆--经济学原理/
+
+### Chapter I 经济学十大原理
+
+- **原理一：人们面临权衡取舍** 
+  - **效率**是指社会能从其稀缺资源中得到最大的利益
+  - **平等**是指将这些利益平均地分配给社会成员
+- **原理二：某种东西的成本是为了得到它放弃的东西**
+  - **机会成本**是为了得到这种东西所放弃的东西。决策者应该认识到每一种可能的行动所带来的机会成本
+- **原理三： 理性人考虑边际量**
+  - **理性人**系统有目的地尽最大努力去实现其目标
+  - **边际变动**：描述现有行动计划的微小增量调整
+- **原理四： 人们会对激励做出反应**
+  - **激励**是引起一个人做出某种行为的某种东西
+- **原理五： 贸易可以使每个人的状况都变得更好**
+
+
+- 通过与他人交易，人们可以以比较低的成本获得各种各样的物品与服务
+- **原理六： 市场通常是组织经济活动的一种好方法**
+  - 价格和利己引导着他们的决策
+- **原理七：政府有时可以改善市场的结果**
+- **原理八： 一国的生活水平取决于它生产物品与服务的能力**
+
+
+
+### Chapter IV 供给与需求的市场力量
+
+> 供给和需求是使市场经济运行的力量，它们决定了每种物品的产量以及其出售的价格。
+
+#### 4.1 市场与竞争
+
+- **市场**：市场是由某种物品或服务的买者与卖者组成的一个群体。买者作为一个群体决定了一种产品的需求，而卖者作为一个群体决定了一种产品的供给。
+
+- **竞争市场**：一个市场是**完全竞争**的，必须具备两个特征：
+
+  - 可供销售的物品是完全相同的
+  - 买者和卖者人数众多，以至于没有任何一个买者或者卖者可以影响市场价格
+
+  由于完全竞争市场上的买者和卖者必须接受市场决定的价格，它们被称为**价格接受者**
+
+
+
+#### 4.2 需求
+
+- **需求量**：买者愿意并且能够购买的该种物品的数量
+- **需求定理**：在其他条件不变时，一种物品的价格上升，对该种物品的需求量减少；反之亦然
+- 市场需求是个人需求之和
+- 减小需求的方法(如香烟)
+  1. 公益广告、烟盒上的有害健康等警示以及禁止在电视上做香烟广告，使需求曲线左平移（同价格需求减少）
+  2. 增加税收，增加消费者支出价格，表现为沿着需求曲线变动到价格更高而需求更小的点。
+
+
+
+#### 4.4 供给与需求的结合
+
+- **均衡**：供给曲线与需求曲线相交与一点，这一点被称为市场的**均衡**
+- 分析均衡变动的三个步骤：
+  1. 确定该事件是使供给曲线移动还是使需求曲线移动(还是都移动)
+  2. 确定曲线移动的方向
+  3. 用供求图说明这种移动如何改变均衡价格和均衡数量
+
+---
+
+### jekyll linux 安装方法
+URL: https://cuijiawei.cn/2017/09/25/jekyll linux 安装方法/
+
+#### jekyll linux 安装方法
+
+##### 安装gcc
+
+`sudo apt-get install gcc`
+
+##### 安装ruby
+
+把大象装进冰箱需要三步
+
+1. 类似node的安装需要nvm，经测试ruby安装最方便的方法是安装rvm
+
+   ```shell
+   gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3
+   curl -sSL https://get.rvm.io | bash -s stable
+   # 如果上面的连接失败，可以尝试: 
+   curl -L https://raw.githubusercontent.com/wayneeseguin/rvm/master/binscripts/rvm-installer | bash -s stable
+   ```
+
+2. 接下来安装ruby
+
+   ```shell
+   rvm requirements
+   # 环境准备
+   rvm install 2.3.0
+   rvm use 2.3.0 --default
+   # 目测有一些版本不行，需要指定2.3.0版本
+   ```
+
+3. 安装jekyll
+
+   ```shell
+   gem install bundler
+   gem install jekyll
+   ```
+
+
+最后，有人说需要nodejs环境，那么就可以安装一下nvm，装一个node上去，到此为止，一切准备就绪。
+
+---
+
+### pm2管理node进程
+URL: https://cuijiawei.cn/2017/10/11/pm2 node进程管理/
+
+#### pm2 node进程管理
+
+- pm2 Git `https://github.com/Unitech/pm2`
+- pm2 中文Gitbook`https://wohugb.gitbooks.io/pm2/content/features/quick-start.html`
+
+
+- pm2无法启动express app
+  - 解决办法`pm2 start bin/www`
+
+---
+
+### iptables初探
+URL: https://cuijiawei.cn/2017/11/25/iptables 初探/
+
+### iptables 基本命令
+
+##### iptables 语法
+
+我们来看看 iptables 命令的语法帮助信息，并将其保存到文本文件想要通过步骤检查，可以在终端输入： `sudo iptables -h > ~/iptables_help`
+
+##### 查看 iptables 表的规则
+
+iptables 有**表 (tables)** 的概念，每张表又包含不同**链 (chains)**，大部分情况下我们仅需要使用 filter 和 nat 两张表的链就可以完成功能。使用以下命令可以查看 filter 表中的规则。`sudo iptables -L -n` 
+
+参数解析:
+
+-  -L 列出规则
+-  -n 不显示域名
+
+命令默认显示的是 filter 表，可以通过 -t 参数来指定其他表。
+
+可以看到目前 filter 表中有 3 条链: INPUT, FORWARD, OUTPUT。 3 条链都没有任何规则存在，因此通过网卡的网络数据包不会受到任何影响。
+
+### 场景：禁止访问目的地址
+
+##### 添加一条规则到 Filter 表
+
+在没有任何防火墙规则时，尝试 ping 百度的服务器，ping 是可以正常返回的。
+
+```shell 
+ping -c 4 www.baidu.com
+PING qcloud.com (119.29.47.192) 56(84) bytes of data.
+64 bytes from 119.29.47.192: icmp_seq=1 ttl=58 time=3.11 ms
+64 bytes from 119.29.47.192: icmp_seq=2 ttl=58 time=3.10 ms
+64 bytes from 119.29.47.192: icmp_seq=3 ttl=58 time=3.17 ms
+```
+
+假设我们作为 Linux 管理员，不希望有人从本机 ping 百度的服务器，那么就可以用到如下的 iptables 命令：`sudo iptables -I OUTPUT -p icmp -d www.baidu.com -j DROP`
+
+参数解析 
+
+- -I 添加规则到链的最前面
+
+
+- -p 匹配协议
+- -d 匹配目的地址
+- -j DROP 将匹配的数据包实施**丢掉**动作
+
+**重要:** 因为在 iptables 一个链中的规则是从上到下依次执行的，因此一条规则在链中的位置十分重要。例如一条拒绝全部连接的规则 -j REJECT 一定要放在链的最后，而允许通行的规则要放在这条规则之前。否则所有网络数据包进入链后直接匹配到这条规则，将导致所有连接被拒绝。现在我们可以用 `sudo iptables -L -n` 命令看到 filter 表的 OUTPUT 链中新增了两条记录，其中 destination 地址是 DNS 返回的百度服务器 IP 地址。
+
+```shell
+Chain OUTPUT (policy ACCEPT)
+target     prot opt source               destination
+DROP       icmp --  0.0.0.0/0            220.181.112.244
+DROP       icmp --  0.0.0.0/0            220.181.111.188
+```
+
+这时再 ping 百度服务器会发现无法 ping 通了，因为访问百度服务器 IP 地址的数据包已经被防火墙过滤丢掉了
+
+```shell
+ping -c 4 www.baidu.com
+PING www.a.shifen.com (220.181.111.188) 56(84) bytes of data.
+ping: sendmsg: Operation not permitted
+ping: sendmsg: Operation not permitted
+```
+
+
+
+### 场景：导出、编辑、导入规则
+
+##### 导出规则
+
+通过如下命令导出所有规则到文本文件`sudo iptables-save > /home/ubuntu/iptables_rules`
+
+##### 编辑规则
+
+在新标签页打开 iptables_rules，在 `filter 表的 :OUTPUT ACCEPT`链下面添加一条规则
+
+```
+-A OUTPUT -p icmp -d 114.114.114.114 -j DROP
+```
+
+按 `Ctrl-S` 保存该文件
+
+##### 导入规则
+
+使用命令将编辑过的规则重新导入 iptables
+
+`sudo iptables-restore /home/ubuntu/iptables_rules`
+
+使用 `sudo iptables -L -n` 查看是否有禁止 `ping 114.114.114.114` 的新增规则使用 `sudo ping 114.114.114.114` 查看新规则是否生效
+
+
+
+### iptables进阶场景：黑/白名单
+
+##### 实验：
+
+假设本机作为一台网关使用，被限制的目标网站有 114.114.114.114 和 220.181.111.188，被限制访问的 PC 就是本机。
+
+查看本机 IP 地址。
+
+`sudo ip a show eth0`
+
+在 `inet` 之后的就是本机网口的 IP 地址，例如 `10.135.166.86`
+
+编辑 iptables 规则：
+
+//清除已有规则
+
+`sudo iptables -F`
+
+//清除自建链
+
+`sudo iptables -X`
+
+//新建一个叫做 BLACKLIST 的链
+
+`sudo iptables -N BLACKLIST`
+
+//当访问的源 IP 地址是本机的时候进入 BLACKLIST 链
+
+`sudo iptables -A OUTPUT -s 10.135.166.86 -j BLACKLIST`
+
+//向 BLACKLIST 链添加 2 条规则
+
+```shell
+sudo iptables -A BLACKLIST -d 114.114.114.114 -j DROP
+sudo iptables -A BLACKLIST -d 220.181.111.188 -j DROP
+```
+
+如上配置后，会发现本机已经无法 ping BLACKLIST 中的目的地址了。
+
+如果后续要增加新的禁止访问的目的地址，则只需向 BLACKLIST 链添加新规则。如果需要限制另一台 PC 通过本网关转发访问外网，则只需添加一条 OUTPUT 链的源 IP 匹配规则并指向 -j BLACKLIST。
+
+
+
+
+
+### 进阶场景：端口映射
+
+##### 分析： 
+
+通常来讲应该首先考虑程序本身能否配置监听多个端口，或者使用负载均衡器作为代理程序。 但在本次实验中我们将使用 iptables 监听 8080 端口并将网络数据包转发给本地80端口
+
+##### 实验：
+
+首先测试  `telnet 0 80` 和 `telnet 0 8080` 
+
+可以看到 80 和 8080 端口都是不通的。
+
+接下来我们用 **netcat** 监听 80 端口：
+
+`sudo nc -k -l 80 &`
+
+这时候 `telnet 0 80` 发现 80 端口可以工作了。
+
+退出telnet需要按 **Ctrl + ]** （右方括号） ，再按 q 回车。
+
+
+
+下面我们用 iptables 做一个端口映射
+
+`sudo iptables -t nat -A OUTPUT -p tcp -d 127.0.0.1 --dport 8080 -j DNAT --to 127.0.0.1:80`
+
+这里我们用到了 -t nat 参数，表示我们使用了 netfilter 的 nat 表。在 nat 表的 OUTPUT 链上做了一个 -j DNAT 转发，将访问内网 8080 端口的数据包转向了 80 端口。
+
+这时候 `telnet 0 8080` 发现 8080 端口也可以工作了。 
+
+如果是监听外网的 8080 端口转发到 80 端口，则需要执行以下命令：
+
+`sudo iptables -t nat -A PREROUTING -p tcp --dport 8080 -j REDIRECT --to-ports 80`
+
+通过使用 PREROUTING 链直接将访问 8080 端口的数据包转发到 80 端
+
+---
+
+### linux邮件服务
+URL: https://cuijiawei.cn/2017/12/01/%E9%82%AE%E4%BB%B6%E6%9C%8D%E5%8A%A1/
+
+| 腾讯云开发者实验室系列
+
+##### 域名解析
+
+域名购买完成后, 需要将域名解析到实验云主机上，实验云主机的 IP 为：`123.207.70.98`
+
+在腾讯云购买的域名，可以到控制台添加解析记录：
+
+完成该实验共需要添加两条记录：
+
+**A 记录**
+
+记录类型：A
+
+主机记录：@
+
+记录值：123.207.70.98
+
+**MX 记录**
+
+记录类型：MX
+
+主机记录：@
+
+记录值：`yourdomain.com`（替换为自己域名）
+
+
+
+##### 生效检查
+
+域名设置解析后需要过一段时间才会生效
+
+- 通过 `ping` 命令检查域名是否生效
+
+`ping yourdomain.com`
+
+如果 ping 命令返回的信息中含有你设置的解析的 IP 地址，说明解析成功。
+
+- 检查 MX 记录
+
+替换下面命令中的 `yourdomain.com` 为您自己的注册的域名：
+
+`nslookup -q=mx yourdomain.com`
+
+如果 nslookup 命令返回的信息中含有你设置的域名的记录值，说明解析成功。
+
+
+
+### 实验之前
+
+
+
+配置一个功能完善的邮件服务器并不是一项容易的工作，本实验只是搭建了一个简单的邮件服务器，一些更为强大的功能还需要你去探索。
+
+
+
+##### Postfix、Dovecot 简介
+
+PostfixPostfix 是一个标准的 MTA「Mail Transfer Agent」服务器，它负责通过 SMTP 协议管理发送到本机的邮件以及由本机发向外界的邮件。
+
+DovecotDovecot 是一个优秀的 IMAP/POP 服务器用以接收外界发送到本机的邮件。
+
+
+
+##### Postfix、Dovecot 安装
+
+在 CentOS 7 上，我们可以直接使用 `yum` 进行下载安装：
+
+`yum -y install postfix dovecot`
+
+
+
+### Postfix
+
+配置 Postfix
+
+有关教程中配置参数的具体含义，请参照 [Postfix 配置文档]()。
+
+配置在终端中输入以下命令以修改 Postfix 相关配置：
+
+**注意**：记得将 yourdomain.com 替换为你自己的域名
+
+```shell
+postconf -e 'myhostname = server.cuijiawei.tk'
+postconf -e 'mydestination = localhost, localhost.localdomain'
+postconf -e 'myorigin = $mydomain'
+postconf -e 'mynetworks = 127.0.0.0/8'
+postconf -e 'inet_interfaces = all'
+postconf -e 'inet_protocols = all'
+postconf -e 'mydestination = $myhostname, localhost.$mydomain, localhost, $mydomain'
+postconf -e 'home_mailbox = Maildir/'
+postconf -e 'smtpd_sasl_type = dovecot'
+postconf -e 'smtpd_sasl_path = private/auth'
+postconf -e 'smtpd_sasl_auth_enable = yes'
+postconf -e 'broken_sasl_auth_clients = yes'
+postconf -e 'smtpd_sasl_authenticated_header = yes'
+postconf -e 'smtpd_recipient_restrictions = permit_mynetworks, permit_sasl_authenticated, reject_unauth_destination'
+postconf -e 'smtpd_use_tls = yes'
+postconf -e 'smtpd_tls_cert_file = /etc/pki/dovecot/certs/dovecot.pem'
+postconf -e 'smtpd_tls_key_file = /etc/pki/dovecot/private/dovecot.pem'
+```
+
+配置中 Postfix 使用 **sasl** 和 **tls** 来完成身份认证和传输信息加密。
+
+试验中使用了 Dovecot 默认的 **ssl** 证书和私钥，如果你需要修改为自己的，请替换最后两行配置的路径。
+
+
+
+
+
+#### 配置 smtps
+
+
+
+部分邮件客户端依赖于使用 465 端口提供加密连接，所以我们修改配置，允许 Postfix 使用 465 端口发送邮件。
+
+打开 [/etc/postfix/master.cf]() 文件，将如下两行前的 `#` 去除：
+
+```
+smtps inet n - n - - smtpd
+-o smtpd_tls_wrappermode=yes
+```
+
+
+
+（注意： -o 前要保留空格）
+
+
+
+#### 启动
+
+使用以下命令，将 Postfix 设为自动启动并首次启动该服务：
+
+```
+systemctl enable postfix.service
+systemctl start  postfix.service
+```
+
+
+
+##### Postfix 日志
+
+Postfix 系统的日志文件在系统的这个目录下的 [/var/log/maillog]() 文件，此文件记录了 Postfix 服务器的运行状态信息。
+
+
+
+
+
+### Dovecot
+
+##### 配置 Dovecot
+
+修改 dovecot.conf
+
+打开 [/etc/dovecot/dovecot.conf]() 文件，在最下方加入以下配置：
+
+```shell
+ssl_cert = </etc/pki/dovecot/certs/dovecot.pem
+ssl_key = </etc/pki/dovecot/private/dovecot.pem
+
+protocols = imap pop3 lmtp
+listen = *
+mail_location = Maildir:~/Maildir
+disable_plaintext_auth = no
+```
+
+
+
+如果前面你修改为了自己的 ssl 证书和私钥，请替换开始两行配置的路径。然后 `ctrl + s` 保存文件。
+
+
+
+修改 10-master.conf
+
+打开 [/etc/dovecot/conf.d/10-master.conf]() 文件，找到 `service auth`部分，将以下行前面的 `#` 去除：
+
+```shell
+unix_listener /var/spool/postfix/private/auth {  
+       mode = 0666  
+}
+```
+
+
+
+##### 启动 Dovecot
+
+使用以下命令，将 Dovecot 设为自动启动并首次启动该服务：
+
+```shell
+systemctl enable dovecot.service
+systemctl start  dovecot.service
+```
+
+查看 [/var/log/maillog]() 文件，查看服务是否成功启动。
+
+如成功启动，日志里应包含如下信息：
+
+```shell
+Jun 26 12:00:28 localhost postfix/postfix-script[28338]: starting the Postfix mail system
+Jun 26 12:00:29 localhost postfix/master[28340]: daemon started -- version 2.10.1, configuration /etc/postfix
+Jun 26 12:28:40 localhost dovecot: master: Dovecot v2.2.10 starting up for imap, pop3, lmtp (core dumps disabled)
+```
+
+
+
+
+
+### 创建账户
+
+该配置下邮箱账户依赖于系统用户，所以通过添加系统用户的方式创建邮箱账户。
+
+添加用户在终端中使用 `useradd` 命令添加用户：
+
+`useradd test`
+
+使用 `passwd` 命令设置对应用户密码：
+
+`passwd test`
+
+
+
+
+
+### 测试
+
+如测试中遇到异常，请查看 maillog 日志文件中的错误信息。
+
+##### 服务器端发送测试
+
+使用 `su` 命令切换用户：`su test`
+
+我们可以使用 `mail` 命令发送邮件，将 `xxxx@xxx.com` 替换为你的其他邮箱。
+
+`echo "Mail Content" | mail -s "Mail Subject" 892001108@qq.com`
+
+然后可以前往你的接收方邮箱查收。
+
+
+
+
+
+- 邮件客户端
+
+  你可以将该邮箱账户添加至邮件客户端使用，推荐使用 [Foxmail]() 客户端。
+
+  可以参考以下配置进行设置：
+
+  ```json
+  服务器类型：`POP3`
+  邮箱账户：  `test@yourdomain.com`
+
+  收件(POP3)服务器：  `yourdomain.com`
+  端口：              `995`
+  安全连接(SSL)：     `是`
+  用户名：            `test`
+  密码：              `test用户密码`
+
+  发件(SMTP)服务器：  `yourdomain.com`
+  端口：              `465`
+  安全连接(SSL)：     `是`
+  用户名：            `test`
+  密码：              `test用户密码`
+  ```
+
+  然后就可以使用邮件客户端通过该账户收发邮件了。（该配置在某些邮件客户端下可能因为使用了通用证书而出现使用异常）
+
+---
+
+### MPI编程学习
+URL: https://cuijiawei.cn/2017/12/25/MPI%E7%BC%96%E7%A8%8B/
+
+|张永东老师的《高性能计算》课程代码
+
+#### MPI编程
+
+
+
+##### 6.同步
+
+```c
+int MPI_Barrier(MPI_Comm comm)
+// MPI_Comm comm 通信子
+```
+
+实例
+
+```c
+#include<stdio.h>
+#include<mpi.h>
+
+int main(int argc, char **argv)
+{
+	int myid, numprocs;
+	double start, finish;
+	
+	MPI_Init(&argc, &argv);
+
+    MPI_Comm_rank(MPI_COMM_WORLD, &myid);
+    MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
+
+	//your code here
+	MPI_Barrier(MPI_COMM_WORLD);
+  	//阻止调用直到communicator中所有进程已经完成调用，就是说，任意一次进程的调用只能在所有communicator中的成员已经开始调用之后进行。
+	//end of your code
+	
+	start = MPI_Wtime();
+	
+	printf("The precision is: %f\n", MPI_Wtick());
+	
+	finish = MPI_Wtime();
+	
+	printf("Hello World!I'm rank %d of %d, running %f seconds.\n", myid, numprocs, finish-start);
+
+	MPI_Finalize();
+	return 0;
+}
+
+```
+
+
+
+
+
+##### 7.消息传递
+
+```c
+int MPI_Send(void* msg_buf_p, int msg_size, MPI_Datatype msg_type, int dest, int tag, MPI_Comm comm)
+int MPI_Recv(void* msg_buf_p, int buf_size, MPI_Datatype msg_type, int source, int tag, MPI_Comm communicator, MPI_Status *status_p)
+```
+
+
+
+> ```
+> void* msg_buf_p ： 发送缓冲区的起始地址；
+> int buf_size ： 缓冲区大小；
+> MPI_Datatype msg_type ： 发送信息的数据类型；
+> int dest ：目标进程的id值；
+> int tag ： 消息标签；
+> MPI_Comm communicator ： 通信子；
+> ```
+
+
+
+```c
+#include <stdio.h>
+#include <mpi.h>
+
+int main(int argc, char **argv)
+{
+	int myid, numprocs, source;
+	MPI_Status status;
+	char message[100];
+
+	MPI_Init(&argc, &argv);
+	MPI_Comm_rank(MPI_COMM_WORLD, &myid);
+    MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
+    
+    if(myid != 0) {
+    	strcpy(message, "hello world!");
+    	
+    	//your code here
+    	MPI_Send(message, strlen(message)+1, MPI_CHAR, 0, 99, MPI_COMM_WORLD);
+    	//end of your code
+	}
+	else { //myid == 0
+		for(source=1; source<numprocs; source++) {
+			//your code here
+			MPI_Recv(message, 100, MPI_CHAR, source, 99, MPI_COMM_WORLD, &status);
+			//end of your code
+			
+			printf("%s\n", message);
+		}
+	}
+
+	MPI_Finalize();
+	return 0;
+}
+```
+
+
+
+##### 8. 地址偏移量
+
+```c
+int MPI_Address(void* location, MPI_Aint *address)
+用法： MPI_Address(&a, &address1);
+```
+
+##### 9. 数据打包
+
+
+
+> ```c
+> int MPI_Pack(void* inbuf, int incount, MPI_datatype datatype, void *outbuf, int outcount, int *position, MPI_Comm comm) 
+>
+> void* inbuf ： 输入缓冲区地址;
+> int incount ：输入数据项数目;
+> MPI_datatype datatype ：数据项的类型;
+> void *outbuf ：输出缓冲区地址;
+> int outcount ：输出缓冲区大小;
+> int *position ：缓冲区当前位置;
+> MPI_Comm comm ：通信子;
+> ```
+
+
+
+> ```c
+> int MPI_Unpack(void* inbuf, int insize, int *position, void *outbuf, int outcount, MPI_Datatype datatype, MPI_Comm comm) 
+>
+> void* inbuf ： 输入缓冲区地址;
+> int insize ：输入数据项数目;
+> MPI_datatype datatype ：数据项的类型;
+> void *outbuf ：输出缓冲区地址;
+> int outcount ：输出缓冲区大小;
+> int *position ：缓冲区当前位置;
+> MPI_Comm comm ：通信子;
+> ```
+
+
+
+```c
+#include <stdio.h>
+#include <mpi.h>
+
+int main(int argc, char **argv)
+{
+	int myid, numprocs, source;
+	MPI_Status status;
+	int i, j, position;
+	int k[2];
+	int buf[1000];
+
+	MPI_Init(&argc, &argv);
+	MPI_Comm_rank(MPI_COMM_WORLD, &myid);
+    MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
+    
+    i = 1;
+    j = 2;
+    
+    if(myid == 0) {
+        
+        position = 0 ;
+        
+    	// your code here
+    	MPI_Pack(&i, 1, MPI_INT, buf, 1000, &position, MPI_COMM_WORLD); 
+        MPI_Pack(&j, 1, MPI_INT, buf, 1000, &position, MPI_COMM_WORLD); 
+    	// end of your code
+    	
+    	MPI_Send(buf, position, MPI_PACKED, 1, 99, MPI_COMM_WORLD); 
+	}
+	else if (myid == 1){ 
+		MPI_Recv(k, 2, MPI_INT, 0, 99, MPI_COMM_WORLD, &status);
+		
+		position = 0 ;
+		
+		MPI_Unpack(k, 2, &position, &i, 1, MPI_INT, MPI_COMM_WORLD);
+		MPI_Unpack(k, 2, &position, &j, 1, MPI_INT, MPI_COMM_WORLD);
+		
+		printf("The number is %d and %d", i, j);
+	}
+
+	MPI_Finalize();
+	return 0;
+}
+
+```
+
+
+
+##### 10. MPI_reduce 规约
+
+---
+
+### https网站禁止调用http资源解决办法
+URL: https://cuijiawei.cn/2018/03/17/Some Web Problems/
+
+**#https网站禁止调用http资源**
+
+有时我们在Git Pages上放前端代码时，可能会遇到引用的外部资源加载不了，有着类似的提示`Mixed Content: The page was loaded over HTTPS, but requested an insecure XMLHttpRequest endpoint HTTP` 。这是因为https协议网站的内容不能引用http内容，此时我们可以在引用处省略协议名称，从而可以避免这个问题。如`src="//cdn.static.runoob.com/libs/jquery/2.1.1/jquery.min.js"` ，但是要记得//不可以去掉。
+
+---
+
+### 本地localhost环境浏览器禁止跨域请求解决办法
+URL: https://cuijiawei.cn/2018/03/17/%E6%B5%8F%E8%A7%88%E5%99%A8%E7%A6%81%E6%AD%A2%E8%B7%A8%E5%9F%9F%E8%AF%B7%E6%B1%82/
+
+**#浏览器禁止跨域请求**
+
+有时我们在本地测试前端代码时，可能会出现`No 'Access-Control-Allow-Origin' header is present on the requested resource`这样的提示，原因是浏览器出于安全因素，不允许我们的页面使用来自多个页面的资源。此时我们需要开放浏览器的跨域请求。
+
+###### Mac-Chrome-Safari开放跨域请求：
+
+- chrome49以前版本
+
+  ```
+   open -a "Google Chrome" --args --disable-web-security
+  ```
+
+- chrome49以后版本
+
+  ```
+   open -a /Applications/Google\ Chrome.app --args --disable-web-security --user-data-dir
+  ```
+
+- Safari
+
+  ```
+  open -a '/Applications/Safari.app' --args --disable-web-security
+  ```
+
+---
+
+### 树莓派最新教程整理
+URL: https://cuijiawei.cn/2018/03/30/%E6%A0%91%E8%8E%93%E6%B4%BE%E6%9C%80%E6%96%B0%E6%95%99%E7%A8%8B%E6%95%B4%E7%90%86/
+
+#### 当前有效教程
+
+- mac下烧录Rasbian进SD卡官方教程
+
+  `https://www.raspberrypi.org/documentation/installation/installing-images/mac.md`
+
+- 配置默认设置，如用户
+
+  `http://www.jianshu.com/p/68af9e3239ea`
+
+- 更换阿里云镜像源
+
+  `http://bbs.shumeipaiba.com/thread-5-1-1.html` 
+
+  有坑，评论区中把sources.list.d文件夹内raspi.list的源注释掉是正确做法。
+
+- 初次安装vim失败，要卸载vim-common才行
+
+  `http://blog.csdn.net/zsscy/article/details/8628311`
+
+- vim与terminal的**solarize**配色
+
+  `http://www.cnblogs.com/RandyXu/p/3279090.html`
+
+- 让树莓派支持中文编码和下载字体
+
+  `http://www.shumeipaiba.com/wanpai/jiaocheng/5.html`
+
+- 树莓派配置**shadowsocks**客户端
+
+  `http://www.wuliaole.com/post/raspberry_pi_and_shadowsocks/`
+
+- 树莓派上安装**node.js**
+
+  `https://cnodejs.org/topic/54032efa9769c2e93797cd06`
+
+- 树莓派配置**ftp**服务器
+
+  `http://blog.csdn.net/wxlguitar/article/details/52162748`
+
+- 树莓派安装**Pathogen**
+
+  `http://blog.csdn.net/z460189852/article/details/51525728`
+
+- 树莓派配置**zsh**
+
+  `http://www.cnblogs.com/jikexianfeng/p/5859496.html`
+
+  ​
+
+---
+
+### IE浏览器button标签不能嵌套a标签解决办法
+URL: https://cuijiawei.cn/2018/04/26/IE%E4%B8%8Bbutton%E6%A0%87%E7%AD%BE%E4%B8%8D%E8%83%BD%E5%B5%8C%E5%A5%97a%E6%A0%87%E7%AD%BE%E8%A7%A3%E5%86%B3%E5%8A%9E%E6%B3%95/
+
+问题是这样的，最近在帮一个留美同学做一个亲子教育网站，在沟通过程中了解到美国那边仍然有不少IE用户，所以那个同学希望可以适配IE浏览器。虽然酬劳不是很多，但是毕竟是同学，对于网站的每一个细节仍然要加以注意。
+
+在IE中调试时发现，一个button标签下的a标签不起作用了，代码大概长下面这个样子。
+
+```html
+<button class ="link">Health and Safety <a href ="Health&Safety.html"></a></button>
+```
+
+这个时候点击a标签不能进行跳转，一开始我以为是IE将button渲染在a标签之上了，于是在a的样式表加上了`z-index = 1` 然而并没有什么卵用。
+
+上网查了一下，IE果然存在这个问题，而且据说不仅如此，当a嵌套button标签时，也会发生不能跳转的问题。
+
+拿来网上一个博客给出的代码，代码是用来解决a标签在button外不能跳转的问题，我拿来尝试一下看看可不可以一起解决。大致代码如下
+
+```html
+<a href ="1.html" onclick ="Javascript:window.location.href='2.html'"><button>click me</button></a>
+```
+
+结果发现仍然不能解决我们的问题。
+
+看来还得靠自己。想到已经打好的每一个a标签的href，不忍心一个个转移到button上再绑定click事件，于是新建一个js，先循环让每一个button标签都获取其下a标签的href，再给每一个button绑定click就跳转的事件。为了绑定URL的正确性，其中还使用了闭包，传递循环的index变量，不然每次click时都会跳转到最后一个a标签指向的URL。不理解请看javascript闭包相关博客。
+
+```javascript
+function isIE() { //ie?
+     if (!!window.ActiveXObject || "ActiveXObject" in 	window)return true;
+     else return false;
+}
+if(isIE()){
+    var index = 0;
+    $(".small-link").each(function(){
+        $(this).click(function(){
+            var index_inner = index;
+            return function(){
+                window.location.href = $(".small-link a").eq(index_inner).attr('href');
+            }
+        }(index));
+        index++;
+    })
+    //alert($(".small-link a").attr('href'));
+}
+```
+
+在虚拟机环境下，调试很麻烦，不过还是成功搞定了它。
+
+---
+
+## Artificial Intelligence (4)
+
+### Deep Learning
+URL: https://cuijiawei.cn/2025/10/22/intro-to-deep-learning/
+
+**Core Idea**: Deep learning, a subfield of machine learning, utilizes neural networks with many layers (hence "deep") to model and understand complex patterns in data. This course introduces the fundamentals of building and training neural networks for structured data using TensorFlow and Keras.
+
+## 1. The Neuron and the Layer
+
+A neural network is composed of layers, and each layer is composed of neurons. A neuron receives inputs, applies a transformation (a linear combination followed by an activation function), and produces an output.
+
+*   **Linear Unit**: `y = w[0] * x[0] + w[1] * x[1] + ... + b`
+*   **Activation Function**: Introduces non-linearity, allowing the network to learn complex patterns. The Rectified Linear Unit (ReLU) is a common choice: `relu(x) = max(0, x)`.
+
+## 2. Building a Sequential Model in Keras
+
+Keras is a high-level API for building and training deep learning models. The `Sequential` model is a simple stack of layers.
+
+```python
+from tensorflow import keras
+from tensorflow.keras import layers
+
+model = keras.Sequential([
+    # the hidden ReLU layers
+    layers.Dense(units=4, activation='relu', input_shape=[2]),
+    layers.Dense(units=3, activation='relu'),
+    # the linear output layer 
+    layers.Dense(units=1),
+])
+```
+
+## 3. Stochastic Gradient Descent (SGD)
+
+SGD is the optimization algorithm used to train neural networks. It iteratively adjusts the network's weights to minimize the loss function (the error between the model's predictions and the true values).
+
+*   **Loss Function**: Measures the model's error. Common choices include Mean Absolute Error (MAE) and Mean Squared Error (MSE).
+*   **Optimizer**: Implements the SGD algorithm. 'Adam' is a popular and effective optimizer.
+
+```python
+model.compile(
+    optimizer='adam',
+    loss='mae',
+)
+```
+
+## 4. Overfitting and Underfitting
+
+*   **Underfitting**: The model has not learned the patterns in the training data well enough. The training loss remains high.
+*   **Overfitting**: The model has learned the training data too well, including the noise. It performs poorly on new, unseen data. The validation loss is much higher than the training loss.
+
+## 5. Preventing Overfitting
+
+### 5.1 Early Stopping
+
+Monitor the validation loss and stop training when it stops improving.
+
+```python
+early_stopping = keras.callbacks.EarlyStopping(
+    patience=10, # how many epochs to wait before stopping
+    min_delta=0.001, # minimum change to count as an improvement
+    restore_best_weights=True,
+)
+```
+
+### 5.2 Dropout
+
+Randomly sets a fraction of neuron outputs to zero during training. This forces the network to learn more robust features.
+
+```python
+layers.Dropout(rate=0.3) # apply 30% dropout
+```
+
+### 5.3 Batch Normalization
+
+Normalizes the inputs to a layer. This helps to stabilize the learning process and can significantly reduce training time.
+
+```python
+layers.BatchNormalization()
+```
+
+**Key Takeaways**:
+
+*   Deep learning models are built from layers of neurons.
+*   Keras provides a user-friendly API for building and training models.
+*   SGD is the core training algorithm, guided by a loss function and an optimizer.
+*   Overfitting is a major challenge in deep learning.
+*   Techniques like early stopping, dropout, and batch normalization can help to prevent overfitting.
+
+---
+
+### Game AI and Reinforcement Learning
+URL: https://cuijiawei.cn/2025/12/20/intro-to-game-ai-and-reinforcement-learning/
+
+**Core Idea**: This course explores the fascinating world of game AI, from classic algorithms to the cutting-edge field of reinforcement learning. You'll learn how to build agents that can make intelligent decisions in game environments.
+
+## 1. Classic Game AI Algorithms
+
+### 1.1 Minimax
+
+Minimax is a decision rule used in two-player, zero-sum games (like Tic-Tac-Toe or Chess). The goal is to minimize the possible loss for a worst-case (maximum loss) scenario. It's a recursive algorithm that explores the game tree to find the optimal move.
+
+### 1.2 Heuristics
+
+For complex games, exploring the entire game tree is computationally infeasible. Heuristics are rules of thumb or evaluation functions that estimate the value of a game state without full exploration. A good heuristic is crucial for building a strong game AI.
+
+## 2. Introduction to Reinforcement Learning (RL)
+
+Reinforcement learning is a type of machine learning where an agent learns to make decisions by taking actions in an environment to maximize a cumulative reward.
+
+*   **Agent**: The learner or decision-maker.
+*   **Environment**: The world the agent interacts with.
+*   **Action**: A move the agent can make.
+*   **State**: The current situation of the agent in the environment.
+*   **Reward**: The feedback the agent receives for its actions.
+
+## 3. Q-Learning
+
+Q-learning is a model-free reinforcement learning algorithm. It learns a policy, which tells an agent what action to take under what circumstances. It does this by learning a Q-function, which represents the expected future reward for taking a certain action in a certain state.
+
+## 4. Deep Q-Networks (DQN)
+
+A Deep Q-Network is a neural network that is used to approximate the Q-function. This allows Q-learning to be applied to problems with very large state spaces, such as the screen of a video game.
+
+```python
+# A simplified DQN structure
+model = keras.Sequential([
+    layers.Dense(units=64, activation='relu', input_shape=[state_size]),
+    layers.Dense(units=64, activation='relu'),
+    layers.Dense(units=action_size, activation='linear'),
+])
+```
+
+## 5. The Exploration-Exploitation Trade-off
+
+A fundamental challenge in RL is the trade-off between exploration (trying new actions to discover better rewards) and exploitation (using the knowledge already gained to maximize reward). An epsilon-greedy strategy is a common approach, where the agent explores with a small probability (epsilon) and exploits the rest of the time.
+
+**Key Takeaways**:
+
+*   Classic game AI algorithms like Minimax provide a foundation for decision-making in games.
+*   Reinforcement learning offers a powerful framework for training agents to learn optimal behaviors through trial and error.
+*   Q-learning and DQNs are fundamental algorithms in the RL toolkit.
+*   The exploration-exploitation trade-off is a key consideration when designing RL agents.
+
+---
+
+### Machine Learning Explainability
+URL: https://cuijiawei.cn/2025/12/28/machine-learning-explainability/
+
+**Core Idea**: As machine learning models become more complex (i.e., "black boxes"), understanding *why* they make certain predictions is increasingly important. Machine learning explainability (or interpretability) provides tools to dissect and understand model behavior, building trust and enabling better debugging.
+
+## 1. The Importance of Explainability
+
+Understanding your model is crucial for:
+*   **Debugging**: Identifying flaws in your model or data.
+*   **Building Trust**: Ensuring stakeholders and users trust the model's decisions.
+*   **Compliance**: Meeting regulatory requirements in fields like finance and healthcare.
+*   **Gaining Insights**: Discovering the underlying drivers of the phenomenon you are modeling.
+
+## 2. Permutation Importance
+
+Permutation importance is a simple yet powerful technique for measuring the importance of a feature. It works by randomly shuffling a single feature and measuring the resulting decrease in model performance. The more the performance drops, the more important the feature is.
+
+```python
+import eli5
+from eli5.sklearn import PermutationImportance
+
+perm = PermutationImportance(my_model, random_state=1).fit(val_X, val_y)
+eli5.show_weights(perm, feature_names = val_X.columns.tolist())
+```
+
+## 3. Partial Dependence Plots (PDP)
+
+A partial dependence plot shows the marginal effect of a feature on the predicted outcome of a machine learning model. It helps to visualize the relationship between a feature and the target variable, holding all other features constant.
+
+```python
+from sklearn.inspection import partial_dependence
+from sklearn.inspection import PartialDependenceDisplay
+
+feature_to_plot = 'feature_name'
+disp = PartialDependenceDisplay.from_estimator(my_model, val_X, [feature_to_plot])
+```
+
+## 4. SHAP (SHapley Additive exPlanations)
+
+SHAP is a game theory-based approach to explain the output of any machine learning model. It connects optimal credit allocation with local explanations using the classic Shapley values from game theory and their related extensions. SHAP values can explain both individual predictions and the overall model structure.
+
+### 4.1 Explaining Individual Predictions
+
+```python
+import shap
+
+explainer = shap.TreeExplainer(my_model)
+shap_values = explainer.shap_values(data_for_prediction)
+shap.initjs()
+shap.force_plot(explainer.expected_value, shap_values, data_for_prediction)
+```
+
+### 4.2 Explaining the Full Model
+
+```python
+# Create a summary plot
+shap.summary_plot(shap_values, val_X)
+```
+
+**Key Takeaways**:
+
+*   Model explainability is not just a "nice-to-have"; it's a critical component of responsible machine learning.
+*   Permutation importance provides a global understanding of feature importance.
+*   Partial dependence plots help to visualize the relationship between a feature and the target.
+*   SHAP values offer a powerful and unified framework for explaining both individual predictions and overall model behavior.
+
+---
+
+### Computer Vision
+URL: https://cuijiawei.cn/2026/01/15/computer-vision/
+
+**Core Idea**: Computer vision is a field of AI that trains computers to interpret and understand the visual world. This course focuses on using Convolutional Neural Networks (CNNs) with TensorFlow and Keras to build powerful image classification models.
+
+## 1. The Convolutional Classifier
+
+A CNN is a specialized type of neural network designed for image data. It uses two key types of layers:
+
+*   **Convolutional Layers**: Apply a set of learnable filters to the image, which act as feature detectors (e.g., detecting edges, corners, textures).
+*   **Pooling Layers**: Downsample the feature maps, reducing their dimensionality and making the model more robust to variations in the position of features.
+
+## 2. Building a CNN in Keras
+
+A typical CNN architecture consists of a stack of convolutional and pooling layers, followed by one or more fully-connected (Dense) layers for classification.
+
+```python
+from tensorflow import keras
+from tensorflow.keras import layers
+
+model = keras.Sequential([
+    layers.Conv2D(filters=32, kernel_size=3, activation='relu', input_shape=[128, 128, 3]),
+    layers.MaxPool2D(),
+
+    layers.Conv2D(filters=64, kernel_size=3, activation='relu'),
+    layers.MaxPool2D(),
+
+    layers.Flatten(),
+    layers.Dense(units=6, activation='softmax'),
+])
+```
+
+## 3. Data Augmentation
+
+Data augmentation is a technique used to artificially expand the training dataset by creating modified versions of the training images. This helps to prevent overfitting and improve the model's ability to generalize.
+
+Common augmentation techniques include:
+*   Random rotations, zooms, and shifts
+*   Horizontal and vertical flips
+*   Changes in brightness and contrast
+
+```python
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+
+datagen = ImageDataGenerator(
+    rotation_range=40,
+    width_shift_range=0.2,
+    height_shift_range=0.2,
+    shear_range=0.2,
+    zoom_range=0.2,
+    horizontal_flip=True,
+    fill_mode='nearest')
+```
+
+## 4. Transfer Learning
+
+Transfer learning is a powerful technique where a model pre-trained on a large dataset (like ImageNet) is used as the starting point for a new task. This can significantly improve performance, especially when you have a limited amount of training data.
+
+```python
+from tensorflow.keras.applications import VGG16
+
+# Load the pre-trained VGG16 model
+conv_base = VGG16(weights='imagenet',
+                  include_top=False, # Don't include the classifier
+                  input_shape=(150, 150, 3))
+
+# Freeze the convolutional base
+conv_base.trainable = False
+```
+
+You can then add your own classifier on top of the frozen base and train it on your specific dataset.
+
+**Key Takeaways**:
+
+*   CNNs are the go-to models for computer vision tasks.
+*   Convolutional and pooling layers are the core building blocks of a CNN.
+*   Data augmentation is a crucial technique for preventing overfitting in image models.
+*   Transfer learning allows you to leverage the knowledge from pre-trained models to achieve high performance with less data.
+
+---
+
+## Projects (3)
+
+### wechat-dev-mcp: Bridging AI and WeChat Mini-Program Development
+URL: https://cuijiawei.cn/2026/01/31/wechat-dev-mcp/
+
+**Core Idea**: The `wechat-dev-mcp` project is a specialized Model Context Protocol (MCP) server that connects AI agents directly to the WeChat Developer Tools. It transforms the mini-program development experience from manual coding and clicking to an AI-orchestrated workflow. I published it at [https://github.com/jiawei686/wechat-dev-mcp](https://github.com/jiawei686/wechat-dev-mcp).
+
+## 1. The Gap in Mini-Program Development
+
+WeChat mini-program development has always been a bit of a "walled garden." While standard web development enjoys a vast ecosystem of automation tools, mini-programs rely heavily on the proprietary WeChat Developer Tools IDE. For developers looking to integrate AI into their workflow, this has traditionally meant a lot of context-switching: copying code from an AI chat, pasting it into the IDE, manually refreshing the simulator, and checking page data.
+
+## 2. What is wechat-dev-mcp?
+
+The `wechat-dev-mcp` server acts as a bridge. By leveraging the `miniprogram-automator` library, it exposes the internal capabilities of the WeChat Developer Tools to any AI agent that supports the Model Context Protocol (like Claude Desktop or custom autonomous agents).
+
+This isn't just about writing code; it's about **controlling the environment**. The server provides a set of tools that allow an AI to:
+*   **Launch and Connect**: Open a specific project path and establish an automation session.
+*   **Navigate and Inspect**: Move between different pages of the mini-program and retrieve real-time page data.
+*   **Interact and Manipulate**: Set page data, call methods on page instances, and even interact with specific WXML elements.
+
+## 3. Why This Matters for the Modern Developer
+
+The real power of this project lies in the **elimination of manual friction**. Instead of telling an AI "I want to change the data on this page," and then doing it yourself, you can now say: "Connect to my project, navigate to the profile page, and update the user's nickname to 'Manus'." The AI handles the navigation, finds the correct page instance, and executes the `setData` call.
+
+This level of integration is a glimpse into the future of "Agentic Development." The developer moves from being a manual operator to a high-level architect, delegating the tactical execution—like UI testing, data state verification, and even complex navigation flows—to an AI that has direct "hands" inside the development environment.
+
+## 4. Key Takeaways
+
+*   **Direct Integration**: No more manual context-switching between the AI and the WeChat IDE.
+*   **Full Lifecycle Control**: From launching the project to manipulating live page data, the AI has comprehensive access.
+*   **Standardized Protocol**: Built on MCP, making it compatible with a growing ecosystem of AI tools and agents.
+*   **Empowering Automation**: Opens the door for automated UI testing and AI-driven prototyping within the WeChat ecosystem.
+
+For anyone building in the WeChat ecosystem, `wechat-dev-mcp` is a significant step toward a more intelligent, automated, and frictionless development experience.
+
+---
+
+### Homeware Sense: Open Source Smart Home Integration for OpenClaw AI
+URL: https://cuijiawei.cn/2026/02/02/introducing-homeware-sense-skill-unified-smart-home-integration-for-openclaw-ai/
+
+## Introduction
+
+In the rapidly evolving world of smart homes and IoT devices, one of the biggest challenges developers face is the fragmentation of platforms and protocols. Whether you're using Apple's HomeKit, Xiaomi's Mi Home ecosystem, MQTT sensors, or custom GPIO solutions, integrating these disparate systems into a cohesive experience can be incredibly complex.
+
+Today, I'm excited to introduce **Homeware Sense**, a new OpenClaw skill that provides a unified interface for environmental sensing across multiple smart home platforms. This skill allows OpenClaw AI assistants to perceive and respond to physical environment changes, bridging the gap between digital intelligence and physical spaces.
+
+## The Problem We're Solving
+
+Most smart home platforms operate in silos. HomeKit devices can't easily communicate with Mi Home devices, and integrating custom sensors often requires platform-specific implementations. For AI assistants to truly understand and interact with their physical environment, they need a unified way to access environmental data regardless of the underlying platform.
+
+Existing solutions typically:
+- Require separate integrations for each platform
+- Lack a consistent API across different hardware types
+- Don't provide automatic failover when hardware is unavailable
+- Need extensive configuration for simple use cases
+
+## Introducing Homeware Sense
+
+Homeware Sense is an OpenClaw skill designed to solve these challenges by providing:
+
+### 🌐 Universal Platform Support
+- **Apple HomeKit**: Native support for HomeKit-compatible devices
+- **Xiaomi Mi Home**: Integration with Xiaomi's ecosystem
+- **MQTT Protocol**: Support for generic MQTT sensors
+- **GPIO Interface**: Direct access to Raspberry Pi GPIO sensors
+- **Smart Simulation**: Hardware-free development and testing
+
+### ⚡ Simplified Integration
+- **Single API**: All platforms use the same calling interface
+- **Automatic Discovery**: Auto-detection of available hardware platforms
+- **Failover System**: Automatic fallback to simulator when hardware is unavailable
+- **Minimal Code**: Just a few lines of code for platform integration
+
+### 🤖 AI-Ready Data
+- **Real-time Monitoring**: Temperature, humidity, light, sound, motion, air quality
+- **Intelligent Alerts**: Automatic notifications when thresholds are exceeded
+- **Data Aggregation**: Combined multi-sensor data for comprehensive analysis
+
+## Technical Deep Dive
+
+### Architecture Overview
+
+Homeware Sense follows a modular architecture with a hardware abstraction layer:
+
+```
+┌─────────────────┐
+│   AI Assistant │
+├─────────────────┤
+│   Skill Layer   │ ← HomewareSenseSkill
+├─────────────────┤
+│  Abstraction    │ ← SensorHub
+│     Layer       │
+├─────────────────┤
+│ Platform Adapters│ ← HomeKit, MiHome, MQTT, GPIO
+├─────────────────┤
+│   Hardware      │ ← Physical devices
+└─────────────────┘
+```
+
+### Simple Usage Example
+
+```python
+from homeware_sense_skill import HomewareSenseSkill
+
+# Auto-connect to all available platforms
+skill = HomewareSenseSkill.quick_connect('auto')
+data = skill.get_environment_data()
+print(data)
+```
+
+### Platform-Specific Connections
+
+```python
+# Connect to specific platforms
+skill = HomewareSenseSkill.quick_connect('homekit')  # HomeKit
+skill = HomewareSenseSkill.quick_connect('mihome')   # Mi Home
+skill = HomewareSenseSkill.quick_connect('mqtt')     # MQTT
+skill = HomewareSenseSkill.quick_connect('gpio')     # GPIO
+```
+
+### Advanced Configuration
+
+```python
+config = {
+    'debug': True,
+    'sensors_enabled': {
+        'temperature': True,
+        'humidity': True,
+        'light': True
+    },
+    'hardware_config': {
+        'temperature': {
+            'enabled': True,
+            'type': 'homekit',
+            'accessory_id': 'com.example.sensor',
+            'pin_code': '123-45-678',
+            'sensor_type': 'temperature',
+            'location': 'living_room'
+        }
+    }
+}
+
+skill = HomewareSenseSkill(config)
+data = skill.get_environment_data()
+```
+
+## Real-World Applications
+
+### Smart Climate Control
+```python
+from homeware_sense_skill import HomewareSenseSkill
+
+skill = HomewareSenseSkill.quick_connect('auto')
+data = skill.get_environment_data()
+
+temp = data['data']['environment_status']['temperature']
+if temp > 26:
+    print("Temperature too high, suggesting AC activation")
+elif temp < 18:
+    print("Temperature too low, suggesting heating activation")
+```
+
+### Intelligent Lighting
+```python
+from homeware_sense_skill import HomewareSenseSkill
+
+skill = HomewareSenseSkill.quick_connect('auto')
+data = skill.get_environment_data()
+
+light = data['data']['environment_status']['light_level']
+if light < 100:  # Dark environment
+    print("Suggesting indoor lighting activation")
+```
+
+### Environmental Alerts
+```python
+from homeware_sense_skill import HomewareSenseSkill
+
+skill = HomewareSenseSkill.quick_connect('auto')
+thresholds = {
+    'temperature': [15, 30],
+    'humidity': [30, 70],
+    'air_quality': [0, 100]
+}
+skill.set_thresholds(thresholds)
+
+data = skill.get_environment_data()
+alerts = data['data']['alerts']
+if alerts:
+    for alert in alerts:
+        print(f"Alert: {alert['message']}")
+```
+
+## Getting Started
+
+### Installation
+```bash
+# Clone the repository to your OpenClaw skills directory
+cd ~/.openclaw/skills/
+git clone https://github.com/jiawei686/homeware-sense-skill.git
+```
+
+### Quick Setup
+```python
+from homeware_sense_skill import HomewareSenseSkill
+
+# Start with simulation (no hardware required)
+skill = HomewareSenseSkill()
+data = skill.get_environment_data()
+print(data)
+```
+
+## Advanced Configuration Examples
+
+### Multi-Room Setup
+```python
+config = {
+    'hardware_config': {
+        'living_room_temp': {
+            'enabled': True,
+            'type': 'homekit',
+            'accessory_id': 'com.living-room.thermometer',
+            'pin_code': '123-45-678',
+            'sensor_type': 'temperature',
+            'location': 'living_room'
+        },
+        'bedroom_humidity': {
+            'enabled': True,
+            'type': 'mihome',
+            'device_ip': '192.168.1.101',
+            'device_token': 'your_mihome_token',
+            'sensor_type': 'air_monitor',
+            'location': 'bedroom'
+        },
+        'kitchen_light': {
+            'enabled': True,
+            'type': 'mqtt',
+            'host': 'localhost',
+            'port': 1883,
+            'topic': 'sensors/kitchen/light',
+            'location': 'kitchen'
+        }
+    }
+}
+
+skill = HomewareSenseSkill(config)
+data = skill.get_environment_data()
+```
+
+### Development with Simulated Sensors
+```python
+# Perfect for development without actual hardware
+dev_config = {
+    'hardware_config': {
+        'temperature': {'enabled': True, 'type': 'mock', 'location': 'simulated_room'},
+        'humidity': {'enabled': True, 'type': 'mock', 'location': 'simulated_room'},
+        'light': {'enabled': True, 'type': 'mock', 'location': 'simulated_room'}
+    }
+}
+
+dev_skill = HomewareSenseSkill(dev_config)
+dev_data = dev_skill.get_environment_data()
+print("Simulated environment data:", dev_data['data']['environment_status'])
+```
+
+## Community and Contributions
+
+Homeware Sense is an open-source project under the MIT license, and we welcome contributions from the community:
+
+- **Report bugs** and suggest features through GitHub Issues
+- **Submit pull requests** with improvements
+- **Help improve documentation**
+- **Share your use cases** and configurations
+- **Develop new platform adapters**
+
+The project includes a comprehensive CONTRIBUTING.md guide to help you get started with development.
+
+## Future Roadmap
+
+We're continuously improving Homeware Sense with plans for:
+
+- **More Platform Support**: Integration with additional smart home ecosystems
+- **Advanced Analytics**: Machine learning-powered insights from sensor data
+- **Cloud Integration**: Remote monitoring and control capabilities
+- **Community Contributions**: Expansion through community-developed adapters
+
+## Performance and Reliability
+
+Homeware Sense is designed with reliability in mind:
+
+- **Automatic Failover**: When hardware sensors are unavailable, the system automatically switches to simulated data
+- **Consistent API**: Regardless of the underlying platform, the API remains consistent
+- **Error Handling**: Comprehensive error handling and logging for debugging
+- **Performance Optimized**: Efficient data polling and caching mechanisms
+
+## Security Considerations
+
+Security is paramount in smart home integrations:
+
+- **Local Processing**: All sensor data processing happens locally
+- **Secure Connections**: Encrypted communication with supported platforms
+- **Minimal Permissions**: Only necessary permissions requested
+- **Privacy Preserving**: No data sent to external services without explicit configuration
+
+## Conclusion
+
+Homeware Sense represents a significant step forward in making AI assistants truly aware of their physical environment. By providing a unified interface across multiple smart home platforms, we're enabling more intelligent, responsive, and useful AI assistants.
+
+Whether you're building the next-generation smart home, developing AI applications, or simply exploring IoT integration, Homeware Sense offers the foundation for truly context-aware artificial intelligence.
+
+The project is available at [https://github.com/jiawei686/homeware-sense-skill](https://github.com/jiawei686/homeware-sense-skill) under the MIT license, and I encourage you to try it out, contribute, and share your experiences.
+
+Ready to make your AI assistant environmentally aware? Give Homeware Sense a try!
+
+---
+
+*What are your thoughts on unified smart home interfaces? I'd love to hear about your experiences and use cases in the comments below.*
+
+---
+
+### Deploy OpenClaw AI on Raspberry Pi: Our Open Source Guide
+URL: https://cuijiawei.cn/2026/02/04/complete-raspberry-pi-openclaw-deployment-guide/
+
+In this tutorial, we'll detail how to deploy the OpenClaw AI assistant platform on different Raspberry Pi models. Whether you have a high-performance Raspberry Pi 4B or a classic older Raspberry Pi 2, this guide will provide you with corresponding deployment solutions.
+
+## Comparison of Different Raspberry Pi Models
+
+### Hardware Specifications
+
+| Model | CPU | RAM | Network | USB | Use Case |
+|-------|-----|-----|---------|-----|----------|
+| Raspberry Pi 4B | Cortex-A72 Quad-core 1.5GHz | 2GB/4GB/8GB | Gigabit Ethernet, WiFi | USB 3.0 | Recommended, best performance |
+| Raspberry Pi 3B+ | Cortex-A53 Quad-core 1.4GHz | 1GB | Ethernet, WiFi | USB 2.0 | Medium load |
+| Raspberry Pi Zero 2 W | Cortex-A53 Single-core 1GHz | 512MB | WiFi | USB 2.0 | Lightweight applications |
+| Raspberry Pi 2 | Cortex-A7 Quad-core 900MHz | 1GB | Ethernet | USB 2.0 | Basic functionality |
+
+### Selection Recommendations
+- **Raspberry Pi 4B and above**: Can run full-featured OpenClaw
+- **Raspberry Pi 3B+**: Can run most features, requires appropriate optimization
+- **Raspberry Pi Zero 2 W**: Runs core functions only
+- **Raspberry Pi 2**: Basic functions, highly optimized
+
+## General System Preparation
+
+### Hardware Requirements
+- Power supply: Stable 5V power (Pi 4B requires 3A, other models 2A)
+- Storage: At least 32GB Class 10 microSD card
+- Network: Wired or WiFi connection
+- Cooling: Heat sinks recommended (especially for Pi 4B)
+
+### System Installation
+
+**Option 1: Raspberry Pi OS (Recommended for beginners)**
+1. Download Raspberry Pi Imager
+2. Select Raspberry Pi OS (64-bit)
+3. Choose SD card and write image
+
+**Option 2: DietPi (Recommended for advanced users, especially older models)**
+- More lightweight, better suited for resource-constrained devices
+- Download address: https://dietpi.com/#download
+
+### System Initialization
+
+```bash
+# Update system
+sudo apt update && sudo apt upgrade -y
+
+# Expand filesystem
+sudo raspi-config
+# Select "Advanced Options" -> "Expand Filesystem"
+```
+
+## Raspberry Pi 4B and Above Deployment
+
+### Environment Configuration
+
+```bash
+# Install basic packages
+sudo apt install -y \
+    build-essential \
+    curl \
+    wget \
+    git \
+    vim \
+    htop \
+    python3-dev \
+    python3-pip \
+    python3-venv \
+    libffi-dev \
+    libssl-dev \
+    zlib1g-dev
+
+# Install Node.js
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+source ~/.bashrc
+nvm install --lts
+nvm use --lts
+```
+
+### Python Environment
+
+```bash
+# Create virtual environment
+python3 -m venv ~/openclaw-env
+source ~/openclaw-env/bin/activate
+pip install --upgrade pip setuptools wheel
+```
+
+### OpenClaw Installation
+
+```bash
+# Clone and install
+mkdir -p ~/projects
+cd ~/projects
+git clone https://github.com/openclaw/openclaw.git
+cd openclaw
+
+source ~/openclaw-env/bin/activate
+pip install -e .
+```
+
+### Configuration File (For Raspberry Pi 4B)
+
+```yaml
+# ~/.openclaw/config.yaml
+server:
+  host: 0.0.0.0
+  port: 3000
+  workers: 2  # Pi 4B can use 2 worker processes
+  timeout: 300
+  debug: false
+
+models:
+  defaults:
+    text: "gpt-3.5-turbo"
+    embedding: "text-embedding-3-small"
+
+ollama:
+  enabled: true
+  host: "http://localhost:11434"
+  model: "llama2:7b"  # Model suitable for Pi 4B
+
+database:
+  type: "sqlite"
+  sqlite:
+    path: "~/.openclaw/data.db"
+
+cache:
+  type: "redis"
+  redis:
+    host: "localhost"
+    port: 6379
+    db: 0
+
+resources:
+  memory_limit: "1G"
+  cpu_limit: 0.8
+  max_concurrent_requests: 4
+
+logging:
+  level: "INFO"
+  file: "~/.openclaw/logs/openclaw.log"
+```
+
+## Raspberry Pi 2 Deployment (Resource-Optimized Version)
+
+### System-Level Optimization
+
+```bash
+# Maximize swap space
+sudo dphys-swapfile swapoff
+sudo nano /etc/dphys-swapfile
+# Set CONF_SWAPSIZE=1024
+# Set CONF_MAXSWAP=2048
+sudo dphys-swapfile setup
+sudo dphys-swapfile swapon
+
+# Disable more services to save resources
+sudo systemctl disable bluetooth
+sudo systemctl disable triggerhappy
+sudo systemctl disable avahi-daemon
+sudo systemctl disable alsa-state
+sudo systemctl disable cups
+sudo systemctl disable cups-browsed
+
+# Adjust GPU memory allocation
+echo "gpu_mem=16" | sudo tee -a /boot/config.txt
+```
+
+### Lightweight Environment Configuration
+
+```bash
+# Install lightweight Node.js version
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+source ~/.bashrc
+nvm install 16  # Install older but stable version
+nvm use 16
+
+# Lightweight Python environment
+python3 -m venv ~/openclaw-env --without-pip
+source ~/openclaw-env/bin/activate
+curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+python get-pip.py --no-cache-dir
+
+pip install --upgrade pip setuptools wheel
+pip install --upgrade \
+    pip \
+    requests \
+    pyyaml \
+    python-dotenv \
+    flask \
+    gevent \
+    redis \
+    pillow
+```
+
+### Configuration File (For Raspberry Pi 2)
+
+```yaml
+# ~/.openclaw/config.yaml
+server:
+  host: 0.0.0.0
+  port: 3000
+  workers: 1  # Single worker process
+  timeout: 600  # Longer timeout period
+  debug: false
+
+models:
+  defaults:
+    text: "gpt-3.5-turbo"  # Must use API models
+
+ollama:
+  enabled: false  # Pi 2 cannot run local models
+
+database:
+  type: "sqlite"
+  sqlite:
+    path: "~/.openclaw/data.db"
+    timeout: 60
+
+cache:
+  type: "memory"
+  memory:
+    max_size: 50MB  # Minimal cache
+
+resources:
+  memory_limit: "512M"  # Strict memory limit
+  cpu_limit: 0.5
+  max_concurrent_requests: 1  # Single request processing
+  slow_down_requests: true
+
+network:
+  timeout: 300
+  retry_attempts: 3
+  retry_delay: 5
+
+logging:
+  level: "INFO"
+  file: "~/.openclaw/logs/openclaw.log"
+```
+
+## Generic Configuration Script
+
+Create a script that can select configuration based on hardware:
+
+```bash
+# ~/setup_openclaw.sh
+#!/bin/bash
+
+# Detect Raspberry Pi model and apply corresponding configuration
+detect_raspberry_pi_model() {
+    # Get CPU info
+    CPU_INFO=$(cat /proc/cpuinfo | grep "model name" | head -1 | cut -d ":" -f 2)
+    
+    if [[ $CPU_INFO == *"ARMv7"* ]]; then
+        # Check CPU cores and frequency
+        CORES=$(nproc)
+        FREQUENCY=$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq 2>/dev/null | head -c 3)
+        
+        if [[ $FREQUENCY -gt 1400 ]]; then
+            echo "pi4"  # Raspberry Pi 4B+
+        elif [[ $FREQUENCY -gt 1000 ]]; then
+            echo "pi3"  # Raspberry Pi 3B+
+        else
+            echo "pi2"  # Raspberry Pi 2 or Zero 2 W
+        fi
+    else
+        echo "unknown"
+    fi
+}
+
+# Create config directory
+mkdir -p ~/.openclaw
+
+# Select config based on model
+MODEL_TYPE=$(detect_raspberry_pi_model)
+echo "Detected Raspberry Pi type: $MODEL_TYPE"
+
+case $MODEL_TYPE in
+    "pi4")
+        echo "Setting up for Raspberry Pi 4B+"
+        cat > ~/.openclaw/config.yaml << 'EOF'
+server:
+  host: 0.0.0.0
+  port: 3000
+  workers: 2
+  timeout: 300
+  debug: false
+
+models:
+  defaults:
+    text: "gpt-3.5-turbo"
+    embedding: "text-embedding-3-small"
+
+ollama:
+  enabled: true
+  host: "http://localhost:11434"
+  model: "llama2:7b"
+
+database:
+  type: "sqlite"
+  sqlite:
+    path: "~/.openclaw/data.db"
+
+cache:
+  type: "redis"
+  redis:
+    host: "localhost"
+    port: 6379
+    db: 0
+
+resources:
+  memory_limit: "1G"
+  cpu_limit: 0.8
+  max_concurrent_requests: 4
+
+logging:
+  level: "INFO"
+  file: "~/.openclaw/logs/openclaw.log"
+EOF
+        ;;
+    "pi2")
+        echo "Setting up for Raspberry Pi 2/Zero 2 W"
+        cat > ~/.openclaw/config.yaml << 'EOF'
+server:
+  host: 0.0.0.0
+  port: 3000
+  workers: 1
+  timeout: 600
+  debug: false
+
+models:
+  defaults:
+    text: "gpt-3.5-turbo"
+
+ollama:
+  enabled: false
+
+database:
+  type: "sqlite"
+  sqlite:
+    path: "~/.openclaw/data.db"
+    timeout: 60
+
+cache:
+  type: "memory"
+  memory:
+    max_size: 50MB
+
+resources:
+  memory_limit: "512M"
+  cpu_limit: 0.5
+  max_concurrent_requests: 1
+  slow_down_requests: true
+
+network:
+  timeout: 300
+  retry_attempts: 3
+  retry_delay: 5
+
+logging:
+  level: "INFO"
+  file: "~/.openclaw/logs/openclaw.log"
+EOF
+        ;;
+    *)
+        echo "Unknown model, using minimal configuration"
+        cat > ~/.openclaw/config.yaml << 'EOF'
+server:
+  host: 0.0.0.0
+  port: 3000
+  workers: 1
+  timeout: 600
+  debug: false
+
+models:
+  defaults:
+    text: "gpt-3.5-turbo"
+
+ollama:
+  enabled: false
+
+database:
+  type: "sqlite"
+  sqlite:
+    path: "~/.openclaw/data.db"
+    timeout: 60
+
+cache:
+  type: "memory"
+  memory:
+    max_size: 25MB
+
+resources:
+  memory_limit: "256M"
+  cpu_limit: 0.4
+  max_concurrent_requests: 1
+
+logging:
+  level: "INFO"
+  file: "~/.openclaw/logs/openclaw.log"
+EOF
+        ;;
+esac
+
+echo "Configuration created for $MODEL_TYPE"
+```
+
+## Performance Optimization and Monitoring
+
+### System-Level Optimization
+
+```bash
+# Optimize kernel parameters
+sudo tee -a /etc/sysctl.conf << EOF
+# File descriptor limits
+fs.file-max = 4096
+
+# Network optimization
+net.core.somaxconn = 128
+
+# Memory optimization (adjust based on device)
+vm.swappiness = 20
+vm.vfs_cache_pressure = 200
+EOF
+
+sudo sysctl -p
+```
+
+### Monitoring Script
+
+```bash
+# ~/openclaw-monitor.sh
+#!/bin/bash
+
+LOG_FILE="$HOME/.openclaw/logs/monitor.log"
+MODEL_TYPE=$(bash -c 'cat /proc/cpuinfo | grep "model name" | head -1 | grep -o "[0-9]*" | head -1')
+
+# Set different thresholds based on model
+if [ "$MODEL_TYPE" -gt 1400 ]; then
+    # Raspberry Pi 4B+
+    MAX_MEM_USAGE=80
+    MAX_DISK_USAGE=85
+else
+    # Raspberry Pi 2/Zero 2 W
+    MAX_MEM_USAGE=70
+    MAX_DISK_USAGE=80
+fi
+
+# Check OpenClaw service status
+if ! pgrep -f "openclaw" > /dev/null; then
+    echo "$(date): OpenClaw service not running, restarting..." >> $LOG_FILE
+    source ~/openclaw-env/bin/activate
+    nohup ~/openclaw-env/bin/openclaw gateway start > ~/.openclaw/logs/openclaw.log 2>&1 &
+fi
+
+# Check memory usage
+MEM_USAGE=$(free | awk 'NR==2{printf "%.0f", $3*100/$2}')
+if (( $(echo "$MEM_USAGE > $MAX_MEM_USAGE" | bc -l) )); then
+    echo "$(date): High memory usage: ${MEM_USAGE}%" >> $LOG_FILE
+    
+    # Restart service if memory usage is too high
+    if [ $MEM_USAGE -gt 90 ]; then
+        echo "$(date): Memory critical (${MEM_USAGE}%), restarting OpenClaw" >> $LOG_FILE
+        pkill -f openclaw
+        sleep 5
+        source ~/openclaw-env/bin/activate
+        nohup ~/openclaw-env/bin/openclaw gateway start > ~/.openclaw/logs/openclaw.log 2>&1 &
+    fi
+fi
+
+# Check disk space
+DISK_USAGE=$(df / | awk 'NR==2{print $5}' | sed 's/%//')
+if [ $DISK_USAGE -gt $MAX_DISK_USAGE ]; then
+    echo "$(date): High disk usage: ${DISK_USAGE}%" >> $LOG_FILE
+    # Clean up old logs
+    find ~/.openclaw/logs -name "*.log" -mtime +7 -delete
+fi
+```
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Insufficient Memory**
+   ```bash
+   # Check memory usage
+   free -h
+   htop
+   
+   # Increase swap space
+   sudo dphys-swapfile swapoff
+   sudo nano /etc/dphys-swapfile
+   # Adjust CONF_SWAPSIZE
+   sudo dphys-swapfile setup
+   sudo dphys-swapfile swapon
+   ```
+
+2. **Service Startup Failure**
+   ```bash
+   # Check service status
+   sudo systemctl status openclaw
+   
+   # View logs
+   journalctl -u openclaw -f
+   tail -f ~/.openclaw/logs/openclaw.log
+   ```
+
+## Summary
+
+This tutorial provides OpenClaw deployment solutions for different Raspberry Pi models:
+
+- **Raspberry Pi 4B and above**: Can run complete features, best performance
+- **Raspberry Pi 2**: Basic functions, highly optimized
+
+Through proper configuration and optimization, OpenClaw can run on various Raspberry Pi models to achieve basic AI assistant functionality. Select the appropriate configuration scheme based on your specific hardware to successfully deploy.
+
+Regardless of which Raspberry Pi model you have, you can enjoy the convenience brought by AI assistants while controlling hardware costs.
+
+---
+
+## Data & ML (3)
+
+### Kaggle与数据科学：实战技巧与最佳实践
+URL: https://cuijiawei.cn/2025/09/15/kaggle-data-science-practical-notes/
+
+在Kaggle竞赛和数据科学实践中，我总结了一些实用的技巧，涵盖数据清洗、可视化、时间序列处理等多个方面。这些经验来自于实际项目，希望能对大家有所帮助。
+
+## 1. 数据清洗技巧
+
+### 1.1 时间戳标准化
+在处理时间序列数据时，时间戳格式混乱是常见问题。以下是一个标准化时间戳的通用方法：
+
+```python
+import pandas as pd
+
+# 加载和标准化时间戳
+df = pd.read_csv("data.csv")
+df["time"] = pd.to_datetime(df["time"], utc=True)  # 统一使用UTC
+df.set_index("time", inplace=True)  # 设为索引
+df = df.sort_index()  # 按时间排序，这对时间序列至关重要
+```
+
+### 1.2 处理非标准数值格式
+数据中常常包含非标准格式的数值，如"15k"、"20000 yuan"等，需要统一处理：
+
+```python
+def clean_numeric_values(value):
+    """清理包含单位或字母的数值"""
+    if pd.isna(value):
+        return None
+    
+    # 处理带k的格式，如"15k"
+    if isinstance(value, str) and 'k' in value.lower():
+        return float(value.lower().replace('k', '')) * 1000
+    
+    # 处理带货币符号的格式
+    if isinstance(value, str):
+        # 移除货币符号和空格
+        cleaned = ''.join(c for c in value if c.isdigit() or c == '.')
+        return float(cleaned) if cleaned else None
+    
+    return float(value)
+
+# 应用清理函数
+df['cleaned_column'] = df['messy_column'].apply(clean_numeric_values)
+```
+
+### 1.3 处理缺失值和重复值
+```python
+# 检查数据基本情况
+print(df.info())
+print(df.describe())
+
+# 处理缺失值
+df.fillna(method='ffill', inplace=True)  # 前向填充
+# 或者使用特定值填充
+df.fillna({'column1': 0, 'column2': df['column2'].median()}, inplace=True)
+
+# 删除重复值
+df.drop_duplicates(inplace=True)
+```
+
+## 2. 数据可视化技巧
+
+### 2.1 有效可视化的原则
+在Kaggle竞赛中，我发现优秀的可视化不仅仅是美观，更重要的是能够清晰地传达数据故事。首先需要明确可视化的目标，避免"为了图表而图表"。
+
+常用工具包括：
+- `matplotlib`：提供精细控制
+- `seaborn`：提供美观的默认样式
+- `plotly`：提供交互式图表
+
+### 2.2 实用的可视化代码模板
+```python
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+import plotly.express as px
+
+# 设置中文字体
+plt.rcParams['font.sans-serif'] = ['SimHei']
+plt.rcParams['axes.unicode_minus'] = False
+
+# 分组柱状图示例
+fig, ax = plt.subplots(figsize=(12, 6))
+sns.barplot(data=df, x='category', y='value', hue='region', ax=ax)
+ax.set_title('各地区分类别表现对比')
+plt.xticks(rotation=45)
+plt.tight_layout()
+plt.show()
+
+# 交互式散点图
+fig = px.scatter(df, x='feature1', y='feature2', color='category',
+                 title='特征间关系可视化')
+fig.show()
+```
+
+## 3. 时间序列特征工程
+
+### 3.1 核心思想
+跳过复杂的时间序列模型，从时间数据中提取时间特征，然后使用标准机器学习模型（如随机森林、XGBoost）进行预测——这种方法既实用又容易实现。
+
+### 3.2 时间索引特征
+提取周期性模式（小时、工作日）和长期趋势：
+
+```python
+import pandas as pd
+import numpy as np
+
+def extract_time_features(df, time_col='timestamp'):
+    """从时间列提取有用的时间特征"""
+    df = df.copy()
+    df[time_col] = pd.to_datetime(df[time_col])
+    
+    # 基础时间特征
+    df['year'] = df[time_col].dt.year
+    df['month'] = df[time_col].dt.month
+    df['day'] = df[time_col].dt.day
+    df['hour'] = df[time_col].dt.hour
+    df['weekday'] = df[time_col].dt.weekday
+    df['quarter'] = df[time_col].dt.quarter
+    
+    # 循环特征（使用sin/cos编码处理周期性）
+    df['hour_sin'] = np.sin(2 * np.pi * df['hour'] / 24)
+    df['hour_cos'] = np.cos(2 * np.pi * df['hour'] / 24)
+    df['day_sin'] = np.sin(2 * np.pi * df['day'] / 31)
+    df['day_cos'] = np.cos(2 * np.pi * df['day'] / 31)
+    df['month_sin'] = np.sin(2 * np.pi * df['month'] / 12)
+    df['month_cos'] = np.cos(2 * np.pi * df['month'] / 12)
+    
+    return df
+
+# 使用示例
+df_with_features = extract_time_features(df)
+```
+
+### 3.3 滑动窗口特征
+```python
+def add_rolling_features(df, target_col, windows=[3, 7, 14]):
+    """添加滑动窗口统计特征"""
+    for window in windows:
+        df[f'{target_col}_mean_{window}'] = df[target_col].rolling(window=window).mean()
+        df[f'{target_col}_std_{window}'] = df[target_col].rolling(window=window).std()
+        df[f'{target_col}_min_{window}'] = df[target_col].rolling(window=window).min()
+        df[f'{target_col}_max_{window}'] = df[target_col].rolling(window=window).max()
+    
+    return df
+
+# 使用示例
+df_with_rolling = add_rolling_features(df_with_features, 'target_value')
+```
+
+## 4. 日期格式处理
+
+在日常数据处理中，日期格式混乱是常遇到的问题。Python的`datetime`模块提供了完善的日期时间处理能力。
+
+### 4.1 字符串转日期对象
+这是所有转化的基础，因为只有把字符串变成`datetime`对象，才能自由调整格式。
+
+```python
+from datetime import datetime
+
+# 处理不同格式的日期字符串
+date_str1 = "2025-12-02 15:30:00"
+date_obj1 = datetime.strptime(date_str1, "%Y-%m-%d %H:%M:%S")
+
+date_str2 = "2025/12/2"
+date_obj2 = datetime.strptime(date_str2, "%Y/%m/%d")
+
+# 常用格式化指令对照表：
+# %Y - 4位年份
+# %m - 2位月份
+# %d - 2位日期
+# %H - 24小时制小时
+# %M - 分钟
+# %S - 秒
+```
+
+### 4.2 Pandas日期处理
+```python
+import pandas as pd
+
+# 读取CSV时直接解析日期
+df = pd.read_csv('data.csv', parse_dates=['date_column'])
+
+# 或者之后转换
+df['date_column'] = pd.to_datetime(df['date_column'])
+
+# 格式化输出
+df['formatted_date'] = df['date_column'].dt.strftime('%Y年%m月%d日')
+```
+
+## 5. 高级数据清洗技巧
+
+### 5.1 处理缺失值策略
+处理缺失值的策略取决于数据的性质和缺失的原因：
+
+- **删除**：如果只有少数行有缺失值，删除它们可能是可接受的
+- **填充**：用常数（0、均值、中位数）填充，或使用更复杂的模型填充方法
+- **分析**：有时，值缺失这一事实本身就是一条可以作为特征使用的信息
+
+```python
+# 删除缺失值较少的行
+df_clean = df.dropna(thresh=len(df.columns)-2)  # 保留至少有这么多非NA值的行
+
+# 使用均值填充数值列
+df['numeric_col'].fillna(df['numeric_col'].mean(), inplace=True)
+
+# 使用众数填充分类列
+mode_value = df['categorical_col'].mode()[0] if not df['categorical_col'].mode().empty else 'Unknown'
+df['categorical_col'].fillna(mode_value, inplace=True)
+
+# 创建指示器特征表示缺失值
+df['missing_indicator'] = df['some_col'].isna().astype(int)
+```
+
+### 5.2 数据类型校正
+确保每列都有正确的数据类型（例如，数值、日期时间、分类）。错误的数据类型会导致分析和建模中的错误和意外行为。
+
+```python
+# 将'date'列转换为datetime对象
+df['date'] = pd.to_datetime(df['date'])
+
+# 将'zip_code'转换为分类类型
+df['zip_code'] = df['zip_code'].astype('category')
+
+# 将数值列转换为适当的数据类型以节省内存
+df['integer_col'] = pd.to_numeric(df['integer_col'], downcast='integer')
+df['float_col'] = pd.to_numeric(df['float_col'], downcast='float')
+```
+
+### 5.3 处理不一致数据
+不一致的数据可能源于输入错误、格式不同或不同的测量单位。正则表达式和字符串操作是清理不一致文本数据的强大工具。
+
+```python
+# 标准化街道名称
+df['street'] = df['street'].str.replace('St.', 'Street').str.replace('Rd.', 'Road')
+df['street'] = df['street'].str.title()  # 首字母大写
+
+# 处理不一致的分类值
+df['category'] = df['category'].str.lower().str.strip()  # 转小写并去除空格
+df['category'] = df['category'].replace({'male': 'Male', 'female': 'Female', 'f': 'Female', 'm': 'Male'})
+```
+
+### 5.4 识别和处理异常值
+异常值是与其他观测值显著不同的数据点。它们可能由测量错误引起，也可能是合法但极端的值。
+
+- **可视化**：箱线图和散点图有助于直观识别异常值
+- **统计方法**：使用统计检验或经验法则（例如，距离均值超过3个标准差的值）来程序化识别异常值
+- **处理**：根据原因，您可能需要删除、限制或转换异常值
+
+```python
+import numpy as np
+
+# 使用IQR方法识别异常值
+Q1 = df['value'].quantile(0.25)
+Q3 = df['value'].quantile(0.75)
+IQR = Q3 - Q1
+lower_bound = Q1 - 1.5 * IQR
+upper_bound = Q3 + 1.5 * IQR
+
+# 标识异常值
+outliers = df[(df['value'] < lower_bound) | (df['value'] > upper_bound)]
+
+# 限制异常值（不删除，而是将其限制在合理范围内）
+df['value_capped'] = df['value'].clip(lower=lower_bound, upper=upper_bound)
+
+# 或使用Z-score方法
+from scipy import stats
+z_scores = np.abs(stats.zscore(df['value']))
+df_no_outliers = df[z_scores < 3]  # 保留Z-score小于3的值
+```
+
+### 5.5 删除重复值
+重复行可能会扭曲您的分析，一般应予以删除。
+
+```python
+# 删除重复行
+df_unique = df.drop_duplicates()
+
+# 基于特定列删除重复项
+df_unique = df.drop_duplicates(subset=['col1', 'col2'])
+
+# 保留最后一个重复项而不是第一个
+df_unique = df.drop_duplicates(keep='last')
+```
+
+## 6. 特征工程与机器学习
+
+### 6.1 处理缺失值
+现实世界的数据库很少是完整的。简单地删除有缺失值的行可能导致大量数据丢失。更好的方法是使用插补法。
+
+**简单插补**：
+```python
+from sklearn.impute import SimpleImputer
+
+# 数值列插补
+num_imputer = SimpleImputer(strategy='median')
+df[['col1', 'col2']] = num_imputer.fit_transform(df[['col1', 'col2']])
+
+# 分类列插补
+cat_imputer = SimpleImputer(strategy='most_frequent')
+df[['cat_col1', 'cat_col2']] = cat_imputer.fit_transform(df[['cat_col1', 'cat_col2']])
+```
+
+**高级插补**：
+```python
+from sklearn.experimental import enable_iterative_imputer
+from sklearn.impute import IterativeImputer
+
+# 使用迭代插补，考虑列之间的关系
+imp = IterativeImputer(random_state=0)
+df_imputed = imp.fit_transform(df)
+```
+
+### 6.2 特征工程核心理念
+数据中的特征最终决定了模型的成功。特征工程是从现有数据中创建新特征的艺术和科学，以便更好地向机器学习模型表示潜在问题。
+
+**互信息**：
+互信息（MI）是衡量两个变量之间关系的一种方法。它可以用来识别对目标变量最有预测潜力的特征。较高的MI分数表示较强的关系。
+
+```python
+from sklearn.feature_selection import mutual_info_regression
+import pandas as pd
+import numpy as np
+
+def make_mi_scores(X, y, discrete_features):
+    """计算互信息分数"""
+    mi_scores = mutual_info_regression(X, y, discrete_features=discrete_features)
+    mi_scores = pd.Series(mi_scores, name="MI Scores", index=X.columns)
+    mi_scores = mi_scores.sort_values(ascending=False)
+    return mi_scores
+
+# 使用示例
+# mi_scores = make_mi_scores(X, y, discrete_features)
+# print(mi_scores)
+```
+
+### 6.3 常用特征工程技术
+```python
+# 1. 计数编码 - 替换类别值为其出现次数
+counts = X_train[col].value_counts()
+X_train.loc[:, col + '_count'] = X_train[col].map(counts)
+
+# 2. 目标编码 - 用训练集中的目标统计替换类别值
+encoding = X_train.groupby(col)['target'].mean()
+X_train.loc[:, col + '_target'] = X_train[col].map(encoding)
+
+# 3. 分桶 - 将连续特征转换为离散特征
+X['feature_binned'] = pd.cut(X['continuous_feature'], bins=5, labels=False)
+
+# 4. 交互特征 - 创建两个或多个特征的组合
+X['interaction'] = X['feature1'] * X['feature2']
+
+# 5. 聚合特征 - 从分组数据中创建特征
+agg_features = df.groupby('category').agg({
+    'value': ['mean', 'std', 'count'],
+}).reset_index()
+agg_features.columns = ['category', 'value_mean', 'value_std', 'value_count']
+```
+
+## 7. 实践心得
+
+1. **明确目标**：每次数据处理前先明确目标，避免不必要的复杂操作
+2. **逐步验证**：每一步操作后都要验证结果是否符合预期
+3. **保持数据完整性**：在清洗过程中注意不要丢失重要信息
+4. **文档化过程**：记录每一步操作，便于复现和调试
+5. **利用Pandas优势**：充分利用Pandas的向量化操作，提高效率
+6. **数据清洗迭代性**：数据清洗通常是迭代且耗时的过程
+7. **系统性方法**：系统的数据清洗方法对于构建可靠的模型至关重要
+8. **可重现性**：始终记录清洗步骤以确保可重现性
+9. **策略依情境而定**：最佳清洗策略取决于数据的具体情境和项目目标
+10. **特征决定成败**：特征工程往往比模型选择更能决定最终效果
+11. **避免数据泄露**：在特征工程中要注意防止数据泄露
+
+这些技巧都是我在Kaggle竞赛和实际项目中总结出来的，希望能够帮助大家更高效地处理数据科学任务。记住，数据科学的核心是解决实际问题，工具和技巧只是手段，关键是要理解数据背后的故事。
+
+---
+
+### Geospatial Analysis
+URL: https://cuijiawei.cn/2026/01/02/geospatial-analysis/
+
+**Core Idea**: Geospatial analysis unlocks insights from data that has a location component. This course introduces the tools and techniques for working with geospatial data, creating interactive maps, and uncovering spatial patterns using libraries like GeoPandas.
+
+## 1. What is Geospatial Data?
+
+Geospatial data is information that describes objects, events, or other features with a location on or near the surface of the earth. It typically combines location information (like coordinates) with attribute information (the characteristics of the object, event, or phenomenon).
+
+*   **Vector Data**: Represents geographic features as points, lines, and polygons.
+*   **Raster Data**: Represents data in a grid of cells, like satellite imagery or elevation models.
+
+## 2. Introduction to GeoPandas
+
+GeoPandas is an open-source project that makes working with geospatial data in Python easier. It extends the datatypes used by pandas to allow spatial operations on geometric types. GeoPandas objects can act just like pandas DataFrames and can be used for a wide range of spatial analysis tasks.
+
+```python
+import geopandas as gpd
+
+# Load a shapefile
+world = gpd.read_file(gpd.datasets.get_path("naturalearth_lowres"))
+```
+
+## 3. Interactive Maps with Folium
+
+Folium is a powerful Python library that helps you create several types of interactive maps. It builds on the data wrangling strengths of the Python ecosystem and the mapping strengths of the Leaflet.js library.
+
+```python
+import folium
+
+# Create a map centered on a specific location
+m = folium.Map(location=[45.5236, -122.6750], zoom_start=13)
+
+# Add a marker
+folium.Marker(
+    location=[45.5236, -122.6750],
+    popup="Portland",
+    icon=folium.Icon(icon="cloud"),
+).add_to(m)
+```
+
+## 4. Spatial Joins
+
+A spatial join is similar to a regular DataFrame join, but instead of joining on a common column, it joins based on the spatial relationship between the geometries of the two DataFrames. This is a fundamental operation for combining different geospatial datasets.
+
+```python
+# Perform a spatial join
+joined_data = gpd.sjoin(gdf1, gdf2, how="inner", op="intersects")
+```
+
+## 5. Proximity Analysis
+
+Proximity analysis is used to answer questions about the distance between features. For example, you could find all the schools within a certain distance of a park.
+
+```python
+# Create a buffer around points
+buffers = gdf.buffer(1000) # 1000-meter buffer
+```
+
+**Key Takeaways**:
+
+*   Geospatial analysis provides a powerful new lens through which to analyze your data.
+*   GeoPandas is the essential tool for working with vector data in Python.
+*   Folium makes it easy to create beautiful and interactive maps.
+*   Spatial joins and proximity analysis are fundamental techniques for combining and analyzing geospatial data.
+
+---
+
+### Advanced SQL
+URL: https://cuijiawei.cn/2026/01/10/advanced-sql/
+
+**Core Idea**: Go beyond basic `SELECT-FROM-WHERE` queries and master the advanced SQL techniques needed to analyze complex datasets. This course focuses on window functions, common table expressions (CTEs), and performance optimization.
+
+## 1. Window Functions
+
+Window functions perform a calculation across a set of table rows that are somehow related to the current row. This is comparable to the type of calculation that can be done with an aggregate function. But unlike regular aggregate functions, use of a window function does not cause rows to become grouped into a single output row — the rows retain their separate identities.
+
+### 1.1 `OVER()` Clause
+
+The `OVER()` clause is what distinguishes window functions from other analytical and reporting functions. It determines the set of rows the function is applied to.
+
+### 1.2 Common Window Functions
+
+*   **Ranking**: `ROW_NUMBER()`, `RANK()`, `DENSE_RANK()`
+*   **Aggregation**: `SUM()`, `AVG()`, `COUNT()` used with `OVER()`
+*   **Value**: `LAG()`, `LEAD()`, `FIRST_VALUE()`, `LAST_VALUE()`
+
+```sql
+SELECT 
+    product_name,
+    category,
+    price,
+    RANK() OVER (PARTITION BY category ORDER BY price DESC) as rank_in_category
+FROM products;
+```
+
+## 2. Common Table Expressions (CTEs)
+
+A CTE is a temporary named result set that you can reference within a `SELECT`, `INSERT`, `UPDATE`, or `DELETE` statement. CTEs help to break down complex queries into simple, logical building blocks, making them more readable and maintainable.
+
+```sql
+WITH RegionalSales AS (
+    SELECT
+        region,
+        SUM(amount) as total_sales
+    FROM orders
+    GROUP BY region
+)
+SELECT
+    region,
+    total_sales
+FROM RegionalSales
+WHERE total_sales > 1000;
+```
+
+## 3. Query Optimization
+
+Writing efficient SQL queries is crucial for working with large datasets.
+
+### 3.1 `EXPLAIN`
+
+Use the `EXPLAIN` command to see the query execution plan. This shows how the database will execute your query, including which indexes it will use. This is the first step in diagnosing a slow query.
+
+### 3.2 Indexing
+
+Indexes are special lookup tables that the database search engine can use to speed up data retrieval. Creating indexes on columns that are frequently used in `WHERE` clauses or `JOIN` conditions can dramatically improve query performance.
+
+### 3.3 Data Types
+
+Using the most appropriate and efficient data types for your columns can reduce storage requirements and improve query speed.
+
+**Key Takeaways**:
+
+*   Window functions are a powerful tool for performing complex analytical queries.
+*   CTEs improve the readability and modularity of your SQL code.
+*   Query optimization is an essential skill for working with large-scale data.
+*   Understanding execution plans and proper indexing are key to high-performance SQL.
+
+---
+

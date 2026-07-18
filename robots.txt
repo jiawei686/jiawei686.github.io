@@ -1,4 +1,30 @@
 User-agent: *
 Allow: /
 
+# Generative Engine Optimization (GEO): AI crawlers are explicitly welcome
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Cohere-AI
+Allow: /
+
+User-agent: Bytespider
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+# Machine-readable index for LLMs
+# https://cuijiawei.cn/llms.txt
+# https://cuijiawei.cn/llms-full.txt
+
 Sitemap: https://cuijiawei.cn/sitemap.xml

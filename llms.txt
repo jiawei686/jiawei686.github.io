@@ -1,0 +1,70 @@
+# cuijiawei.cn
+
+> Personal blog of Jiawei Cui (崔家维 / kiritocui) — deep-dives on large language models and AI papers, software & frontend engineering, machine learning, and side projects. Content in Chinese and English.
+
+## Index
+- [Home](https://cuijiawei.cn/): Home page
+- [Sitemap](https://cuijiawei.cn/sitemap.xml): Full URL index for crawlers
+- [Atom feed](https://cuijiawei.cn/atom.xml): Latest posts feed
+
+## Large Language Models & AI Papers (25)
+- [The Transformer: Attention Is All You Need](https://cuijiawei.cn/2026/03/01/the-transformer-attention-is-all-you-need/): **Paper:** Vaswani et al., *Attention Is All You Need*, NeurIPS 2017. [arXiv:1706.03762](https://arxiv.org/abs/1706.03762)
+- [BERT: Bidirectional Pretraining from Transformers](https://cuijiawei.cn/2026/03/08/bert-bidirectional-pretraining/): **Paper:** Devlin et al., *BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding*, NAACL 2019. [arXiv:1810.04805](https://arxiv.org/abs/1810.04805)
+- [GPT-3 and Few-Shot Learning at Scale](https://cuijiawei.cn/2026/03/15/gpt-3-few-shot-learners/): **Paper:** Brown et al., *Language Models are Few-Shot Learners*, NeurIPS 2020. [arXiv:2005.14165](https://arxiv.org/abs/2005.14165)
+- [InstructGPT: Aligning LLMs with Human Preference (RLHF)](https://cuijiawei.cn/2026/03/22/instructgpt-rlhf-alignment/): **Paper:** Ouyang et al., *Training language models to follow instructions with human feedback (InstructGPT)*, 2022. [arXiv:2203.02155](https://arxiv.org/abs/2203.02155)
+- [Chain-of-Thought Prompting: Let the Model Think Step by Step](https://cuijiawei.cn/2026/03/29/chain-of-thought-prompting/): **Paper:** Wei et al., *Chain-of-Thought Prompting Elicits Reasoning in Large Language Models*, 2022. [arXiv:2201.11903](https://arxiv.org/abs/2201.11903)
+- [LoRA: Low-Rank Adaptation of Large Models](https://cuijiawei.cn/2026/04/05/lora-low-rank-adaptation/): **Paper:** Hu et al., *LoRA: Low-Rank Adaptation of Large Language Models*, ICLR 2022. [arXiv:2106.09685](https://arxiv.org/abs/2106.09685)
+- [FlashAttention: IO-Aware Exact Attention](https://cuijiawei.cn/2026/04/12/flashattention-efficient-attention/): **Paper:** Dao et al., *FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness*, NeurIPS 2022. [arXiv:2205.14135](https://arxiv.org/abs/2205.14135)
+- [LLaMA: The Open-Weight Catalyst](https://cuijiawei.cn/2026/04/19/llama-open-weights-revolution/): **Paper:** Touvron et al., *LLaMA: Open and Efficient Foundation Language Models*, 2023. [arXiv:2302.13971](https://arxiv.org/abs/2302.13971) — followed by *LLaMA 2* (arXiv:2307.09
+- [Mixtral of Experts: Sparse Mixture of Experts](https://cuijiawei.cn/2026/04/26/mixtral-mixture-of-experts/): **Paper:** Jiang et al., *Mixtral of Experts*, 2024. [arXiv:2401.04088](https://arxiv.org/abs/2401.04088)
+- [DeepSeek-R1: Reasoning via Reinforcement Learning](https://cuijiawei.cn/2026/05/03/deepseek-r1-reasoning-rl/): **Paper:** DeepSeek-AI, *DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning*, 2025. [arXiv:2501.12948](https://arxiv.org/abs/2501.12948)
+- [RAG: Retrieval-Augmented Generation](https://cuijiawei.cn/2026/05/10/rag-retrieval-augmented-generation/): **Paper:** Lewis, Perez, Piktus, Petroni, Karpukhin, Goyal, Küttler, Lewis, Yih, Rocktäschel, Riedel, Kiela, *Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks*, Neu
+- [ReAct: Reasoning + Acting in Language Models](https://cuijiawei.cn/2026/05/17/react-reasoning-acting/): **Paper:** Yao, Zhao, Yu, Du, Shafran, Narasimhan, Cao, *ReAct: Synergizing Reasoning and Acting in Language Models*, ICLR 2023. [arXiv:2210.03629](https://arxiv.org/abs/2210.03629
+- [Toolformer: Language Models That Teach Themselves to Use Tools](https://cuijiawei.cn/2026/05/24/toolformer-tools/): **Paper:** Schick, Dwivedi-Yu, Dessì, Raileanu, Lomeli, Zettlemoyer, Cancedda, Goyal, Lewis, *Toolformer: Language Models Can Teach Themselves to Use Tools*, NeurIPS 2023. [arXiv:2
+- [Reflexion: Verbal Reinforcement Learning for Language Agents](https://cuijiawei.cn/2026/05/31/reflexion-verbal-rl/): **Paper:** Shinn, Cassano, Berman, Gopinath, Moss, Labash, *Reflexion: Language Agents with Verbal Reinforcement Learning*, NeurIPS 2023. [arXiv:2303.11366](https://arxiv.org/abs/2
+- [Generative Agents: Believable Simulacra of Human Behavior](https://cuijiawei.cn/2026/06/07/generative-agents/): **Paper:** Park, Chan, Roh, Zito, Fried, Bernstein, *Generative Agents: Interactive Simulacra of Human Behavior*, UIST 2023. [arXiv:2304.03442](https://arxiv.org/abs/2304.03442)
+- [AutoGen: Multi-Agent Conversation as Computation](https://cuijiawei.cn/2026/06/14/autogen-multi-agent/): **Paper:** Wu, Bansal, Zhang, Wu, Zhang, Zhu, Li, Jiang, Zhang, Wang, Krishna, Wu, *AutoGen: Enabling Next-Gen LLM Applications via Multi-Agent Conversation*, 2023. [arXiv:2308.081
+- [Tree of Thoughts: Deliberate Problem Solving](https://cuijiawei.cn/2026/06/21/tree-of-thoughts/): **Paper:** Yao, Yu, Zhao, Shafran, Griffiths, Cao, Narasimhan, *Tree of Thoughts: Deliberate Problem Solving with Large Language Models*, NeurIPS 2023. [arXiv:2305.10601](https://a
+- [Scaling Laws for Neural Language Models](https://cuijiawei.cn/2026/06/28/scaling-laws/): **Paper:** Kaplan, J., et al., *Scaling Laws for Neural Language Models*, 2020. [arXiv:2001.08361](https://arxiv.org/abs/2001.08361)
+- [RoPE: Rotary Position Embedding](https://cuijiawei.cn/2026/07/03/rope/): **Paper:** Su, J., et al., *RoFormer: Enhanced Transformer with Rotary Position Embedding*, 2021. [arXiv:2104.09864](https://arxiv.org/abs/2104.09864)
+- [Chinchilla: Training Compute-Optimal Large Language Models](https://cuijiawei.cn/2026/06/30/chinchilla/): **Paper:** Hoffmann, J., et al. (DeepMind), *Training Compute-Optimal Large Language Models*, 2022. [arXiv:2203.15556](https://arxiv.org/abs/2203.15556)
+- [RLHF: Deep Reinforcement Learning from Human Preferences](https://cuijiawei.cn/2026/07/05/rlhf-from-human-preferences/): **Paper:** Christiano, P., et al., *Deep Reinforcement Learning from Human Preferences*, NeurIPS 2017. [arXiv:1706.03741](https://arxiv.org/abs/1706.03741)
+- [DPO: Direct Preference Optimization](https://cuijiawei.cn/2026/07/07/dpo/): **Paper:** Rafailov, R., et al., *Direct Preference Optimization: Your Language Model is Secretly a Reward Model*, NeurIPS 2023. [arXiv:2305.18290](https://arxiv.org/abs/2305.18290
+- [Constitutional AI: Harmlessness from AI Feedback](https://cuijiawei.cn/2026/07/09/constitutional-ai/): **Paper:** Bai, Y., et al. (Anthropic), *Constitutional AI: Harmlessness from AI Feedback*, 2022. [arXiv:2212.08073](https://arxiv.org/abs/2212.08073)
+- [Self-Consistency: Improving Chain-of-Thought Reasoning](https://cuijiawei.cn/2026/07/10/self-consistency/): **Paper:** Wang, X., et al., *Self-Consistency Improves Chain-of-Thought Reasoning in Language Models*, ICLR 2023. [arXiv:2203.11171](https://arxiv.org/abs/2203.11171)
+- [CLIP: Learning Transferable Visual Models From Language Supervision](https://cuijiawei.cn/2026/07/11/clip/): **Paper:** Radford, A., et al. (OpenAI), *Learning Transferable Visual Models From Natural Language Supervision*, ICML 2021. [arXiv:2103.00020](https://arxiv.org/abs/2103.00020)
+
+## Software Engineering (17)
+- [IPv6技术](https://cuijiawei.cn/2016/12/20/IPv6%E6%8A%80%E6%9C%AF/): IPv6地址长度是128位，所以理论上IPv6地址一共有$2^{128}$个。
+- [Advanced Javascript题目](https://cuijiawei.cn/2017/03/16/Learning Advanced Javascript/): **#2: Goal: To be able to understand this function:**
+- [wget工具的安装及使用](https://cuijiawei.cn/2017/04/24/wget%E5%B7%A5%E5%85%B7%E7%9A%84%E5%AE%89%E8%A3%85%E5%8F%8A%E4%BD%BF%E7%94%A8/): Mac下wget工具的安装
+- [MySQL安装方法](https://cuijiawei.cn/2017/05/02/MySQL%E5%AE%89%E8%A3%85%E6%96%B9%E6%B3%95/): MySQL for MAC
+- [Git初始化操作](https://cuijiawei.cn/2017/05/12/Gitlab Commands/): |总是忘记，写在这里没事看一看
+- [面向连接的运输：TCP](https://cuijiawei.cn/2017/05/18/面向连接的运输：TCP/): ​ TCP连接是**面向连接**的，因为一个应用进程可以开始向另一个应用进程发送数据之前，这两个进程必须先相互“握手”。（相互发送某些预备报文段，以建立确保数据传输的参数）
+- [罗朗展式及孤立奇点](https://cuijiawei.cn/2017/06/14/%E7%BD%97%E6%9C%97%E5%B1%95%E5%BC%8F%E5%8F%8A%E5%AD%A4%E7%AB%8B%E5%A5%87%E7%82%B9/): 罗朗展式是幂级数的一个推广，是“双向”幂级数，当所有负幂项系数为零时就是幂级数
+- [经济学原理](https://cuijiawei.cn/2017/06/26/曼昆--经济学原理/): Chapter I 经济学十大原理
+- [jekyll linux 安装方法](https://cuijiawei.cn/2017/09/25/jekyll linux 安装方法/): jekyll linux 安装方法
+- [pm2管理node进程](https://cuijiawei.cn/2017/10/11/pm2 node进程管理/): - pm2 Git `https://github.com/Unitech/pm2` - pm2 中文Gitbook`https://wohugb.gitbooks.io/pm2/content/features/quick-start.html`
+- [iptables初探](https://cuijiawei.cn/2017/11/25/iptables 初探/): iptables 基本命令
+- [linux邮件服务](https://cuijiawei.cn/2017/12/01/%E9%82%AE%E4%BB%B6%E6%9C%8D%E5%8A%A1/): | 腾讯云开发者实验室系列
+- [MPI编程学习](https://cuijiawei.cn/2017/12/25/MPI%E7%BC%96%E7%A8%8B/): |张永东老师的《高性能计算》课程代码
+- [https网站禁止调用http资源解决办法](https://cuijiawei.cn/2018/03/17/Some Web Problems/): **#https网站禁止调用http资源**
+- [本地localhost环境浏览器禁止跨域请求解决办法](https://cuijiawei.cn/2018/03/17/%E6%B5%8F%E8%A7%88%E5%99%A8%E7%A6%81%E6%AD%A2%E8%B7%A8%E5%9F%9F%E8%AF%B7%E6%B1%82/): **#浏览器禁止跨域请求**
+- [树莓派最新教程整理](https://cuijiawei.cn/2018/03/30/%E6%A0%91%E8%8E%93%E6%B4%BE%E6%9C%80%E6%96%B0%E6%95%99%E7%A8%8B%E6%95%B4%E7%90%86/): - mac下烧录Rasbian进SD卡官方教程
+- [IE浏览器button标签不能嵌套a标签解决办法](https://cuijiawei.cn/2018/04/26/IE%E4%B8%8Bbutton%E6%A0%87%E7%AD%BE%E4%B8%8D%E8%83%BD%E5%B5%8C%E5%A5%97a%E6%A0%87%E7%AD%BE%E8%A7%A3%E5%86%B3%E5%8A%9E%E6%B3%95/): 问题是这样的，最近在帮一个留美同学做一个亲子教育网站，在沟通过程中了解到美国那边仍然有不少IE用户，所以那个同学希望可以适配IE浏览器。虽然酬劳不是很多，但是毕竟是同学，对于网站的每一个细节仍然要加以注意。
+
+## Artificial Intelligence (4)
+- [Deep Learning](https://cuijiawei.cn/2025/10/22/intro-to-deep-learning/): **Core Idea**: Deep learning, a subfield of machine learning, utilizes neural networks with many layers (hence "deep") to model and understand complex patterns in data. This course
+- [Game AI and Reinforcement Learning](https://cuijiawei.cn/2025/12/20/intro-to-game-ai-and-reinforcement-learning/): **Core Idea**: This course explores the fascinating world of game AI, from classic algorithms to the cutting-edge field of reinforcement learning. You'll learn how to build agents
+- [Machine Learning Explainability](https://cuijiawei.cn/2025/12/28/machine-learning-explainability/): **Core Idea**: As machine learning models become more complex (i.e., "black boxes"), understanding *why* they make certain predictions is increasingly important. Machine learning e
+- [Computer Vision](https://cuijiawei.cn/2026/01/15/computer-vision/): **Core Idea**: Computer vision is a field of AI that trains computers to interpret and understand the visual world. This course focuses on using Convolutional Neural Networks (CNNs
+
+## Projects (3)
+- [wechat-dev-mcp: Bridging AI and WeChat Mini-Program Development](https://cuijiawei.cn/2026/01/31/wechat-dev-mcp/): **Core Idea**: The `wechat-dev-mcp` project is a specialized Model Context Protocol (MCP) server that connects AI agents directly to the WeChat Developer Tools. It transforms the m
+- [Homeware Sense: Open Source Smart Home Integration for OpenClaw AI](https://cuijiawei.cn/2026/02/02/introducing-homeware-sense-skill-unified-smart-home-integration-for-openclaw-ai/): In the rapidly evolving world of smart homes and IoT devices, one of the biggest challenges developers face is the fragmentation of platforms and protocols. Whether you're using Ap
+- [Deploy OpenClaw AI on Raspberry Pi: Our Open Source Guide](https://cuijiawei.cn/2026/02/04/complete-raspberry-pi-openclaw-deployment-guide/): In this tutorial, we'll detail how to deploy the OpenClaw AI assistant platform on different Raspberry Pi models. Whether you have a high-performance Raspberry Pi 4B or a classic o
+
+## Data & ML (3)
+- [Kaggle与数据科学：实战技巧与最佳实践](https://cuijiawei.cn/2025/09/15/kaggle-data-science-practical-notes/): 在Kaggle竞赛和数据科学实践中，我总结了一些实用的技巧，涵盖数据清洗、可视化、时间序列处理等多个方面。这些经验来自于实际项目，希望能对大家有所帮助。
+- [Geospatial Analysis](https://cuijiawei.cn/2026/01/02/geospatial-analysis/): **Core Idea**: Geospatial analysis unlocks insights from data that has a location component. This course introduces the tools and techniques for working with geospatial data, creat
+- [Advanced SQL](https://cuijiawei.cn/2026/01/10/advanced-sql/): **Core Idea**: Go beyond basic `SELECT-FROM-WHERE` queries and master the advanced SQL techniques needed to analyze complex datasets. This course focuses on window functions, commo
