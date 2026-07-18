@@ -7,7 +7,7 @@
 - [Sitemap](https://cuijiawei.cn/sitemap.xml): Full URL index for crawlers
 - [Atom feed](https://cuijiawei.cn/atom.xml): Latest posts feed
 
-## Large Language Models & AI Papers (25)
+## Large Language Models & AI Papers (26)
 - [The Transformer: Attention Is All You Need](https://cuijiawei.cn/2026/03/01/the-transformer-attention-is-all-you-need/): **Paper:** Vaswani et al., *Attention Is All You Need*, NeurIPS 2017. [arXiv:1706.03762](https://arxiv.org/abs/1706.03762)
 - [BERT: Bidirectional Pretraining from Transformers](https://cuijiawei.cn/2026/03/08/bert-bidirectional-pretraining/): **Paper:** Devlin et al., *BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding*, NAACL 2019. [arXiv:1810.04805](https://arxiv.org/abs/1810.04805)
 - [GPT-3 and Few-Shot Learning at Scale](https://cuijiawei.cn/2026/03/15/gpt-3-few-shot-learners/): **Paper:** Brown et al., *Language Models are Few-Shot Learners*, NeurIPS 2020. [arXiv:2005.14165](https://arxiv.org/abs/2005.14165)
@@ -33,6 +33,7 @@
 - [Constitutional AI: Harmlessness from AI Feedback](https://cuijiawei.cn/2026/07/09/constitutional-ai/): **Paper:** Bai, Y., et al. (Anthropic), *Constitutional AI: Harmlessness from AI Feedback*, 2022. [arXiv:2212.08073](https://arxiv.org/abs/2212.08073)
 - [Self-Consistency: Improving Chain-of-Thought Reasoning](https://cuijiawei.cn/2026/07/10/self-consistency/): **Paper:** Wang, X., et al., *Self-Consistency Improves Chain-of-Thought Reasoning in Language Models*, ICLR 2023. [arXiv:2203.11171](https://arxiv.org/abs/2203.11171)
 - [CLIP: Learning Transferable Visual Models From Language Supervision](https://cuijiawei.cn/2026/07/11/clip/): **Paper:** Radford, A., et al. (OpenAI), *Learning Transferable Visual Models From Natural Language Supervision*, ICML 2021. [arXiv:2103.00020](https://arxiv.org/abs/2103.00020)
+- [Softmax: Turning Logits into Probabilities](https://cuijiawei.cn/2026/07/18/softmax/): Every time a language model predicts the next word, or an image classifier picks among a thousand labels, there is a softmax at the very end turning raw numbers into a probability
 
 ## Software Engineering (17)
 - [IPv6技术](https://cuijiawei.cn/2016/12/20/IPv6%E6%8A%80%E6%9C%AF/): IPv6地址长度是128位，所以理论上IPv6地址一共有$2^{128}$个。

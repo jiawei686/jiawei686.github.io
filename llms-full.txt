@@ -8,7 +8,7 @@
 - [Sitemap](https://cuijiawei.cn/sitemap.xml)
 - [Atom feed](https://cuijiawei.cn/atom.xml)
 
-## Large Language Models & AI Papers (25)
+## Large Language Models & AI Papers (26)
 
 ### The Transformer: Attention Is All You Need
 URL: https://cuijiawei.cn/2026/03/01/the-transformer-attention-is-all-you-need/
@@ -1309,6 +1309,146 @@ CLIP is the "text meets vision" layer the LLM world got built on. When a model "
 
 - Radford et al. (2021). *Learning Transferable Visual Models From Natural Language Supervision (CLIP).* ICML 2021. [arXiv:2103.00020](https://arxiv.org/abs/2103.00020)
 - Vaswani et al. (2017). *Attention Is All You Need.* [arXiv:1706.03762](https://arxiv.org/abs/1706.03762)
+
+---
+
+### Softmax: Turning Logits into Probabilities
+URL: https://cuijiawei.cn/2026/07/18/softmax/
+
+Every time a language model predicts the next word, or an image classifier picks among a thousand labels, there is a softmax at the very end turning raw numbers into a probability distribution. It is the function that answers the only question that matters at decision time: *how sure are we, and across which options?* This post builds it from scratch, fixes its one famous numerical trap, and then shows where it does the heavy lifting in modern LLMs.
+
+## The problem: raw scores are not probabilities
+
+A model's final layer usually emits **logits** — unbounded real numbers, one per class. They are comparable within a row but they do not mean "probability." We need a function that:
+
+- maps every output into the range $[0, 1]$, and
+- makes them sum to exactly $1$,
+
+so the outputs read as a proper distribution. That function is softmax.
+
+## The formula
+
+For a vector of logits $z = (z_1, \dots, z_C)$ over $C$ classes:
+
+$$
+\text{softmax}(z_i) = \frac{e^{z_i}}{\sum_{c=1}^{C} e^{z_c}}
+$$
+
+Each class receives a share of the total probability mass proportional to $e^{z_i}$.
+
+## Soft vs hard max
+
+`hardmax` simply takes the largest element:
+
+```python
+import numpy as np
+np.max([1, 2, 3, 4, 5])   # -> 5
+```
+
+It is a winner-take-all switch — fine when there is exactly one answer. But a news article can be 60% sports and 40% politics; a sentence can be partly angry and partly sad. Softmax keeps a *distribution* over all classes, so you see the model's **confidence**, not just its pick. (The name: a "soft" version of "max".)
+
+Worked example, inputs $[2, 3, 5]$:
+
+- Naive normalization $[0.2, 0.3, 0.5]$ — it *flattens* the gaps.
+- Softmax $[0.042, 0.114, 0.844]$ — the exponential *amplifies* them.
+
+The model was not "a bit" more confident in class 3; it was *much* more confident. That sharpening is the whole point of the exponential.
+
+## Why the exponential?
+
+Two reasons $e^x$ is the right choice:
+
+1. **Monotonic and steep.** Small differences in logits become large, well-separated probabilities — exactly the margin you want for classification.
+2. **Trivial derivative.** $(e^x)' = e^x$, which keeps backprop clean (below).
+
+## The catch: overflow
+
+The exponential is also dangerous. Feed it large logits and you overflow to `inf`, then divide `inf / inf` and get `nan`:
+
+```python
+scores = np.array([123, 456, 789])
+np.exp(scores) / np.sum(np.exp(scores))
+# array([0., 0., nan])   # overflow -> 0/0
+```
+
+## Numerical stability: subtract the max
+
+The fix is the oldest trick in the book — subtract the maximum value before exponentiating. It is mathematically identical, because a constant cancels in both numerator and denominator:
+
+$$
+\text{softmax}(z_i) = \frac{e^{z_i - \max(z)}}{\sum_{c=1}^{C} e^{z_c - \max(z)}}
+$$
+
+```python
+scores = np.array([123, 456, 789])
+scores -= scores.max()
+p = np.exp(scores) / np.sum(np.exp(scores))
+# array([5.75e-290, 2.40e-145, 1.0])   # stable
+```
+
+This is the **log-sum-exp** trick, and it is exactly what `F.softmax` / `tf.nn.softmax` do internally. Rule of thumb: if you ever hand-roll softmax, always subtract the max. Better yet, in frameworks pass `from_logits=True` and let the fused kernel handle stability inside the loss op.
+
+## A minimal stable implementation
+
+```python
+import numpy as np
+
+def softmax(z, axis=-1):
+    z = z - np.max(z, axis=axis, keepdims=True)
+    e = np.exp(z)
+    return e / np.sum(e, axis=axis, keepdims=True)
+
+logits = np.array([2.0, 1.0, 0.1])
+print(softmax(logits))   # [0.659, 0.242, 0.099]
+```
+
+## Softmax meets cross-entropy
+
+Softmax is almost never used alone — it pairs with **cross-entropy loss**. For a one-hot label $y$ (1 at the true class, 0 elsewhere) and predicted probabilities $p = \text{softmax}(z)$:
+
+$$
+L = -\sum_{c=1}^{C} y_c \log p_c = -\log p_{\text{true}}
+$$
+
+The gradient is beautifully simple:
+
+$$
+\frac{\partial L}{\partial z_i} = p_i - y_i
+$$
+
+"Push all, pull one": every logit gets pushed down by its predicted probability, and the true class gets pulled up by one. That is the entire update rule — no separate softmax derivative needed if you fuse it with the loss.
+
+## Where softmax lives in modern LLMs
+
+This is where it gets interesting for the rest of this series:
+
+1. **Attention.** Scaled dot-product attention ends with a softmax over the key scores:
+   $$
+   \text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^\top}{\sqrt{d_k}}\right)V
+   $$
+   The softmax turns raw relevance scores into a *normalized weighting* of the values. The $\sqrt{d_k}$ keeps the dot products small enough that softmax does not saturate and kill the gradient.
+
+2. **Next-token prediction.** The final linear layer of a language model emits logits over the entire vocabulary (tens of thousands of tokens). Softmax turns them into the distribution you sample the next token from.
+
+3. **Temperature.** Divide the logits by $T$ before softmax:
+   $$
+   p_i = \frac{e^{z_i/T}}{\sum_c e^{z_c/T}}
+   $$
+   Low $T$ → sharper, more confident, more repetitive; high $T$ → flatter, more diverse, sometimes incoherent. It is the single knob that controls how "creative" a model sounds.
+
+## Takeaways
+
+- Softmax converts logits into a normalized probability distribution over classes.
+- The exponential sharpens differences but risks overflow — always subtract the max (or use a fused `from_logits` op).
+- Its gradient through cross-entropy collapses to $p - y$, which is why training is so clean.
+- In LLMs it does two jobs at once: normalizing attention weights and producing the next-token distribution, with temperature as the creativity dial.
+
+If you have read the Transformer post, you have already seen softmax doing the heavy lifting inside attention. Everything downstream — pretraining, RLHF, mixture-of-experts — inherits this same primitive.
+
+## References
+
+- Goodfellow, Bengio & Courville, *Deep Learning* (MIT Press), chapter on softmax and cross-entropy.
+- Bridging the classic "softmax from logits to loss" treatment with its modern LLM usage.
 
 ---
 
