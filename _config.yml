@@ -10,6 +10,9 @@ kramdown:
 
 # Setup
 url:              https://cuijiawei.cn
+# serve (jekyll serve) overrides `url` to http://localhost:4000 at runtime,
+# so SEO/canonical/sitemap must use this explicit key instead of `site.url`.
+seo_url:          https://cuijiawei.cn
 
 # Set to "" in case of hosting on `http://<your-github-name>.github.io`
 baseurl:          ""
