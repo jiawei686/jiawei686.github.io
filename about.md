@@ -6,7 +6,7 @@ title: About
 <style>
 .cv{margin:4px 0 20px;}
 .cv-item{display:flex;align-items:center;gap:14px;margin:14px 0;}
-.cv-logo{width:84px;flex:0 0 84px;display:flex;align-items:center;justify-content:center;}
+.cv-logo{width:84px;flex:0 0 84px;display:flex;align-items:center;justify-content:center;margin-top:8px;}
 .cv-logo img{height:50px;width:auto;max-width:84px;object-fit:contain;}
 .cv-body{flex:1;min-width:0;}
 .cv-row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;}
