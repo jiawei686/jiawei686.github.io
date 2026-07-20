@@ -1,6 +1,7 @@
 ---
 layout: post
 title: "Constitutional AI: Harmlessness from AI Feedback"
+description: "Constitutional AI (RLAIF) explained: how Anthropic trained harmlessness from AI feedback instead of human raters. The recipe, with code. arXiv:2212.08073"
 date: 2026-07-09
 tags: [llm]
 subcat: alignment

@@ -1,6 +1,7 @@
 ---
 layout: post
 title: "RAG: Retrieval-Augmented Generation"
+description: "RAG explained: marry a generative model with an external knowledge index so it can look things up. The seed of every production LLM app. arXiv:2005.11401"
 date: 2026-05-10
 tags: [llm]
 subcat: agents

@@ -1,6 +1,7 @@
 ---
 layout: post
 title: "Toolformer: Language Models That Teach Themselves to Use Tools"
+description: "Toolformer explained: a 6B model teaches itself to use tools from unlabeled text. The ancestor of GPT-4 function calling, with code. arXiv:2302.04761"
 date: 2026-05-24
 tags: [llm]
 subcat: agents

@@ -1,6 +1,7 @@
 ---
 layout: post
 title: "DeepSeek-R1: Reasoning via Reinforcement Learning"
+description: "DeepSeek-R1 explained: open-weight reasoning from pure RL, no supervised reasoning data. How it matches o1, and the recipe. arXiv:2501.12948"
 date: 2026-05-03
 tags: [llm]
 subcat: reasoning

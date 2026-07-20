@@ -1,6 +1,7 @@
 ---
 layout: post
 title: "Self-Consistency: Improving Chain-of-Thought Reasoning"
+description: "Self-Consistency explained: sample many reasoning paths, take the majority vote. The cheapest accuracy win for LLM reasoning. arXiv:2203.11171"
 date: 2026-07-10
 tags: [llm]
 subcat: reasoning

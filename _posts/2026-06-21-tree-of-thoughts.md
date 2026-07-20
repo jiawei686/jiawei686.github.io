@@ -1,6 +1,7 @@
 ---
 layout: post
 title: "Tree of Thoughts: Deliberate Problem Solving"
+description: "Tree of Thoughts explained: how LLMs explore, judge, and backtrack through a search tree instead of one greedy chain. Intuition + examples. arXiv:2305.10601"
 date: 2026-06-21
 tags: [llm]
 subcat: reasoning

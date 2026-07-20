@@ -1,6 +1,7 @@
 ---
 layout: post
 title: "FlashAttention: IO-Aware Exact Attention"
+description: "FlashAttention explained clearly: IO-aware exact attention that speeds up transformers. The tiling + online-softmax trick, intuition, and code. arXiv:2205.14135"
 date: 2026-04-12
 tags: [llm]
 subcat: architecture

@@ -1,6 +1,7 @@
 ---
 layout: post
 title: "Reflexion: Verbal Reinforcement Learning for Language Agents"
+description: "Reflexion explained: improve language agents with verbal RL, no weight updates, just memory of mistakes. The self-reflect loop, with code. arXiv:2303.11366"
 date: 2026-05-31
 tags: [llm]
 subcat: agents
