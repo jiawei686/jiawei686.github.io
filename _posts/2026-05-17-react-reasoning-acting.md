@@ -4,64 +4,50 @@ title: "ReAct: Reasoning + Acting in Language Models"
 date: 2026-05-17
 tags: [llm]
 subcat: agents
+description: "ReAct interleaves reasoning traces and actions so a language model can plan, use tools, and observe results — the blueprint for most LLM agents today."
 ---
 
-**Paper:** Yao, Zhao, Yu, Du, Shafran, Narasimhan, Cao, *ReAct: Synergizing Reasoning and Acting in Language Models*, ICLR 2023. [arXiv:2210.03629](https://arxiv.org/abs/2210.03629)
+ReAct (Yao et al., 2022) is the paper that gave us the recognizable shape of an **LLM agent**: think, act, observe, repeat. Before ReAct, reasoning (Chain-of-Thought) and acting (using tools) were treated as separate things. ReAct showed you get better results by **interleaving** them — let the model reason about what to do, take an action, see the result, and reason again. I'm writing this because if you've built or used an AI agent, you've used ReAct's loop, whether you knew the name or not.
 
-A raw LLM can reason (that's Chain-of-Thought) or act (that's calling a tool), but it does neither well when forced to pick one. CoT reasons in a vacuum: it can't fetch a fact it doesn't know, so it makes one up. Act-only agents run tools but leave no trail of why, so they fall apart on anything multi-step. ReAct just interleaves the two: think out loud, act, see what happened, keep going. That Thought → Action → Observation loop is, in practice, what people mean when they say "LLM agent."
+## The idea: interleave thought and action
 
-## How the trajectories look
-
-A ReAct prompt hands the model a few examples shaped like this:
+A ReAct prompt structures the model's output as an alternating sequence:
 
 ```
-Thought: I need the population of the capital of Romania.
-Action: Search[Romania capital]
-Observation: Bucharest
-Thought: Now look up Bucharest's population.
-Action: Search[Bucharest population]
-Observation: 1.8 million
-Answer: 1.8 million
+Thought: I need to find the population of France.
+Action: search["France population"]
+Observation: France has ~67 million people.
+Thought: Now I can answer the question.
+Action: finish["The population is about 67 million."]
 ```
 
-The agent is a policy: given the trajectory `τ` so far, it emits the next `(Thought, Action)`. The environment runs the `Action`, tacks on the `Observation`, and you loop until a `Finish` action shows up.
+The model isn't just chain-of-thought-ing privately; it's **externalizing a plan**, taking a real action (calling a tool), ingesting the **observation**, and updating its reasoning. That observation step is the key — it grounds the next thought in actual results, not the model's possibly-wrong guess.
 
-## Why mixing them beats either alone
+## Why interleaving beats doing them separately
 
-| Style | Reasons? | Uses tools? | Failure mode |
-|-------|----------|-------------|--------------|
-| CoT   | yes      | no          | hallucinates unknown facts |
-| Act-only | no    | yes         | no multi-step planning |
-| **ReAct** | **yes** | **yes**   | grounded, debuggable |
+- **Pure reasoning** (CoT) has no access to external facts — it hallucinates or guesses when it doesn't know.
+- **Pure acting** (a planner that just fires tools) has no reflective step — it can't recover from a bad tool result or reconsider.
+- **ReAct combines both:** reasoning decides the action, the action's observation feeds back into reasoning. This lets the agent *correct course* mid-task — e.g. "that search returned nothing useful, let me try a different query."
 
-The explicit `Thought` gives the model a scratchpad to break the problem down. The `Observation` yanks it back to reality. You can also drop a human into the loop mid-run, which closes a lot of the dumb errors.
+## What it enabled
 
-## A minimal loop
+ReAct is the direct ancestor of tool-using agents. The "Thought/Action/Observation" loop is now the default skeleton for agent frameworks (and you'll see echoes of it in ReAct-style prompting in LangChain, AutoGen, and custom agents). It showed that **giving a model a simple action space + a scratchpad of observations** produces surprisingly capable task-solving behavior.
 
-```python
-def react(question, max_steps=6):
-    traj = f"Question: {question}\n"
-    for _ in range(max_steps):
-        out = llm(traj + "\nThought:")          # model emits Thought + Action
-        thought, action = parse(out)
-        obs = env.step(action)                  # e.g. Search / Wikipedia / Calc
-        traj += f"Thought: {thought}\nAction: {action}\nObservation: {obs}\n"
-        if action.startswith("Finish"):
-            return obs
-    return traj
-```
+## Practical implementation notes
 
-## What they showed
+- **Define a small, clear action space.** Too many tools = the model gets confused about which to use. Start with 2–5 actions.
+- **Make observations crisp and parseable.** The model reasons over the observation text, so noisy/verbose tool output hurts. I trim tool results aggressively before feeding them back.
+- **Parse the action reliably.** You need to extract "search[...]" from generated text and dispatch it. A strict format + robust parser avoids loops.
+- **Add a stop/answer action** so the agent knows when to finish instead of acting forever.
+- **Guard against loops.** Agents can repeat the same failed action; add a max-steps limit and simple deduplication.
 
-- On multi-hop QA (**HotpotQA**) and fact-checking (**FEVER**), ReAct on PaLM-540B beat both the CoT and Act-only baselines.
-- On interactive tasks (**AlfWorld**, **WebShop**), it pulled well ahead of agents trained with imitation or RL.
-- Adding a human to the loop cleaned up most of what was left.
+## Limitations to respect
 
-## Where this actually shows up
+- The agent can still **reason poorly** and pick bad actions; ReAct doesn't fix a weak base model, it just structures its attempts.
+- **Latency and cost** grow with steps; each action is another model call.
+- Long action sequences can **drift off-task**; keeping the original goal in the prompt helps.
+- Tool failures (API errors, timeouts) need handling, or the agent spins.
 
-Most "agent" frameworks, LangChain and LlamaIndex included, are ReAct wearing a different jacket. The Reflexion and Tree-of-Thoughts posts build straight on top of it: ReAct gives you the loop, those add memory and search. The thing I'd push back on: the paper makes it look clean, but in production the real failure mode is the loop going in circles, and nothing in the original fixes that.
+## My take
 
-## References
-
-- Yao et al. (2023). *ReAct: Synergizing Reasoning and Acting in Language Models.* [arXiv:2210.03629](https://arxiv.org/abs/2210.03629)
-- Wei et al. (2022). *Chain-of-Thought Prompting.* [arXiv:2201.11903](https://arxiv.org/abs/2201.11903)
+ReAct is the minimal viable agent. If you're building anything that "uses tools to accomplish a goal," you're implementing some version of Thought/Action/Observation — and that structure is the whole game. The insight to keep: **observations are fuel.** A reasoning trace alone guesses; a reasoning trace fed by real tool outputs *corrects*. When I build agents, I spend more time designing clean observations and a tight action space than on the prompt itself — that's where ReAct succeeds or fails in practice.

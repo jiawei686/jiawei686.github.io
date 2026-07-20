@@ -1,5 +1,4 @@
 ---
-
 layout: post
 title: "Self-Consistency: Improving Chain-of-Thought Reasoning"
 description: "Self-Consistency explained: sample many reasoning paths, take the majority vote. The cheapest accuracy win for LLM reasoning. arXiv:2203.11171"
@@ -8,58 +7,42 @@ tags: [llm]
 subcat: reasoning
 ---
 
+Self-Consistency (Wang et al., 2022, arXiv:2203.11171) is, in my experience, the **best accuracy-per-dollar trick** in LLM reasoning. It builds directly on Chain-of-Thought: instead of generating one reasoning path, you generate *many*, then take the **majority answer**. I'm writing this because it's shockingly effective, trivial to implement, and a perfect example of "let the model vote instead of guess once."
 
-**Paper:** Wang, X., et al., *Self-Consistency Improves Chain-of-Thought Reasoning in Language Models*, ICLR 2023. [arXiv:2203.11171](https://arxiv.org/abs/2203.11171)
+## The problem with a single chain
 
-CoT showed that asking a model to think step by step unlocks reasoning. But a single greedy path is brittle. One bad step and the whole answer goes off the rails. Self-Consistency fixes this with a change so small it feels like a cheat: sample a bunch of reasoning paths, then take the majority vote on the final answer. No training, no verifier. It lifted accuracy on math and commonsense benchmarks by double digits. If you do any reasoning with LLMs, this is the cheapest win available.
+Even with CoT, a single sampled reasoning path can go wrong — one arithmetic slip, one bad leap, and you get a wrong final answer. But here's the key observation: if you sample *many* reasoning paths for the same problem, the *correct* answer tends to be reached by *multiple* diverse paths, while wrong answers are scattered across different mistakes. So the **majority** is far more reliable than any single sample.
 
-## Marginalizing over paths
+## The method, step by step
 
-A reasoning problem usually has many valid chains that reach the same answer but few that reach a wrong one. Greedily picking one path throws that away. Instead:
+1. Prompt the model with Chain-of-Thought.
+2. Sample `k` reasoning paths (e.g. `k=5` to `40`) with high temperature so they differ.
+3. Extract the final answer from each path.
+4. Take the **most common answer** (majority vote). Optionally weight by path confidence.
 
-1. Sample $k$ diverse CoT paths $\{z_1, \dots, z_k\}$ with temperature $> 0$.
-2. Parse the final answer $a_i$ from each path.
-3. Aggregate by majority vote (or weighted by path probability):
+That's it. No extra training, no new model, no verifier needed.
 
-$$
-\hat{a} = \operatorname*{argmax}_{a} \sum_{i:\, \text{ans}(z_i) = a} p(z_i \mid x)
-$$
+## Why it works (intuition)
 
-The intuition is that the correct answer is a fixed point. Sample the model many times and the right answer keeps showing up, while the wrong ones scatter.
+Reasoning is a search over possible solution trajectories. A single sample is one trajectory — noisy. Many samples explore the trajectory space; the *correct* destination is a strong attractor (many routes converge there), while each wrong destination has only one or two routes. Majority voting selects the attractor. This is the same statistical principle behind ensemble methods in ML, applied to reasoning paths.
 
-## The six-line version
+## How much does it help?
 
-```python
-paths = [model.generate(prompt, temperature=0.7) for _ in range(20)]
-answers = [parse_answer(p) for p in paths]
-final = max(set(answers), key=answers.count)   # majority vote
-```
+Substantially. On arithmetic and commonsense reasoning benchmarks the paper reported large gains (e.g. +10–15 points on GSM8K-style math) just from majority voting over ~20–40 samples. In my own use, even `k=5` often fixes ambiguous or borderline problems, and `k=10–20` is the sweet spot before diminishing returns.
 
-No extra training, no verifier model required.
+## Practical guidance
 
-## Results, briefly
+- **Set a moderate temperature** (e.g. 0.7–0.9) so paths actually diverge; at temperature 0 they'd all be identical and voting is pointless.
+- **Extract answers robustly.** The fragile part is parsing "the answer is 42" from free text. I use a strict format (e.g. "Answer: <number>") or a small regex, and fall back to the longest/most-confident parse.
+- **Pick k by budget.** k=5 is cheap and helps; k=20–40 for high-stakes tasks. Each extra sample costs a full generation, so it's a latency/cost trade-off.
+- **It pairs perfectly with verifiers.** If you have a checker (code that runs, a math grader), prefer *best-of-n by verifier* over blind majority — but majority is the fallback when no verifier exists.
 
-- GSM8K: ~70% → ~78% (and higher with more samples) for PaLM 540B.
-- Large gains on MATH, StrategyQA, ARC-challenge, and other multi-step tasks.
-- Near or surpassing supervised verifier methods at the time, with zero additional supervision.
+## When NOT to use it
 
-## The part worth keeping
+- **Open-ended generation / creative writing:** there's no single "correct answer" to vote on, and you don't want 20 near-identical essays.
+- **Strict latency constraints:** it multiplies generation cost by k. For real-time chat you usually can't sample 20 times per message (though some "reasoning" services do this server-side).
+- **Factual questions with a known answer in context:** one good RAG retrieval beats 20 guesses.
 
-Self-Consistency is the practical companion to the CoT post. CoT hands the model a reasoning process; self-consistency makes that process hold up. It's also the ancestor of the "sample many thoughts at test time" idea that reasoning models and Tree-of-Thought search lean on. The catch I'd flag: you pay for it in tokens, and on a question with no real path to a fixed point, more samples just buy you more confident noise.
+## My take
 
-## References
-
-- Wang et al. (2022). *Self-Consistency Improves Chain-of-Thought Reasoning in Language Models.* ICLR 2023. [arXiv:2203.11171](https://arxiv.org/abs/2203.11171)
-- Wei et al. (2022). *Chain-of-Thought Prompting Elicits Reasoning in Large Language Models.* [arXiv:2201.11903](https://arxiv.org/abs/2201.11903)
-
-<!-- EXPANDED -->
-
-## Marginalizing over reasoning
-
-Chain-of-thought is powerful but fragile: change the phrasing and you may get a different final answer. Self-consistency fixes this by treating reasoning as a **latent variable**. Instead of one greedy chain, you sample many diverse CoT trajectories with a high temperature, then take the **majority vote** over their final answers.
-
-The intuition: a single wrong arithmetic step can derail one chain, but if most independent chains converge on the same answer, that answer is far more trustworthy. It is approximate marginalization -- "what answer do most valid reasoning paths support?"
-
-## Trade-offs
-
-It costs multiple forward passes per question, so it is a test-time compute trick, not a training change. On math and commonsense benchmarks it gives large, reliable gains over greedy CoT, and it pairs naturally with verifier-style scoring.
+Self-consistency is the technique I reach for first whenever a reasoning task is *important and checkable by majority*. It's almost free to implement (a loop and a counter) and routinely beats a single精心-crafted chain. The mental model: don't ask the model once and trust it; ask several times, let the answers vote. Combine with CoT (the paths) and you get most of the "reasoning model" behavior without training one. For production, the only real cost is latency — and you can dial k to fit your budget.

@@ -1,5 +1,4 @@
 ---
-
 layout: post
 title: "Advanced SQL"
 date: 2026-01-10
@@ -7,85 +6,68 @@ tags: [data]
 description: "Advanced SQL: window functions, CTEs, query optimization, and indexing for analytical workloads."
 ---
 
+SQL is easy to start and surprisingly deep to master. The "advanced" parts — window functions, CTEs, query planning, indexing — are what separate "I can fetch rows" from "I can answer real analytical questions efficiently." I'm writing this as a practical guide because these features are high-leverage: they turn multi-query, application-side hacks into a single clear statement, and they're where most real-world data work happens.
 
-**Core Idea**: Go beyond basic `SELECT-FROM-WHERE` queries and master the advanced SQL techniques needed to analyze complex datasets. This course focuses on window functions, common table expressions (CTEs), and performance optimization.
+## Window functions: the biggest unlock
 
-## 1. Window Functions
-
-Window functions perform a calculation across a set of table rows that are somehow related to the current row. This is comparable to the type of calculation that can be done with an aggregate function. But unlike regular aggregate functions, use of a window function does not cause rows to become grouped into a single output row — the rows retain their separate identities.
-
-### 1.1 `OVER()` Clause
-
-The `OVER()` clause is what distinguishes window functions from other analytical and reporting functions. It determines the set of rows the function is applied to.
-
-### 1.2 Common Window Functions
-
-*   **Ranking**: `ROW_NUMBER()`, `RANK()`, `DENSE_RANK()`
-*   **Aggregation**: `SUM()`, `AVG()`, `COUNT()` used with `OVER()`
-*   **Value**: `LAG()`, `LEAD()`, `FIRST_VALUE()`, `LAST_VALUE()`
+A window function computes a value across a set of rows *related* to the current row, without collapsing them like `GROUP BY` does. This is the feature people most underuse.
 
 ```sql
-SELECT 
-    product_name,
-    category,
-    price,
-    RANK() OVER (PARTITION BY category ORDER BY price DESC) as rank_in_category
-FROM products;
+-- running total per user, ordered by date, WITHOUT losing rows
+SELECT user_id, order_date, amount,
+       SUM(amount) OVER (
+         PARTITION BY user_id
+         ORDER BY order_date
+       ) AS running_total
+FROM orders;
 ```
 
-## 2. Common Table Expressions (CTEs)
+Key clauses:
+- `PARTITION BY` — the "group" (resets per user).
+- `ORDER BY` — the order within the window (enables running totals, ranks).
+- **Window vs. aggregate:** `GROUP BY` reduces rows; `OVER(...)` keeps every row and adds a computed column. That distinction is the whole point.
 
-A CTE is a temporary named result set that you can reference within a `SELECT`, `INSERT`, `UPDATE`, or `DELETE` statement. CTEs help to break down complex queries into simple, logical building blocks, making them more readable and maintainable.
+Common patterns: `ROW_NUMBER()` (dedupe, pick latest), `RANK()/DENSE_RANK()` (leaderboards), `LAG()/LEAD()` (period-over-period change), `NTILE()` (bucket into quantiles).
+
+## CTEs: readable, composable queries
+
+Common Table Expressions (`WITH`) let you name intermediate result sets:
 
 ```sql
-WITH RegionalSales AS (
-    SELECT
-        region,
-        SUM(amount) as total_sales
-    FROM orders
-    GROUP BY region
+WITH active AS (
+  SELECT * FROM users WHERE last_seen > now() - interval '30 days'
+), spend AS (
+  SELECT user_id, SUM(amount) AS total
+  FROM orders JOIN active USING (user_id)
+  GROUP BY user_id
 )
-SELECT
-    region,
-    total_sales
-FROM RegionalSales
-WHERE total_sales > 1000;
+SELECT * FROM spend ORDER BY total DESC;
 ```
 
-## 3. Query Optimization
+CTEs are mostly readability aids (the optimizer usually inlines them) — but `RECURSIVE` CTEs can do real work, like walking a tree/hierarchy (org charts, category trees) in pure SQL.
 
-Writing efficient SQL queries is crucial for working with large datasets.
+## Query optimization: think like the planner
 
-### 3.1 `EXPLAIN`
+- **Indexes** are the primary speed lever. They're great for `WHERE`, `JOIN`, and `ORDER BY` on indexed columns; useless for functions wrapped around a column (`WHERE LOWER(name) = ...` won't use a plain index on `name`).
+- **EXPLAIN / EXPLAIN ANALYZE** is your friend — see the actual plan and where the cost is. I never tune a slow query without it.
+- **Avoid SELECT \*** in analytical queries; fetch only needed columns (helps columnar stores especially).
+- **Join order and filters:** push filters down early; a bad plan often comes from missing statistics or a missing index on a join key.
+- **Beware correlated subqueries** — they can re-run per row; a window function or CTE join is usually better.
 
-Use the `EXPLAIN` command to see the query execution plan. This shows how the database will execute your query, including which indexes it will use. This is the first step in diagnosing a slow query.
+## Indexing strategy
 
-### 3.2 Indexing
+- Index columns you filter/join/sort on.
+- Composite indexes follow the **leftmost-prefix** rule — `(a, b, c)` helps queries filtering on `a`, or `a,b`, but not on `b` alone.
+- Too many indexes slow writes; it's a trade-off, not free.
+- Partial and expression indexes solve specific hot queries elegantly (`CREATE INDEX ... WHERE status = 'open'`).
 
-Indexes are special lookup tables that the database search engine can use to speed up data retrieval. Creating indexes on columns that are frequently used in `WHERE` clauses or `JOIN` conditions can dramatically improve query performance.
+## Practical habits
 
-### 3.3 Data Types
+- Write CTEs top-to-bottom to mirror your thinking; future-you will thank you.
+- Reach for window functions before pulling data into Python to "post-process" — the database does it faster.
+- Profile with EXPLAIN before assuming; intuition about what's slow is often wrong.
+- Know your dialect (Postgres, BigQuery, MySQL, Snowflake differ in window/CTE support and types).
 
-Using the most appropriate and efficient data types for your columns can reduce storage requirements and improve query speed.
+## My take
 
-**Key Takeaways**:
-
-*   Window functions are a powerful tool for performing complex analytical queries.
-*   CTEs improve the readability and modularity of your SQL code.
-*   Query optimization is an essential skill for working with large-scale data.
-*   Understanding execution plans and proper indexing are key to high-performance SQL.
-
-<!-- EXPANDED -->
-
-## Beyond SELECT and JOIN
-
-Analytical SQL lives or dies on a few features:
-
-- **Window functions:** `ROW_NUMBER()`, `RANK()`, `SUM(...) OVER (PARTITION BY ... ORDER BY ...)` compute per-row aggregates without collapsing rows -- essential for running totals, rankings, and period-over-period changes.
-- **CTEs (`WITH`):** name subqueries for readable, composable pipelines instead of nested subqueries.
-- **Indexing:** B-tree indexes speed filters and joins; understand when they help (high-selectivity predicates) and when they don't (full scans).
-- **Query plans:** `EXPLAIN` shows whether the engine scans sequentially or uses an index, and where the cost is.
-
-## The mindset
-
-SQL is declarative -- you describe the result, the planner decides the path. Learning to read the plan and design indexes is what separates reports that take seconds from ones that take minutes.
+Advanced SQL is the difference between a query that answers the question and one that almost does, slowly. The two features I'd learn first are **window functions** (they eliminate a whole category of app-side loops) and **EXPLAIN** (it ends guesswork about performance). Everything else — CTEs for readability, recursive CTEs for hierarchies, sensible indexing — compounds from there. If you do any analytics, investing a few days in these pays back on nearly every query you'll write afterward. The database is almost always faster at this than your application code; let it do the work.

@@ -7,44 +7,56 @@ tags: [llm]
 subcat: agents
 ---
 
-**Paper:** Shinn, Cassano, Berman, Gopinath, Moss, Labash, *Reflexion: Language Agents with Verbal Reinforcement Learning*, NeurIPS 2023. [arXiv:2303.11366](https://arxiv.org/abs/2303.11366)
+Reflexion (Shinn et al., 2023, arXiv:2303.11366) solves a frustrating problem with LLM agents: they make the *same mistake twice*. A standard ReAct agent that fails a task will, on a retry, often repeat the exact bad action. Reflexion adds a **self-reflection step** that turns failures into memory the agent consults next time. I'm writing this because it's a cheap, weight-free way to make agents actually learn from experience, and the pattern is something I use constantly in agent builds.
 
-Most agents get better by updating weights, which is RL. Reflexion shows you can improve an agent without any weight update at all, just by having it write down what went wrong and remember it. That is cheap, works with any black-box LLM, and became the basis of the critic / self-reflect loop now standard in agent stacks. It is a direct extension of the ReAct loop: same acting, plus a memory of mistakes.
+## The problem: agents don't remember their mistakes
 
-## Three modules, no gradient
+A vanilla agent runs: think, act, observe. If it fails, you can re-run it, but it has no *memory* of why it failed — so it fails the same way. Real learning (gradient descent) is expensive and unavailable at inference. Reflexion's insight: you don't need to change weights to learn; you can **learn in language**.
 
-- **Actor:** produces actions in an environment (ReAct-style), receiving a reward / feedback signal `r`.
-- **Evaluator:** scores the trajectory (binary success, or a scalar).
-- **Self-Reflection:** an LLM reads the full trajectory plus the feedback and writes a short natural-language reflection of what failed and what to try next. This text is stored in an **episodic memory buffer** `M`.
+## The Reflexion loop
 
-On the next attempt the actor conditions on `M`:
+After a failed (or suboptimal) trajectory, the agent writes a **verbal reflection**: a short natural-language summary of what went wrong and what to do differently. That reflection is stored in an episodic memory and prepended to the next attempt.
 
-$$
-M_t = M_{t-1} \cup \{\,\text{reflect}(\tau_t, r_t)\,\}
-$$
+```
+Attempt 1: think → act → observe → FAIL
+Reflection: "I called the search tool with too broad a query and got noise;
+            next time, include the year and specific entity name."
+Attempt 2: [reflection] → think → act → observe → SUCCESS
+```
 
-$$
-a_t \sim \pi(a \mid \tau_t, M_{t-1})
-$$
+No gradients, no fine-tuning — just text memory of past mistakes.
 
-The "reinforcement" is purely verbal. The gradient stays at zero; learning happens in the prompt, not the weights.
+## Why this works better than you'd expect
 
-## Why words beat a score
+- **It's targeted.** The reflection addresses the *specific* failure, so the next attempt avoids it directly.
+- **It's cheap.** Writing one paragraph of reflection costs a single generation; no training run.
+- **It compounds.** Over multiple attempts the agent accumulates a growing "lessons learned" buffer that improves robustness on hard, multi-step tasks.
+- **It's model-agnostic.** Works on any LLM, since it's pure prompting + memory.
 
-A scalar reward ("failed, score 0.2") carries almost no information about how to improve. A sentence like *"I searched the wrong entity; the answer required the company's headquarters, not its CEO"* is a dense, actionable gradient in natural language. The agent literally tells its future self what to do differently.
+The paper showed meaningful gains on reasoning, coding (where the agent reflects on failed test runs), and sequential decision tasks, often outperforming agents without reflection.
 
-## Results, briefly
+## A minimal sketch
 
-- **AlfWorld** (embodied tasks): success rose from ~63% (no reflection) to ~97% with reflection.
-- **HumanEval** (code generation): clear gains from reflecting on failing tests.
-- **HotpotQA**: notable improvements over non-reflective baselines.
-- Outperformed replay and RL baselines at equal sample budgets.
+```python
+memory = []
+for attempt in range(max_tries):
+    prompt = build_prompt(task, memory)
+    traj, outcome = run_agent(prompt)
+    if outcome.ok: break
+    reflection = model.reflect(traj, outcome)   # "why did this fail?"
+    memory.append(reflection)
+```
 
-## The memory pattern in the wild
+The `model.reflect` call is just a prompted generation: "Here's what happened and the result. What went wrong, and what should you change?" The output is plain text appended to memory.
 
-Reflexion is the memory plus self-critique pattern behind iterative coding agents, the "agent evaluates its own output" loop, and plenty of multi-step pipelines. It also dovetails with the Generative Agents post, where reflection becomes the mechanism for turning raw experience into higher-level insight. The honest caveat: the reflection is only as good as the LLM writing it, and nothing guarantees the self-critic is right, only that it sounds plausible. Tree-of-Thoughts, next, adds search on top of this kind of deliberation.
+## Practical notes for builders
 
-## References
+- **Make reflections specific and actionable.** Vague reflections ("I should try harder") don't help. Good ones name the bad action and the fix.
+- **Bound the memory.** Don't dump every reflection forever; keep the most recent / most relevant few to avoid context bloat.
+- **Use a verifier when possible.** Reflection is strongest when the agent *knows* it failed (a test failed, an answer was wrong) rather than guessing.
+- **Pair with ReAct** (covered separately): ReAct gives the action loop, Reflexion gives the learning loop on top.
+- Watch for **reflection loops** — the agent might reflect endlessly without trying; cap attempts.
 
-- Shinn et al. (2023). *Reflexion: Language Agents with Verbal Reinforcement Learning.* [arXiv:2303.11366](https://arxiv.org/abs/2303.11366)
-- Yao et al. (2023). *ReAct.* [arXiv:2210.03629](https://arxiv.org/abs/2210.03629)
+## My take
+
+Reflexion is the cheapest "learning" upgrade you can add to an agent, and I treat it as near-default for any multi-step agent that can fail. The principle — *turn experience into language and feed it back* — is profound: it's a form of reinforcement learning where the "gradient" is a sentence. If your agent keeps repeating mistakes, stop re-running it blindly; add a reflection step and let it remember. Just keep the reflections tight and the memory bounded, or you'll trade one failure mode (repeat mistakes) for another (context overflow).

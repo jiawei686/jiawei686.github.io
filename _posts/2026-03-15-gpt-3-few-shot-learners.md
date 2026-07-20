@@ -1,5 +1,4 @@
 ---
-
 layout: post
 title: "GPT-3 and Few-Shot Learning at Scale"
 date: 2026-03-15
@@ -8,76 +7,52 @@ subcat: training
 description: "GPT-3 showed that scaling to 175B parameters enables in-context few-shot learning with no gradient updates."
 ---
 
+GPT-3 (Brown et al., 2020) is the moment the world stopped thinking of language models as "text completers" and started thinking of them as *programmable via prompts*. The paper's headline — a 175-billion-parameter model that learns new tasks from a few examples in the prompt, with no fine-tuning — is the direct ancestor of everything we now call "prompt engineering" and, eventually, "in-context learning." I'm writing this because the mechanism it revealed (in-context learning) is still not fully understood and is central to how we use LLMs today.
 
-**Paper:** Brown et al., *Language Models are Few-Shot Learners*, NeurIPS 2020. [arXiv:2005.14165](https://arxiv.org/abs/2005.14165)
+## The shift: from fine-tuning to prompting
 
-The experiment GPT-3 ran was simple to state and expensive to pull off. Take a 175 billion parameter model, train it on a giant web corpus, and then never touch its weights for a new task. What do you get? It learns new tasks **in context**, straight from the prompt. Few-shot or zero-shot, with no gradients anywhere.
+Before GPT-3, adapting a model to a task meant updating its weights (fine-tuning). GPT-3 flipped that: you put a few examples of the task directly in the input, and the model infers the pattern. For instance, to build a translator you don't train anything — you write:
 
-## The three ways to query it
+```
+English: sea otter
+French: loutre de mer
 
-Given a task, you can condition the model differently:
+English: cheese
+French: fromage
 
-- **Zero-shot:** `Translate to French: <english>` → answer.
-- **One/few-shot:** prepend 1–N exemplars `(input, output)` pairs, then the real input.
-- **Fine-tuning (baseline):** update weights (not used by GPT-3 at inference).
-
-The part that surprised people: few-shot beat zero-shot every time, and occasionally came close to a fine-tuned model, all with *zero* parameter updates.
-
-## How big, exactly
-
-| Model | Params | Train tokens |
-|-------|--------|--------------|
-| GPT-3 | 175B   | ~300B        |
-
-Trained on CommonCrawl, WebText2, Books, Wikipedia. The architecture is a 96-layer decoder-only Transformer (`d_model = 12288`, 96 heads), essentially GPT-2 scaled ~100×.
-
-## What in-context learning actually is
-
-A model this large has effectively "seen" most task patterns during pretraining. The prompt acts as a retrieval key that flips on the relevant behavior already sitting in its parameters. Modern takes frame in-context learning as implicit Bayesian inference, or as a little algorithm the model runs over the context.
-
-## What it could do
-
-- On many NLP benchmarks, few-shot GPT-3 matched or exceeded task-specific fine-tuned models of the era.
-- TriviaQA, closed-book QA: dramatically better than GPT-2.
-- It could write code, summarize, translate, and do arithmetic unevenly, but without any task training.
-
-## A minimal call
-
-```python
-import openai  # or any OpenAI-compatible endpoint
-
-resp = openai.chat.completions.create(
-    model="gpt-3.5-turbo",  # spiritual successor
-    messages=[
-        {"role": "system", "content": "You are a terse translator."},
-        {"role": "user", "content": "Translate to French: The model learned in context."},
-    ],
-)
-print(resp.choices[0].message.content)
+English: snow
+French:
 ```
 
-## The shift it caused
+…and the model completes "neige." No gradients, no dataset, no training run. That was genuinely surprising in 2020.
 
-GPT-3 moved the field from "train a model per task" to "prompt one giant model." It made **in-context learning** a real capability and set up instruction tuning (InstructGPT) and the ChatGPT moment. If you read one paper about scale, make it this one. The thing I keep coming back to: the model was undertrained relative to its size, and it still worked. That undershoot is exactly why the scaling and Chinchilla posts matter.
+## What "few-shot" actually means here
 
-## References
+The paper tested three setups:
 
-- Brown et al. (2020). *Language Models are Few-Shot Learners.* [arXiv:2005.14165](https://arxiv.org/abs/2005.14165)
+- **Zero-shot:** just a description of the task, no examples.
+- **One-shot:** a single example.
+- **Few-shot:** a handful (typically 10–100) of examples in the context.
 
-<!-- EXPANDED -->
+The striking result: performance *improved steadily with model size and with the number of in-context examples*, and at 175B parameters GPT-3 could often match or approach fine-tuned smaller models on benchmarks — without any task-specific training. This is the empirical origin of the now-obvious fact that bigger models are better *promptable*.
 
-## In-context learning, not fine-tuning
+## Why this matters (and why it was controversial)
 
-The headline result of GPT-3 is not raw accuracy -- it is that a 175B-parameter model can perform a new task from a handful of examples placed in the prompt, with **no weight updates**. Give it a few (input, output) pairs and it continues the pattern. This "in-context learning" behaves like a tiny program the model runs over the context.
+In-context learning meant you could adapt a model you couldn't even fine-tune (because you didn't have the weights or the compute), just by writing text. That democratized access but also raised uncomfortable questions: is the model "learning" in the prompt, or just pattern-matching against training data that already contained similar examples? Researchers still debate the mechanism. My operating assumption: in-context learning is partly genuine generalization and partly clever retrieval of similar structures seen during pretraining. Both are useful; the honest framing matters when you're relying on it for production.
 
-Brown et al. framed this as meta-learning: during pretraining the model learns to learn from the prompt at inference time.
+## The limitations nobody should ignore
 
-## Three regimes
+- **Context window is the new bottleneck.** Few-shot examples eat tokens. Early GPT-3 had a 2k–4k window; you couldn't fit many examples or long documents.
+- **It's sensitive to wording.** The exact phrasing, ordering, and formatting of the prompt change results. This fragility is real and frustrating.
+- **It can silently fail on rare tasks** where the pretraining distribution had little coverage.
+- **Cost and latency** scale with how much context you shove in.
 
-- **Zero-shot:** just a description of the task.
-- **One-shot / few-shot:** a few demonstrations.
-- **Fine-tuning:** (optional) updating weights -- but the paper's point was you often do not need it.
+These are still the core constraints of prompt-based systems. When I build LLM features, I treat few-shot examples as a *calibration tool*, not a guarantee — and I always keep a few-shot variant around for when zero-shot underperforms.
 
-## What it exposed
+## Practical lineage
 
-GPT-3 made prompting a first-class skill and showed that raw scale alone unlocks capabilities smaller models lack. Its weaknesses -- expensive decoding, no real grounding, brittle prompts -- motivated the alignment and instruction-tuning work that followed (InstructGPT, RLHF).
+GPT-3 is the hinge between "language model as autocomplete" and "language model as general interface." Every later capability — instruction tuning (InstructGPT), chain-of-thought, tool use, agents — sits on top of the in-context learning substrate GPT-3 demonstrated. If you've ever written a prompt with examples, you're using a GPT-3 idea.
+
+## My take
+
+The enduring lesson of GPT-3 is that *scale changes the qualitative behavior of a model*, not just its accuracy. A 1B model can't do in-context learning; a 175B one can. That's not a smooth curve — it's an emergent capability that appears past a threshold. When people argue "my small local model is just as good," the counterexamples almost always involve exactly these emergence effects. Understand GPT-3 and you understand why we keep building bigger models despite the cost.

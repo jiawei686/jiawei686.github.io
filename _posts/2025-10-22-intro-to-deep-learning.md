@@ -1,5 +1,4 @@
 ---
-
 layout: post
 title: "Deep Learning"
 date: 2025-10-22
@@ -7,102 +6,47 @@ tags: [ai]
 description: "A practical intro to deep learning: from perceptrons to backprop, CNNs, RNNs, and Transformers."
 ---
 
+Deep learning is the subfield of machine learning built around **neural networks with many layers** — "deep" because of the stack of transformations between input and output. If you've used speech recognition, a photo app that tags faces, or any modern chatbot, you've used deep learning. I'm writing this as a grounded intro: not the math for its own sake, but the intuition and the moving parts you actually need to understand the rest of this blog (most of which assumes you know what a neural net is).
 
-**Core Idea**: Deep learning, a subfield of machine learning, utilizes neural networks with many layers (hence "deep") to model and understand complex patterns in data. This course introduces the fundamentals of building and training neural networks for structured data using TensorFlow and Keras.
+## The basic unit: the neuron
 
-## 1. The Neuron and the Layer
+A single artificial neuron takes several numbers, weights them, sums them, adds a bias, and passes the result through a non-linear **activation function**:
 
-A neural network is composed of layers, and each layer is composed of neurons. A neuron receives inputs, applies a transformation (a linear combination followed by an activation function), and produces an output.
-
-*   **Linear Unit**: `y = w[0] * x[0] + w[1] * x[1] + ... + b`
-*   **Activation Function**: Introduces non-linearity, allowing the network to learn complex patterns. The Rectified Linear Unit (ReLU) is a common choice: `relu(x) = max(0, x)`.
-
-## 2. Building a Sequential Model in Keras
-
-Keras is a high-level API for building and training deep learning models. The `Sequential` model is a simple stack of layers.
-
-```python
-from tensorflow import keras
-from tensorflow.keras import layers
-
-model = keras.Sequential([
-    # the hidden ReLU layers
-    layers.Dense(units=4, activation='relu', input_shape=[2]),
-    layers.Dense(units=3, activation='relu'),
-    # the linear output layer 
-    layers.Dense(units=1),
-])
+```
+output = activation( w1·x1 + w2·x2 + ... + b )
 ```
 
-## 3. Stochastic Gradient Descent (SGD)
+The "weights" `w` and bias `b` are the *learned* parameters. A neural network is just many of these arranged in layers: layer 1 reads the input, the last layer produces the output, and the layers in between ("hidden layers") learn progressively richer representations.
 
-SGD is the optimization algorithm used to train neural networks. It iteratively adjusts the network's weights to minimize the loss function (the error between the model's predictions and the true values).
+## Why the non-linearity matters
 
-*   **Loss Function**: Measures the model's error. Common choices include Mean Absolute Error (MAE) and Mean Squared Error (MSE).
-*   **Optimizer**: Implements the SGD algorithm. 'Adam' is a popular and effective optimizer.
+Without an activation function, stacking layers would collapse into a single linear transformation — you could never learn "X-shaped" or "circular" boundaries. The non-linearity (ReLU, tanh, sigmoid, GELU…) is what lets networks approximate complicated functions. This is the single most common thing beginners omit and then wonder why their network can't learn anything non-trivial.
 
-```python
-model.compile(
-    optimizer='adam',
-    loss='mae',
-)
-```
+## Learning: backpropagation
 
-## 4. Overfitting and Underfitting
+Training means finding weights that make the network's outputs match the data. The loop:
 
-*   **Underfitting**: The model has not learned the patterns in the training data well enough. The training loss remains high.
-*   **Overfitting**: The model has learned the training data too well, including the noise. It performs poorly on new, unseen data. The validation loss is much higher than the training loss.
+1. **Forward pass:** run an input through the network to get a prediction.
+2. **Loss:** measure the error (e.g. how far the prediction is from the true answer).
+3. **Backward pass (backprop):** use the chain rule to compute how much each weight contributed to the error.
+4. **Update:** nudge every weight slightly in the direction that reduces the error (gradient descent / its variants).
 
-## 5. Preventing Overfitting
+Repeat over the dataset many times. Backprop is just "compute gradients efficiently through the whole graph" — the chain rule applied mechanically. Modern frameworks (PyTorch, JAX) do it automatically; you rarely write it by hand, but understanding *that* it's happening explains why a bad learning rate or a vanishing gradient breaks training.
 
-### 5.1 Early Stopping
+## The architectures you'll meet
 
-Monitor the validation loss and stop training when it stops improving.
+- **MLPs (multilayer perceptrons):** the vanilla stack. Good for tabular/structured data; bad at spatial or sequential structure.
+- **CNNs (convolutional nets):** use local filters that slide over an image, exploiting translation invariance. The backbone of classic computer vision (covered in the CV post).
+- **RNNs / LSTMs:** process sequences step by step, carrying a hidden state. Formerly the default for text; now mostly supplanted by Transformers (covered in depth separately).
+- **Transformers:** attention-based, parallel-friendly, the architecture behind every LLM. The most important one to understand today.
 
-```python
-early_stopping = keras.callbacks.EarlyStopping(
-    patience=10, # how many epochs to wait before stopping
-    min_delta=0.001, # minimum change to count as an improvement
-    restore_best_weights=True,
-)
-```
+## Practical realities
 
-### 5.2 Dropout
+- **Data is the bottleneck**, not algorithms. A simple model on lots of clean data usually beats a fancy model on little data.
+- **Overfitting is the default failure.** Your network will memorize training data if you let it; regularization, validation splits, and early stopping are how you fight back.
+- **GPUs matter.** Matrix multiplies at scale need them; this is why deep learning exploded after GPUs became accessible.
+- **Start simple.** For a new problem I reach for a baseline (logistic regression or a small MLP) before anything deep, to know what "easy" looks like.
 
-Randomly sets a fraction of neuron outputs to zero during training. This forces the network to learn more robust features.
+## My take
 
-```python
-layers.Dropout(rate=0.3) # apply 30% dropout
-```
-
-### 5.3 Batch Normalization
-
-Normalizes the inputs to a layer. This helps to stabilize the learning process and can significantly reduce training time.
-
-```python
-layers.BatchNormalization()
-```
-
-**Key Takeaways**:
-
-*   Deep learning models are built from layers of neurons.
-*   Keras provides a user-friendly API for building and training models.
-*   SGD is the core training algorithm, guided by a loss function and an optimizer.
-*   Overfitting is a major challenge in deep learning.
-*   Techniques like early stopping, dropout, and batch normalization can help to prevent overfitting.
-
-<!-- EXPANDED -->
-
-## The arc of the field
-
-Deep learning is just stacking parameterized functions and learning their parameters from data with gradient descent. The arc:
-
-- **Perceptron to MLP:** one neuron becomes layers of them.
-- **Backpropagation:** the chain rule computes gradients of the loss w.r.t. every weight, so you can update millions of parameters.
-- **CNNs:** weight sharing and locality for images.
-- **RNNs / LSTMs:** sequences, though they struggle with long-range dependence.
-- **Transformers:** attention replaces recurrence and scales to huge data.
-
-## Why "deep" won
-
-Three things converged: more data, more compute (GPUs), and tricks (better initialization, normalization, residual connections) that let very deep networks train stably. The practical loop is always the same: define a model, compute a loss, backprop, and step.
+Deep learning isn't magic — it's differentiable functions + gradient descent + lots of data and compute. The conceptual spine (neuron → layer → forward/backward → update) is learnable in an afternoon; the *engineering* (data pipelines, regularization, debugging training) is where real skill lives. If you're here to understand LLMs, treat this post as the foundation: every Transformer and attention mechanism later in this blog is just a specific, very successful arrangement of these same building blocks. Get comfortable with backprop intuition and you'll never be lost.

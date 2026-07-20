@@ -1,5 +1,4 @@
 ---
-
 layout: post
 title: "Mixtral of Experts: Sparse Mixture of Experts"
 date: 2026-04-26
@@ -8,71 +7,42 @@ subcat: training
 description: "Mixtral is a sparse mixture-of-experts model that activates only a few experts per token, combining dense-model quality with cheaper inference."
 ---
 
+Mixtral (Mistral AI, 2023) is the model that made **mixture-of-experts (MoE)** practical and popular in the open ecosystem. The idea behind MoE is old, but Mixtral shipped it in a way that actually beat dense models of similar *active* compute — at 7x the total parameter count — and ran efficiently. I'm writing this because MoE is now how most frontier models (and a lot of efficient ones) get their capacity, and the trade-offs are subtle.
 
-**Paper:** Jiang et al., *Mixtral of Experts*, 2024. [arXiv:2401.04088](https://arxiv.org/abs/2401.04088)
+## The problem: more params help, but they're expensive
 
-## The cost problem nobody could dodge
+A bigger dense model is smarter, but every token pays the full cost of every parameter. If you double the model, every prediction gets twice as slow and twice as memory-hungry. That's wasteful: for any given token, only some of the model's knowledge is relevant.
 
-Bigger models get smarter, but every token used to pay for every parameter, all of them, every time. **Mixture of Experts (MoE)** cuts that knot. You keep a giant pool of weights and wake up only a small slice per token. Mixtral is the version that made the idea practical and, just as important, open.
+MoE's fix: replace some feed-forward layers with **many parallel "expert" networks** and a small **router** that sends each token to only a few of them.
 
-## What's inside the layers
+## How Mixtral works
 
-Mixtral 8×7B is a Transformer where each **feed-forward layer** is replaced by `8` expert FFNs plus a router:
+Mixtral is a standard Transformer where each token, at certain layers, passes through a **sparse MoE feed-forward block** made of 8 expert MLPs. A router (a small linear layer) computes a score for each expert and selects the **top 2**. So:
 
-- For every token, a router (a small linear layer) scores the experts and selects the **top-2**.
-- The output is the weighted combination of those two experts.
+- Total parameters: ~46B (all 8 experts × layers).
+- **Active** parameters per token: ~12.9B (only 2 of 8 experts run).
 
-$$ y = \sum_{i \in \text{top-2}} \text{softmax}(\text{gate}(x))_i \cdot E_i(x) $$
+The result: you get the knowledge capacity of a 46B model, but the per-token compute of a ~13B model. That's the entire appeal — *capacity without proportional cost*.
 
-- **Total parameters:** ~47B.
-- **Active parameters per token:** ~13B (only 2 of 8 experts run).
-- Context length 32K; trained on 1T tokens.
+## Why this is genuinely better than a dense model
 
-## Why the routing is the whole point
+A dense 13B model spends its 13B params on everything. Mixtral spends 46B params total, but for any token activates only the experts the router deems relevant. Different experts specialize: one might handle code, another math, another dialogue. The model effectively carries more total knowledge while keeping inference cheap.
 
-Only 2 experts fire per token, so the bill you pay at inference is the *active* 13B, not the full 47B. The model's *capacity*, what it can actually represent, is still that of a 47B model. That is the trick in one sentence: full-size quality, small-size latency.
+Empirically, Mixtral-8x7B outperformed LLaMA-2-70B on many benchmarks while using far less compute per token. That's a rare "win on both quality and efficiency" result, which is why MoE spread fast (you'll see it in Mixtral, later Mistral variants, and frontier models like Gemini/Claude internally).
 
-## What it scored
+## The catch: MoE has sharp edges
 
-- Outperformed **Llama-2 70B** and **GPT-3.5** on most benchmarks.
-- Especially strong on math, code, and multilingual tasks.
-- Fast to serve (active params ≈ 13B) despite large total size.
+- **Memory, not compute, is the bottleneck.** You must load *all* 46B params into RAM/VRAM even though you only use 13B per token. So MoE saves compute and latency, not memory. This surprises people who expect "12.9B active = fits in 13B worth of VRAM." It doesn't — you still need room for the full weights.
+- **Routing can be unbalanced.** If the router sends most tokens to the same 2 experts, you lose the benefit and some experts starve. Training includes a load-balancing auxiliary loss to spread tokens around. Bad routing = wasted capacity.
+- **Batching is trickier.** Different tokens use different experts, so you can't naively batch the FFN; efficient MoE kernels group tokens by expert.
+- **Fine-tuning nuances.** LoRA on MoE needs care about *which* experts/layers you adapt; naive LoRA may underperform.
 
-## A tiny router sketch
+## Practical notes
 
-```python
-import torch, torch.nn.functional as F
+- For *serving* (latency/throughput), MoE is great if you have the memory. For *fitting on small hardware*, a dense model of the active size is easier.
+- Quantization still applies: you can 4-bit quantize Mixtral, but you're quantizing all 46B, so memory stays high.
+- When evaluating an MoE, look at **active** params for speed and **total** params for capacity — conflating them is the most common mistake I see in model comparisons.
 
-def moe(x, experts, gate, k=2):
-    logits = gate(x)                       # [tokens, num_experts]
-    w, idx = torch.topk(logits, k, dim=-1) # pick top-k experts
-    w = F.softmax(w, dim=-1)
-    out = torch.zeros_like(x)
-    for j in range(k):
-        e = idx[:, j]
-        out += w[:, j].unsqueeze(-1) * experts[e](x)
-    return out
-```
+## My take
 
-## The thing I'd flag before you copy it
-
-MoE is how a lot of frontier models (Gemini, Grok, DeepSeek, Qwen-MoE) reach absurd parameter counts without proportional serving cost. The part people underestimate is routing: if you get it wrong, *expert collapse* sets in and some experts never get picked. Worth reading up on if you ever design one of these yourself.
-
-## References
-
-- Jiang et al. (2024). *Mixtral of Experts.* [arXiv:2401.04088](https://arxiv.org/abs/2401.04088)
-- Shazeer et al. (2017). *Outrageously Large Neural Networks: MoE.* [arXiv:1701.06538](https://arxiv.org/abs/1701.06538)
-
-<!-- EXPANDED -->
-
-## Sparse activation
-
-Mixtral-8x7B has eight feed-forward "experts" per layer but routes each token to only **two** of them. So although the model holds ~47B parameters, every token uses about **13B** -- you get near-47B quality at roughly 13B inference cost. This is the whole point of mixture-of-experts (MoE): capacity without proportional compute.
-
-## The router
-
-A small gating network scores the experts and picks the top-2. To keep experts balanced (so one doesn't dominate), training adds an auxiliary load-balancing loss. If routing collapses, you lose the efficiency gain.
-
-## Why it mattered
-
-Mixtral beat models like LLaMA-2-70B on many benchmarks while decoding much faster, showing MoE was practical at scale. It set the template for a wave of sparse models and made "active parameters vs total parameters" a standard spec line.
+Mixtral made MoE stop being a research curiosity and start being a deployment strategy. The key mental model: MoE trades *memory* for *compute efficiency*, giving you a bigger brain that only wakes the relevant parts per token. If you're serving at scale and memory isn't the constraint, MoE is one of the best efficiency levers available. If you're memory-constrained on the edge, prefer a dense model sized to your active budget. Know which constraint you're actually hitting.

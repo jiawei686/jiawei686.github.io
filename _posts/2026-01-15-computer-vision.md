@@ -1,5 +1,4 @@
 ---
-
 layout: post
 title: "Computer Vision"
 date: 2026-01-15
@@ -7,94 +6,44 @@ tags: [ai]
 description: "Foundations of computer vision: from convolutional nets and ImageNet to transfer learning and vision transformers."
 ---
 
+Computer vision (CV) is the field of getting computers to *understand images* — classify them, find objects, segment regions, describe scenes. For a long time it was hand-engineered features and fragile heuristics; then deep learning rewrote the field almost overnight. I'm writing this as a foundation because CV also underpins multimodal models (CLIP, covered separately) and a lot of applied AI, and the arc from CNNs to Vision Transformers is a clean story worth knowing.
 
-**Core Idea**: Computer vision is a field of AI that trains computers to interpret and understand the visual world. This course focuses on using Convolutional Neural Networks (CNNs) with TensorFlow and Keras to build powerful image classification models.
+## Before deep learning: features by hand
 
-## 1. The Convolutional Classifier
+Early CV extracted engineered features (SIFT, HOG) and fed them to classifiers. It worked for narrow cases but broke on real-world variety — lighting, pose, background. The breakthrough was letting the model *learn* the features from data.
 
-A CNN is a specialized type of neural network designed for image data. It uses two key types of layers:
+## Convolutional Neural Networks (CNNs)
 
-*   **Convolutional Layers**: Apply a set of learnable filters to the image, which act as feature detectors (e.g., detecting edges, corners, textures).
-*   **Pooling Layers**: Downsample the feature maps, reducing their dimensionality and making the model more robust to variations in the position of features.
+CNNs are the architecture that made image understanding work at scale. Instead of feeding raw pixels to a flat network, they use **convolutions** — small filters that slide over the image, detecting local patterns (edges → textures → shapes → objects). Key ideas:
 
-## 2. Building a CNN in Keras
+- **Local connectivity & weight sharing:** a filter is reused across the image, so the model needs far fewer parameters and naturally handles translation (a cat in the corner vs. center).
+- **Hierarchy:** early layers detect edges; deeper layers compose them into eyes, faces, objects. This emergent feature hierarchy is why CNNs generalize.
+- **Pooling:** downsamples spatially, giving some translation invariance and reducing compute.
 
-A typical CNN architecture consists of a stack of convolutional and pooling layers, followed by one or more fully-connected (Dense) layers for classification.
+The 2012 AlexNet win on ImageNet — crushing previous methods — is the moment CV went deep. After that, better architectures (VGG, ResNet with skip connections, EfficientNet) kept pushing accuracy.
 
-```python
-from tensorflow import keras
-from tensorflow.keras import layers
+## ImageNet and transfer learning
 
-model = keras.Sequential([
-    layers.Conv2D(filters=32, kernel_size=3, activation='relu', input_shape=[128, 128, 3]),
-    layers.MaxPool2D(),
+ImageNet (millions of labeled images, 1000 classes) became the training ground that made pretrained models possible. The practical revolution was **transfer learning**: take a CNN pretrained on ImageNet, chop off its final classification layer, and fine-tune the rest on *your* small dataset. Suddenly you could build a competent custom image classifier with a few hundred labeled images instead of a million. This pattern — pretrain on a huge generic dataset, adapt to your task — is the same idea that later powered LLMs.
 
-    layers.Conv2D(filters=64, kernel_size=3, activation='relu'),
-    layers.MaxPool2D(),
+## The Transformer arrives: ViT
 
-    layers.Flatten(),
-    layers.Dense(units=6, activation='softmax'),
-])
-```
+Vision Transformer (ViT) showed you can split an image into patches, treat each patch like a "token," and feed them to a standard Transformer (the kind used in LLMs). With enough data, ViT matched or beat CNNs. This was a big conceptual unification: **vision and language became the same architecture**. It also set up CLIP and the whole multimodal era, where a shared Transformer handles both.
 
-## 3. Data Augmentation
+## Common CV tasks
 
-Data augmentation is a technique used to artificially expand the training dataset by creating modified versions of the training images. This helps to prevent overfitting and improve the model's ability to generalize.
+- **Classification:** what's in the image (ImageNet-style).
+- **Object detection:** find and box multiple objects (YOLO, Faster R-CNN).
+- **Semantic / instance segmentation:** label every pixel (what vs. which instance).
+- **Pose / depth / generation:** keypoints, 3D, and now diffusion-based image creation.
 
-Common augmentation techniques include:
-*   Random rotations, zooms, and shifts
-*   Horizontal and vertical flips
-*   Changes in brightness and contrast
+## Practical realities
 
-```python
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
+- **Data and augmentation** matter as much as architecture. Random crops, flips, color jitter stretch a small dataset.
+- **Pretrained models are the default** — almost nobody trains from scratch anymore; use a backbone (ResNet, ViT) and adapt.
+- **CNNs are still great** for many production tasks: simpler, faster to train, less data-hungry than ViT. Don't assume Transformer = automatically better for your case.
+- **Be aware of bias:** models trained on web images inherit the quirks and biases of that data.
 
-datagen = ImageDataGenerator(
-    rotation_range=40,
-    width_shift_range=0.2,
-    height_shift_range=0.2,
-    shear_range=0.2,
-    zoom_range=0.2,
-    horizontal_flip=True,
-    fill_mode='nearest')
-```
+## My take
 
-## 4. Transfer Learning
-
-Transfer learning is a powerful technique where a model pre-trained on a large dataset (like ImageNet) is used as the starting point for a new task. This can significantly improve performance, especially when you have a limited amount of training data.
-
-```python
-from tensorflow.keras.applications import VGG16
-
-# Load the pre-trained VGG16 model
-conv_base = VGG16(weights='imagenet',
-                  include_top=False, # Don't include the classifier
-                  input_shape=(150, 150, 3))
-
-# Freeze the convolutional base
-conv_base.trainable = False
-```
-
-You can then add your own classifier on top of the frozen base and train it on your specific dataset.
-
-**Key Takeaways**:
-
-*   CNNs are the go-to models for computer vision tasks.
-*   Convolutional and pooling layers are the core building blocks of a CNN.
-*   Data augmentation is a crucial technique for preventing overfitting in image models.
-*   Transfer learning allows you to leverage the knowledge from pre-trained models to achieve high performance with less data.
-
-<!-- EXPANDED -->
-
-## How machines see
-
-Computer vision turns pixels into understanding. The modern stack:
-
-- **CNNs:** convolutions exploit local patterns and translation invariance; AlexNet's 2012 ImageNet win started the deep-vision era.
-- **ImageNet pretraining:** models trained on millions of labeled images learn features reusable everywhere; you then **fine-tune** on your smaller dataset.
-- **Object detection and segmentation:** frameworks like YOLO and Mask R-CNN localize and outline objects, not just classify.
-- **Vision Transformers (ViT):** treat an image as a sequence of patches and apply attention -- now competitive with or beating CNNs when data is abundant.
-
-## Practical note
-
-For most tasks today you do not train from scratch: take a pretrained backbone, swap the head, and fine-tune. Data and augmentation usually matter more than architecture.
+Computer vision's arc — hand features → CNNs → pretrain/transfer → Transformers → multimodal — is a template the whole field has followed, and it directly feeds the LLM story (pretrain on lots of data, adapt to your task; unify architectures). For practitioners, the takeaway is pragmatic: stand on pretrained backbones, use transfer learning, and pick CNN vs. ViT based on your data size and latency budget rather than fashion. And if you go further into multimodal AI, CLIP and friends are built on exactly these foundations — understanding convolutions and ImageNet transfer is the on-ramp.

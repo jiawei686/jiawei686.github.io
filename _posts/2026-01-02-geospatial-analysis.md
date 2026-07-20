@@ -1,5 +1,4 @@
 ---
-
 layout: post
 title: "Geospatial Analysis"
 date: 2026-01-02
@@ -7,82 +6,54 @@ tags: [data]
 description: "Geospatial data analysis: coordinate systems, spatial joins, and the Python stack for working with maps and geometries."
 ---
 
+Geospatial analysis is working with data that has a *location* — coordinates, regions, routes. It shows up everywhere once you notice it: delivery zones, disease spread, urban planning, ride-sharing, environmental monitoring, even "which store is nearest." I'm writing this as a practical intro because location data has gotchas (coordinate systems!) that bite newcomers, and a standard Python toolkit that makes the hard parts routine.
 
-**Core Idea**: Geospatial analysis unlocks insights from data that has a location component. This course introduces the tools and techniques for working with geospatial data, creating interactive maps, and uncovering spatial patterns using libraries like GeoPandas.
+## The first gotcha: coordinate reference systems (CRS)
 
-## 1. What is Geospatial Data?
+The single most common geospatial bug is mixing coordinate systems. A "point" is meaningless without knowing *what framework* its numbers refer to.
 
-Geospatial data is information that describes objects, events, or other features with a location on or near the surface of the earth. It typically combines location information (like coordinates) with attribute information (the characteristics of the object, event, or phenomenon).
+- **Latitude/longitude (EPSG:4326):** degrees on the globe. What you see on Google Maps. Good for storage, bad for measuring distances (a degree of longitude is a different distance near the poles vs. the equator).
+- **Projected systems (e.g. Web Mercator EPSG:3857, or local UTM zones):** flat x/y in meters. Needed for accurate distances, areas, and overlaps.
 
-*   **Vector Data**: Represents geographic features as points, lines, and polygons.
-*   **Raster Data**: Represents data in a grid of cells, like satellite imagery or elevation models.
+Rule I follow: **store in lat/long, project to a metric CRS for any calculation.** Forgetting this gives distances that are off by orders of magnitude.
 
-## 2. Introduction to GeoPandas
+## Core operations
 
-GeoPandas is an open-source project that makes working with geospatial data in Python easier. It extends the datatypes used by pandas to allow spatial operations on geometric types. GeoPandas objects can act just like pandas DataFrames and can be used for a wide range of spatial analysis tasks.
+- **Spatial join:** attach attributes from one layer to another by location ("which neighborhood is each crime report in?"). This is the geospatial analog of a SQL join, but on geometry instead of a key.
+- **Buffering:** "everything within 500m of a river" = buffer the river line by 500m, then intersect.
+- **Overlay/intersection:** combine polygons (zip code × flood zone) to find areas in both.
+- **Distance & nearest neighbor:** route planning, facility location, "nearest clinic."
+
+## The Python stack
+
+- **GeoPandas:** pandas with geometry columns. Does spatial joins, buffers, overlays, CRS handling. The daily-driver.
+- **Shapely:** the geometry engine underneath — points, lines, polygons, and their predicates (intersects, contains, distance).
+- **Folium / Plotly / Kepler.gl:** interactive map visualization. Folium (Leaflet-based) is my quick default.
+- **OSMnx:** pull real street networks from OpenStreetMap and analyze them (great for network/graph problems).
+- **PyProj / rasterio:** CRS transforms and raster (image-like grid) data respectively.
+
+A typical workflow: load shapefiles/GeoJSON with GeoPandas → set/check CRS → do spatial joins/buffers → visualize with Folium. Most "hard" problems reduce to picking the right operation and a correct CRS.
+
+## Practical pitfalls
+
+- **CRS mismatch** between layers → silently wrong results. Always check `.crs` on every layer before joining.
+- **Performance:** spatial operations are `O(n²)` if naive; GeoPandas uses spatial indexes (RTree) — make sure they're built (`sindex`).
+- **Precision vs. reality:** a "nearest hospital" calculation ignores road networks unless you use network distance (OSMnx), so straight-line distance can mislead.
+- **Data size:** large geometries are memory-heavy; simplify polygons (`.simplify()`) when visuals don't need full detail.
+
+## A minimal example
 
 ```python
 import geopandas as gpd
 
-# Load a shapefile
-world = gpd.read_file(gpd.datasets.get_path("naturalearth_lowres"))
+points = gpd.read_file("incidents.geojson").to_crs(3857)   # metric
+zones  = gpd.read_file("districts.geojson").to_crs(3857)
+joined = gpd.sjoin(points, zones, how="left", predicate="within")
+counts = joined.groupby("district").size()
 ```
 
-## 3. Interactive Maps with Folium
+That `to_crs(3857)` on both layers is the step people skip and then wonder why the join returns nothing.
 
-Folium is a powerful Python library that helps you create several types of interactive maps. It builds on the data wrangling strengths of the Python ecosystem and the mapping strengths of the Leaflet.js library.
+## My take
 
-```python
-import folium
-
-# Create a map centered on a specific location
-m = folium.Map(location=[45.5236, -122.6750], zoom_start=13)
-
-# Add a marker
-folium.Marker(
-    location=[45.5236, -122.6750],
-    popup="Portland",
-    icon=folium.Icon(icon="cloud"),
-).add_to(m)
-```
-
-## 4. Spatial Joins
-
-A spatial join is similar to a regular DataFrame join, but instead of joining on a common column, it joins based on the spatial relationship between the geometries of the two DataFrames. This is a fundamental operation for combining different geospatial datasets.
-
-```python
-# Perform a spatial join
-joined_data = gpd.sjoin(gdf1, gdf2, how="inner", op="intersects")
-```
-
-## 5. Proximity Analysis
-
-Proximity analysis is used to answer questions about the distance between features. For example, you could find all the schools within a certain distance of a park.
-
-```python
-# Create a buffer around points
-buffers = gdf.buffer(1000) # 1000-meter buffer
-```
-
-**Key Takeaways**:
-
-*   Geospatial analysis provides a powerful new lens through which to analyze your data.
-*   GeoPandas is the essential tool for working with vector data in Python.
-*   Folium makes it easy to create beautiful and interactive maps.
-*   Spatial joins and proximity analysis are fundamental techniques for combining and analyzing geospatial data.
-
-<!-- EXPANDED -->
-
-## Working with space as data
-
-Geospatial analysis handles data tied to locations -- points, lines, polygons. The first thing to get right is the **coordinate reference system (CRS)**: the same longitude and latitude means different things in different projections, and you must reproject before measuring distances or overlapping layers.
-
-## The Python stack
-
-- **GeoPandas:** pandas with geometry columns; you get `merge` and `groupby` plus spatial operations like `sjoin` (spatial join) and `buffer`.
-- **Shapely:** predicates and operations on geometries (`intersects`, `within`, `union`).
-- **Folium / Kepler.gl:** quick interactive map visualizations.
-
-## Typical workflow
-
-Load shapefiles or GeoJSON, reproject to one CRS, spatially join your points to regions, aggregate, and map the result. The common bug is mixing CRSs, which silently offsets every feature by kilometers.
+Geospatial work is 20% clever algorithms and 80% *getting coordinate systems and joins right*. The toolkit (GeoPandas/Shapely) is mature and pleasant; the craft is knowing which spatial operation matches your question and respecting the CRS. If you're starting out, internalize "store lat/long, compute in a metric projection, always verify CRS before a spatial join" and you'll avoid the mistakes that cost most of the debugging time. Location data is everywhere — once these basics click, a huge class of "where" questions becomes straightforward.

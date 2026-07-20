@@ -1,5 +1,4 @@
 ---
-
 layout: post
 title: "BERT: Bidirectional Pretraining from Transformers"
 date: 2026-03-08
@@ -8,81 +7,54 @@ subcat: training
 description: "Pre-trained BERT with masked language modeling became the default backbone for NLP before decoder-only models took over."
 ---
 
+BERT (Devlin et al., 2018) is the model that made "pretrain on a huge corpus, then fine-tune on your task" the default playbook for NLP — and for a few years, almost every production NLP system ran on a BERT variant. Even though decoder-only models (GPT-class) now dominate chat, BERT is still the right tool for classification, retrieval, and any task where you need to *read and label* text rather than *generate* it. I'm writing this because understanding BERT's training objective explains a design fork the whole field took.
 
-**Paper:** Devlin et al., *BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding*, NAACL 2019. [arXiv:1810.04805](https://arxiv.org/abs/1810.04805)
+## The problem with left-to-right language modeling
 
-You've probably used a Transformer encoder today without naming it. The original Transformer was an encoder–decoder built for translation. GPT-style models read left to right, each token predicting the next, so every token only sees what's to its left. That's fine for generation and terrible for classification, question answering, or NER, where a word's meaning comes from both sides. BERT's bet was straightforward: pretrain a deep encoder to read both directions at once, then fine-tune it on whatever you actually want.
+GPT-style models predict the next token from the left context only. That's a problem for understanding tasks. If I ask a model "The man went to the [MASK] to buy milk," and it has only seen the left side, it can guess "store." But if the sentence were "The man went to the store to buy [MASK]," left-to-right modeling still can't use the right context ("milk") to know the answer is probably a dairy product. Humans use both sides.
 
-## The two objectives
+BERT's breakthrough: **train on both directions at once** via masked language modeling.
 
-**Masked Language Modeling (MLM).** Randomly mask 15% of input tokens and train the model to reconstruct them.
+## Masked Language Modeling (MLM)
 
-- 80% replaced with `[MASK]`
-- 10% replaced with a random token
-- 10% left unchanged (to reduce train/serve mismatch)
+During pretraining, BERT randomly masks ~15% of tokens and asks the model to reconstruct them:
 
-This forces a bidirectional representation: predicting a masked word pulls from left and right context both.
-
-**Next Sentence Prediction (NSP).** Given sentence A and B, predict whether B actually follows A. This teaches inter-sentence relationships useful for QA and inference.
-
-## The architecture
-
-BERT uses the Transformer **encoder only**:
-
-- **BERT-Base:** 12 layers, `d_model = 768`, 12 heads, 110M params.
-- **BERT-Large:** 24 layers, `d_model = 1024`, 16 heads, 340M params.
-
-Pretrained on BooksCorpus (800M words) + English Wikipedia (2,500M words) for 4 days on 4–16 TPUs.
-
-## Using it (Hugging Face)
-
-```python
-from transformers import AutoTokenizer, AutoModel
-
-tok = AutoTokenizer.from_pretrained("bert-base-uncased")
-model = AutoModel.from_pretrained("bert-base-uncased")
-
-text = "Deep learning shifted Jiawei from software to [MASK]."
-out = model(**tok(text, return_tensors="pt"))
-# out.last_hidden_state[:, 0, :] is the [CLS] pooler representation
+```
+Input:  the man went to the [MASK] to buy [MASK]
+Target:                 store                milk
 ```
 
-The `[CLS]` token's final hidden state is the standard sentence embedding for classification.
+But a naive 15%-mask-all-with-[MASK] has a train/inference mismatch: at test time (fine-tuning) there are no `[MASK]` tokens. BERT handles this with a small trick on the 15% chosen positions:
 
-## Results, briefly
+- 80% replaced with `[MASK]`
+- 10% replaced with a random token (noise, forces the model to use context)
+- 10% left unchanged (so the model still learns to represent real tokens)
 
-- GLUE benchmark: **80.5%** (vs 72.6% for prior SOTA), a jump of nearly 8 points.
-- SQuAD v1.1: 86.9 F1 (vs 81.9 human-at-the-time SOTA).
-- BERT-Base alone beat the previous best *ensemble* on several tasks.
+This keeps the model from over-relying on the mask signal. I've found this 80/10/10 split is one of those details people skip when reimplementing and then wonder why fine-tuning is unstable.
 
-## The legacy
+## Next Sentence Prediction (NSP)
 
-BERT locked in the pretrain → fine-tune pattern and showed one bidirectional model could be bent to nearly any NLP task with a small task head. Every encoder model since (RoBERTa, DeBERTa, ModernBERT) descends from it, and the "foundation model" idea is BERT's wager pushed to the extreme. The caveat I'd flag: NSP, which the paper sells as core, turned out to be mostly dead weight. RoBERTa just dropped it and got better. Worth remembering when you read the original's claims about sentence pairs.
-
-## References
-
-- Devlin et al. (2018). *BERT.* [arXiv:1810.04805](https://arxiv.org/abs/1810.04805)
-- Liu et al. (2019). *RoBERTa: A Robustly Optimized BERT Pretraining Approach.* [arXiv:1907.11692](https://arxiv.org/abs/1907.11692)
-
-<!-- EXPANDED -->
+The second objective: given two segments `A` and `B`, predict whether `B` actually follows `A`. This was meant to help tasks like question answering and natural language inference. Later work (RoBERTa) showed NSP wasn't pulling its weight and often hurt; most modern encoders dropped it. Worth knowing because you'll see "with NSP" vs "without NSP" variants in the wild.
 
 ## Why bidirectional changes everything
 
-Earlier language models read text left-to-right, so a word's representation only saw the tokens before it. BERT's masked language model (MLM) randomly hides 15% of tokens and trains the model to reconstruct them from both directions at once. That means the representation of a word like "bank" can lean on "river" later in the sentence, not just "sat on the" before it.
+Because BERT sees both sides of every token, its contextual embeddings are dramatically richer for *understanding*. A single BERT pass gives you a vector for each word that already "knows" its disambiguated meaning. That's why, for years, the recipe for any NLP product was: take `bert-base`, append a small task head (a classifier layer, a span extractor), fine-tune on a few hundred labeled examples, ship it. No more training LSTMs from scratch.
 
-The second objective, next-sentence prediction (NSP), taught the model whether two spans follow each other -- useful for question answering and entailment.
+## BERT vs. GPT: the fork
 
-## Using BERT today
+- **BERT (encoder-only):** reads all input at once, outputs a representation. Great for labeling/classification/retrieval. Cannot naturally generate free-form text.
+- **GPT (decoder-only):** generates left-to-right. Great for generation, dialogue, and now reasoning.
+- **T5/BART (encoder-decoder):** both, good for translation and summarization.
 
-You rarely train BERT from scratch. You load a pretrained checkpoint and either:
+The field ultimately bet on decoder-only for foundational models (scale + generation won), but BERT-style encoders are far from dead — they power search ranking, spam filters, and embedding models.
 
-- **Feature extraction:** take the hidden states as inputs to another model.
-- **Fine-tuning:** add a task head (a classifier layer) and train end-to-end -- this is what dominates.
+## Practical notes from deployment
 
-```python
-from transformers import AutoModelForSequenceClassification, AutoTokenizer
-tok = AutoTokenizer.from_pretrained("bert-base-uncased")
-model = AutoModelForSequenceClassification.from_pretrained("bert-base-uncased", num_labels=2)
-```
+- **Use the `[CLS]` token's output** for sentence-level classification; use token outputs for tagging/NER.
+- Base vs. large: `bert-base` (~110M params) is usually enough; `large` helps on competitive benchmarks but costs more at inference.
+- Fine-tuning is cheap. On a single GPU you can adapt BERT to a new classification task in minutes. I've shipped internal classifiers this way when a quick labeled set existed.
+- For retrieval/embeddings, prefer a *purpose-trained* embedding model (e.g. a sentence-transformer) over raw BERT pooled output — BERT wasn't optimized for that and the pooling choice matters a lot.
 
-The takeaway: BERT shifted the field from task-specific architectures to a single pretrain-then-adapt recipe, and it stayed the backbone of NLP until decoder-only models took over inference.
+## My take
+
+BERT is the paper that proved "transfer learning works for language" at scale, and it deserves credit for the pretrain/fine-tune paradigm that GPT later rode to dominance. If your task is *understanding* text (classify it, find entities, rank it, embed it), don't sleep on encoder models — a well-tuned BERT-class encoder is often faster, cheaper, and more accurate than prompting a giant decoder model. Use the right tool; "bigger and generative" is not always better.

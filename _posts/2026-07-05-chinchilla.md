@@ -1,5 +1,4 @@
 ---
-
 layout: post
 title: "Chinchilla: Training Compute-Optimal Large Language Models"
 date: 2026-06-30
@@ -8,59 +7,49 @@ subcat: training
 description: "Chinchilla established the compute-optimal scaling law: model size and training tokens should scale together, favoring far more data than was common."
 ---
 
+Chinchilla (Hoffmann et al., 2022) is the paper that corrected a mistake the entire field was making about how to train large language models. It asked a deceptively simple question: *given a fixed compute budget, what's the optimal split between model size and training data?* The answer overturned the prevailing "just make the model bigger" doctrine. I'm writing this because Chinchilla's "20 tokens per parameter" rule is something every model trainer should have internalized, and ignoring it is a classic way to waste a training budget.
 
-**Paper:** Hoffmann, J., et al. (DeepMind), *Training Compute-Optimal Large Language Models*, 2022. [arXiv:2203.15556](https://arxiv.org/abs/2203.15556)
+## The setup: a compute-constrained optimization
 
-## The field was oversizing models
+You have a fixed training-compute budget `C` (say, FLOPs). You can spend it on:
 
-Kaplan's earlier scaling laws (previous post) boiled down to "make the model as big as possible and feed it whatever data you have." DeepMind went back and did the analysis properly, with over 400 training runs, and concluded the field had been **wasting compute**. Under a fixed budget, parameters and training tokens should grow in equal proportion, not lopsidedly toward size. Their 70B Chinchilla, trained on 1.4T tokens, beat Gopher at 280B and held its own against models 4× bigger. If you have a training budget to spend today, this is the recipe.
+- A bigger model `N` (more parameters), or
+- More training tokens `D`.
 
-## The math, briefly
+The earlier Kaplan scaling laws suggested pouring almost everything into `N` and undertraining on data. Chinchilla re-derived the scaling law *correctly* by fitting loss as a function of **both** `N` and `D` simultaneously and then minimizing for fixed `C`.
 
-Write the loss as a sum of power-law terms in parameters $N$ and data $D$:
+## The result: parameters and data should scale together
 
-$$
-L(N, D) = \frac{A}{N^{\alpha}} + \frac{B}{D^{\beta}} + E
-$$
+Chinchilla's optimal law is approximately:
 
-Fit over the 400+ runs and you get $\alpha \approx 0.34$, $\beta \approx 0.28$. Both exponents are much larger than Kaplan's, which means scaling helps more than anyone had assumed. Minimize under the compute constraint $C \approx 6 N D$ and the optimum lands at:
+```
+N_opt ∝ C^0.5
+D_opt ∝ C^0.5
+```
 
-$$
-N_{\text{opt}} \propto C^{0.5}, \qquad D_{\text{opt}} \propto C^{0.5}
-$$
+In plain terms: **double your compute, increase both model size and data by ~√2 — not model size alone.** Concretely, they found the optimal ratio is roughly **20 tokens per parameter**.
 
-The line everyone memorizes: **train on roughly 20× as many tokens as parameters** ($D \approx 20 N$).
+## The damning implication for existing models
 
-## Who was off the mark
+Under Chinchilla's law, models like GPT-3 (175B params, ~300B tokens) and Gopher (280B, ~300B tokens) were *massively undertrained*. They should have been trained on **~4x more data** for the same compute. Chinchilla itself — a 70B model trained on **1.4 trillion tokens** — matched or beat Gopher (280B) on most benchmarks while using a fraction of the parameters. Same compute, far better results, simply by feeding it enough data.
 
-At the time, the big flagship models were all on the wrong side of the curve:
+This is the single most useful correction in modern LLM training. I've seen teams burn a budget on an oversized model trained on too little data; Chinchilla says that's backwards for most compute budgets.
 
-- **GPT-3** (175B, ~300B tokens), undertrained.
-- **Gopher** (280B, 300B tokens), undertrained.
-- **MT-NLG** (530B), severely over-parameterized.
+## Why everyone retrains "smaller but better"
 
-Chinchilla's point was blunt: match or beat them with far fewer parameters, just give the model more data.
+The lesson cascaded: a properly-trained 7B model on ~140B tokens (20×7B) often beats an undertrained 13B or 30B model on the same compute. This is why modern base models ship with large training corpora and why "my model is bigger" stopped being a winning argument on its own. The LLaMA family, for instance, leans heavily on the "more tokens, better-curated data" philosophy that Chinchilla legitimized.
 
-## What it delivered
+## Practical guidance
 
-- Chinchilla (70B, 1.4T tokens) outperformed Gopher (280B) on MMLU, reading comprehension, and closed-book QA.
-- Massively cheaper inference (70B vs 280B) for equal or better quality.
-- Established the "more data, smaller model" training paradigm now used across the industry.
+- **Token budget ≈ 20 × parameters** for compute-optimal pretraining. (This is a rule of thumb; real optimal ratios vary with data quality and architecture.)
+- If you're pretraining and your data runs out long before your model is trained to the Chinchilla ratio, you're either underusing parameters or need more data — not a bigger model.
+- For fine-tuning and most applied work this doesn't directly apply; it's a *pretraining* principle.
 
-## The part that actually persists
+## Caveats
 
-Every serious training run since 2022 sizes its corpus from Chinchilla's math, not Kaplan's. The 1:20 intuition carries over to vision and multimodal work too, with caveats. Read it alongside the Scaling Laws post and you have the "how big, how much data" chapter of any LLM course. The open question for me is whether the 20× rule still holds now that we are scraping the bottom of the high-quality-data barrel.
+- The "20 tokens/param" ratio is for *compute-optimal* training at a given budget. If your goal is the *best absolute model regardless of cost*, you still want a big model *and* lots of data (frontier labs do both).
+- Data quality matters as much as quantity; Chinchilla assumed decent data. Garbage data at 20× won't save you — which is exactly why data curation (see the LLaMA post) is the real differentiator.
 
-<!-- EXPANDED -->
+## My take
 
-## The scaling law that changed training
-
-Before Chinchilla, large models were trained on fixed, relatively small datasets (GPT-3 used ~300B tokens for 175B params). Chinchilla showed the optimal rule: **parameters and training tokens should grow in proportion** -- roughly 20 tokens per parameter. So a 70B model should train on ~1.4T tokens, not the few hundred billion used previously.
-
-## What they did
-
-Hoffmann et al. fit a loss model `L = A/N^alpha + B/D^beta` over compute, params, and data, then solved for the compute-optimal split. Chinchilla (70B, ~1.4T tokens) matched or beat Gopher (280B) and GPT-3 (175B) while using a fraction of the parameters.
-
-## The takeaway
-
-Undertrained giants were a mistake of the era. Chinchilla is why modern models ship with trillion-token datasets and why "how many tokens did you train on?" matters as much as "how big is the model?"
+Chinchilla is the paper I'd hand to anyone about to spend real money training a model. The headline isn't "smaller models win" — it's "stop undertraining." Most wasted compute in this field comes from the instinct that more parameters = smarter, when the bottleneck was almost always *data*. Get the N:D split right first; everything else (architecture tweaks, fancy objectives) is secondary. And note how it builds on the scaling laws post — same power-law world, just fit correctly.

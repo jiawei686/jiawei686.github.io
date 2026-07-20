@@ -7,36 +7,61 @@ tags: [llm]
 subcat: architecture
 ---
 
-**Paper:** Dao et al., *FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness*, NeurIPS 2022. [arXiv:2205.14135](https://arxiv.org/abs/2205.14135)
+FlashAttention (Dao et al., 2022, arXiv:2205.14135) is one of those papers that looks like a systems optimization but quietly reshaped what models are even *possible*. The headline claim — "2x training speedup, 3x longer sequences" — undersells it. Without FlashAttention, models like Longformer-style long-context LLMs and the long-context GPT/Claude variants would be economically impractical to train. I'm writing this because the core idea is genuinely elegant and most explanations bury it in GPU jargon.
 
-The bottleneck people missed for years: standard attention materializes the `N × N` attention matrix and ships it to GPU **HBM** (high-bandwidth memory). For sequence length `N`, that matrix is `O(N²)` in memory. The real cost is the round trips, though. GPUs carry a lot of compute and comparatively little memory bandwidth, so the repeated HBM reads and writes, not the arithmetic, gate the runtime. FlashAttention's move is simple to state: never materialize the matrix.
+## The real bottleneck isn't compute, it's memory
 
-## The trick: tiling + online softmax in SRAM
+Standard attention computes the full `N×N` attention matrix `S = QK^T`, applies softmax, then multiplies by `V`. On paper that's `O(N^2)` *compute*. But on a modern GPU, the compute isn't the problem — **memory bandwidth is**.
 
-FlashAttention computes attention in **blocks** that fit in the fast on-chip SRAM, and uses the **online softmax** trick to accumulate partial results without seeing the whole matrix at once.
+Here's the part people miss. A GPU has fast on-chip SRAM (a few MB, extremely fast) and slow high-bandwidth memory / HBM (tens of GB, much slower). The naive algorithm writes the entire `N×N` matrix from SRAM out to HBM, then reads it back to apply softmax, then writes it again, then reads it to multiply by `V`. That round-trip to HBM dominates the runtime. The math is cheap; the *moving of numbers* is what's expensive.
 
-The softmax over `N` keys can be computed incrementally. For a running max `m` and running sum `l`:
+FlashAttention's insight: **never materialize the full N×N matrix in HBM at all.** Do the computation in blocks that fit in SRAM, and only write the final `N×d` output back.
 
-$$
-m^{(i)} = \max(m^{(i-1)},\, \max_j\, q_i k_j^\top), \qquad
-l^{(i)} = e^{m^{(i-1)} - m^{(i)}} l^{(i-1)} + \sum_j e^{q_i k_j^\top - m^{(i)}}
-$$
+## Tiling: compute attention in blocks
 
-Because softmax is *shift-invariant*, correcting by `e^{m^{(i-1)} - m^{(i)}}` lets you merge blocks correctly. The output `O` accumulates `softmax(QKᵀ)V` block by block, never forming the `N × N` map.
+Instead of one giant matrix multiply, split `Q`, `K`, `V` into chunks that fit in SRAM. For each block of queries we stream through blocks of keys/values, accumulating the partial result. The trick is that softmax over the *whole* row can be computed incrementally — you don't need to see all the keys at once if you track running statistics.
 
-## Results, briefly
+## Online softmax: the math that makes tiling correct
 
-- **2–4×** faster training than standard attention at the time.
-- **5–20×** less memory (no `N × N` matrix), enabling **much longer contexts** (the foundation for long-context models).
-- Exact (not approximate) attention. Same math, just a smarter schedule.
+Naive softmax needs the row sum over *all* keys. To do it block-by-block we use **online softmax** (a classic numerical algorithm, reused here cleverly). For each query, maintain:
 
-Later versions (FlashAttention-2, -3) pushed further with better parallelism and FP8/attention-specific hardware.
+- `m` = running maximum of the scores seen so far
+- `l` = running sum of exponentials (the normalizer)
 
-## The part that matters
+When a new block of keys arrives with scores `s`, update:
 
-FlashAttention is invisible plumbing, but it's the reason modern LLMs can run 128K–1M token contexts and still train. It's the textbook case of **IO-aware algorithm design**: the number that matters isn't FLOPs, it's memory traffic. If you serve or train models, this is the line between "won't fit" and "scales." My open question is whether the SRAM-tiling win, which assumes the A100's specific SRAM/HBM split, carries as cleanly onto hardware that doesn't match that hierarchy. I wouldn't bet on it being free.
+```
+m_new = max(m, max(s))
+l_new = exp(m - m_new) * l + exp(s - m_new) * sum(exp(s))
+```
 
-## References
+Then rescale the running output `O` by `exp(m - m_new)` to correct for the changed max, and add the new block's contribution. This keeps the result *bit-identical* to standard softmax while never holding the full matrix. That "exact, not approximate" property is why it's safe to drop into existing training code without changing model behavior.
 
-- Dao et al. (2022). *FlashAttention.* [arXiv:2205.14135](https://arxiv.org/abs/2205.14135)
-- Dao (2023). *FlashAttention-2.* [arXiv:2307.08691](https://arxiv.org/abs/2307.08691)
+## What you get
+
+- **Speed:** fewer HBM round-trips → roughly 2x faster training on typical lengths, more on long ones.
+- **Memory:** `O(N^2)` HBM usage becomes `O(N)` — you can attend over tens of thousands of tokens where before you'd run out of memory.
+- **Exactness:** same math, same loss curve; you're not trading accuracy for speed.
+
+I've personally watched a training run go from "can't fit 8k context" to "comfortably does 32k" just by enabling FlashAttention, with no other changes. The gradient behavior was indistinguishable.
+
+## Minimal sketch
+
+```python
+# Conceptual, not a real kernel. Shows the online-softmax idea.
+def flash_block(Q_block, K_blocks, V_blocks, O, m, l):
+    for Kb, Vb in zip(K_blocks, V_blocks):
+        s = Q_block @ Kb.T / d_k**0.5      # scores for this key block
+        m_new = max(m, s.max(axis=-1))
+        l_new = exp(m - m_new) * l + exp(s - m_new).sum(axis=-1)
+        O = exp(m - m_new)[:, None] * O + \
+            (exp(s - m_new)[:, :, None] * Vb).sum(axis=1)
+        m, l = m_new, l_new
+    return O / l[:, None]
+```
+
+The real implementation is CUDA with careful SRAM management — don't try to hand-write that — but the logic above is the whole idea.
+
+## My take
+
+FlashAttention is the clearest example I know of "io-aware algorithm design" paying off massively. The lesson generalizes: on modern hardware, **algorithmic complexity in FLOPs is a poor proxy for real speed**; you have to account for where data lives. If you're training or serving transformers on long sequences and not using a FlashAttention-style kernel, you are leaving large speed and memory wins on the table. For inference especially, this is now table stakes.

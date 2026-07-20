@@ -1,5 +1,4 @@
 ---
-
 layout: post
 title: "AutoGen: Multi-Agent Conversation as Computation"
 date: 2026-06-14
@@ -8,66 +7,52 @@ subcat: agents
 description: "AutoGen is a framework for building multi-agent conversations where LLM and tool-using agents collaborate to solve tasks."
 ---
 
+AutoGen (Microsoft, 2023) is a framework that treats **multi-agent conversation as the unit of computation**. Instead of one prompt solving a task, you spin up several agents — a "user proxy" that executes code, a "assistant" that reasons, maybe a critic, maybe a retrieval agent — and let them talk until the task is done. I'm writing this because multi-agent orchestration is now a core way to build robust LLM systems, and AutoGen (alongside similar frameworks) established the patterns: configurable agents, human-in-the-loop, and conversation as control flow.
 
-**Paper:** Wu, Bansal, Zhang, Wu, Zhang, Zhu, Li, Jiang, Zhang, Wang, Krishna, Wu, *AutoGen: Enabling Next-Gen LLM Applications via Multi-Agent Conversation*, 2023. [arXiv:2308.08155](https://arxiv.org/abs/2308.08155)
+## The shift: from one prompt to a conversation
 
-ReAct and Reflexion give you a single-agent loop. Real jobs need roles: a coder, a critic, a person, a tool, all talking to each other. AutoGen makes that conversation the program. It is the seed idea behind CrewAI, MetaGPT, and most of the orchestration frameworks people actually deploy.
+A single LLM call is brittle for complex tasks — it has to plan, act, and verify all at once. AutoGen's bet: decompose the work across **specialized agents** that converse:
 
-## The one abstraction: ConversableAgent
+- **AssistantAgent:** reasons, writes code, proposes steps.
+- **UserProxyAgent:** a stand-in for the user that can *execute code* and return results (or pause for a human).
+- Optional **critic / coder / retriever** agents with narrow roles.
 
-AutoGen's unit is the **ConversableAgent**: any participant that can send and receive messages, backed by one of:
+The framework handles message passing, termination conditions, and tool execution so you focus on agent *roles* and *prompts*.
 
-- an **LLM** (reasons / writes),
-- a **human** (approves or answers),
-- a **tool / code executor** (runs code, returns output).
+## Why multiple agents help
 
-Each agent is customizable via a system message, an LLM config, a human-input mode, and a max-consecutive-auto-replies. A **GroupChat** manager broadcasts each message to the group; agents respond until a termination condition is met.
+- **Separation of concerns.** One agent reasons; another just runs code and reports output. This mirrors how humans divide "think" vs. "do."
+- **Natural tool use.** The UserProxyAgent executes generated code and feeds the result back into the conversation — the model sees real output and corrects, exactly like the ReAct/Reflexion loops (covered separately) but orchestrated for you.
+- **Human-in-the-loop.** You can inject a human at any point (approve code, give direction) without restructuring the whole app.
+- **Specialization improves quality.** A "critic" agent reviewing the "coder" agent's output catches errors a single self-prompted model misses.
 
-## The pattern worth stealing: Assistant + UserProxy
+## A typical flow
 
-```python
-assistant = ConversableAgent("assistant", llm_config={"model": "gpt-4"})
-user_proxy = ConversableAgent("user_proxy",
-                              human_input_mode="NEVER",
-                              code_execution_config={"work_dir": "coding"})
-
-user_proxy.initiate_chat(
-    assistant,
-    message="Plot a sine wave and save it as sine.png"
-)
-# assistant writes the code -> user_proxy executes it -> errors (if any)
-# flow back -> assistant fixes -> loop until done
+```
+UserProxy: "Plot sales by region from data.csv"
+Assistant: writes pandas code
+UserProxy: executes it, returns the plot / error
+Assistant: if error, debugs; if success, explains
+... until done or max turns
 ```
 
-The user proxy autonomously runs generated code and feeds stdout and tracebacks back. That is a Reflexion-style self-correction loop, just split across two agents instead of one: the assistant sees its own errors and patches them.
+The conversation *is* the program. Termination can be "task complete" message, max turns, or a human stop.
 
-## What the paper showed
+## Practical notes from using it
 
-- Substantially less engineering effort than wiring single-agent prompts by hand.
-- On coding and math benchmarks, multi-agent conversation outperformed single-agent prompting.
-- Human-in-the-loop modes let a person gate risky actions (e.g., before executing code).
+- **Define clear agent roles.** Overlapping roles cause agents to talk past each other. I keep roles minimal: a reasoner, an executor, sometimes a reviewer.
+- **Code execution needs sandboxing.** AutoGen can run generated code — awesome for capability, dangerous by default. Always execute in a restricted environment, never on a privileged host. (This is non-negotiable; arbitrary LLM-generated code is a security risk.)
+- **Set termination conditions.** Without a max-turns or "done" signal, agents can loop. I always bound conversations.
+- **It's heavier than a single call.** More agents = more tokens and latency; use multi-agent only when the task justifies it (complex coding, multi-step planning), not for simple Q&A.
+- **Debugging is conversational.** When it goes wrong, you read the chat log — which is actually nicer than tracing a monolithic prompt.
 
-## Where I'd actually use it
+## Limitations
 
-Complex agent pipelines are almost never one model in a loop. They are teams: a planner, a worker, a critic, a retriever, a user. AutoGen's "conversation-as-computation" model is the mental framework I reach for when I design them, and it composes cleanly with RAG (retriever agent), ReAct (worker), and Reflexion (critic). The part I'd flag: the paper shows the happy path, but a chatty group of agents is also where cost and latency quietly blow up, and nothing here tells you when to stop talking. Next in the series, Tree-of-Thoughts adds structured search to this deliberation.
+- **Cost/latency** scale with agents and turns.
+- **Agent chatter** can drift or stall; good termination + role design matter.
+- **Quality still depends on the base model.** Frameworks orchestrate; they don't add reasoning the model lacks.
+- **Security** of code execution must be handled deliberately.
 
-## References
+## My take
 
-- Wu et al. (2023). *AutoGen: Enabling Next-Gen LLM Applications via Multi-Agent Conversation.* [arXiv:2308.08155](https://arxiv.org/abs/2308.08155)
-
-<!-- EXPANDED -->
-
-## Agents that talk to each other
-
-AutoGen models a task as a conversation among **conversable agents**. The two you meet first:
-
-- **AssistantAgent:** an LLM that reasons and writes code.
-- **UserProxyAgent:** represents the human (or a tool) and can execute code and return results.
-
-You wire them together, and they pass messages back and forth until the task is done -- the assistant proposes code, the proxy runs it, errors bounce back, the assistant fixes them.
-
-## Group chat and orchestration
-
-For harder workflows, a `GroupChat` lets many agents (a coder, a critic, a retriever, a human) discuss and converge. The value is decomposition: each agent has one job, and the conversation orchestrates them without you hand-coding the control flow.
-
-The pattern -- modular agents plus a message bus -- is the same idea behind many agent frameworks, and it pairs naturally with tool-calling and code execution.
+AutoGen popularized a mental model I now use for hard tasks: *don't make one model do everything — give each agent one job and let them converse.* The framework handles the plumbing (message passing, execution, termination), so you invest in role design and prompts. The big caveats are real: sandbox any code execution, bound the conversation, and don't reach for multi-agent when a single well-prompted call suffices. But for complex coding or planning tasks, a reasoner+executor+critic trio consistently beats a lone model. Conversation as computation is a genuinely useful paradigm — just watch the token bill.

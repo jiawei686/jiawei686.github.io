@@ -7,36 +7,51 @@ tags: [llm]
 subcat: reasoning
 ---
 
-**Paper:** Yao, Yu, Zhao, Shafran, Griffiths, Cao, Narasimhan, *Tree of Thoughts: Deliberate Problem Solving with Large Language Models*, NeurIPS 2023. [arXiv:2305.10601](https://arxiv.org/abs/2305.10601)
+Tree of Thoughts (ToT, Yao et al., 2023, arXiv:2305.10601) takes Chain-of-Thought and makes it *deliberate*. Instead of generating one linear reasoning path and hoping it's right, ToT has the model explore **many** paths, evaluate them, and **backtrack** when one looks wrong. It's the difference between free-associating an answer and actually doing a search. I'm writing this because ToT crystallizes a core idea in LLM reasoning — *search over thoughts* — that underlies a lot of agentic and "slow thinking" systems.
 
-Chain-of-Thought is one left-to-right path. Take a wrong step early and it's stuck, because there's no lookahead and no way back. Tree of Thoughts (ToT) reframes reasoning as a search over a tree of partial solutions, so the model can explore, judge, and backtrack. That's the gap between guessing the next word and actually solving something. It's a core piece of the agentic reasoning trend, and you can see the same search instinct in o1 style models.
+## The limitation of a single chain
 
-## Thoughts become nodes
+Chain-of-Thought gives one path. If that path makes a bad early decision, the model is committed — it can't undo it. For problems where the first step is consequential (planning, puzzles, games), a single greedy chain fails often. Humans don't do this; we consider options, judge them, and backtrack.
 
-- A **thought** is a coherent intermediate step, a sentence or a few lines of reasoning.
-- ToT keeps a tree of states `s`, and each state has candidate next thoughts `T(s)`.
-- Three LLM roles drive the search:
-  - **Propose** generates candidate next thoughts from a state.
-  - **Evaluate / Value** scores each state, either a confidence score or a vote across samples, to steer the search.
-  - **Search** uses BFS to keep the top-`b` states per step, or DFS to descend and backtrack when a state looks dead.
+## The ToT idea: thoughts as a search tree
 
-The final answer comes from the best leaf found.
+ToT frames reasoning as a tree search:
 
-## The BFS version, in one line
+1. **Decompose** the problem into steps (thought states).
+2. At each step, **generate multiple candidate thoughts** (branches) — not just one.
+3. **Evaluate** each candidate with the LLM (a heuristic score, or a "is this promising?" judgment).
+4. **Search** the tree (BFS/DFS) using those scores, **pruning** bad branches and **backtracking** when needed.
+5. Reach a leaf that solves the problem, or the best-scoring path.
 
-At each depth, keep only the `b` highest-valued states (say `b = 5`), expand those, and repeat. It explores systematically before committing, which is the opposite of CoT committing on the spot.
+So the model isn't just "thinking step by step" — it's thinking step by step, *considering alternatives at each step, and choosing among them*.
 
-## Results, briefly
+## A concrete example: the 24-game
 
-- **Game of 24** (combine 4 numbers into 24): CoT scored ~4% success; ToT reached **~74%**. The task needs planning a few steps ahead, exactly where CoT fails.
-- Gains on **creative writing** (where a global plan matters) and **mini crosswords** (local search helps).
-- The evaluation step (voting / scoring) was essential. Generation alone was not enough.
+The paper's classic demo is the "24 game" (given 4 numbers, combine with +−×÷ to make 24). A single CoT path often commits to a bad intermediate expression and fails. ToT generates several candidate next-steps, asks the model "does this look promising?" for each, and only expands promising ones — then backtracks if a branch dead-ends. Success rate jumps dramatically (the paper reported something like 4% → 74% on that task).
 
-## Where it pays off, and where it wobbles
+## Why this matters beyond puzzles
 
-ToT is deliberate problem solving. It layers lookahead and backtracking on top of the ReAct loop (acting) and Reflexion (learning from failure). When an agent hits a task with a verifiable goal, math, code, puzzles, or multi-step planning, a search over thoughts beats a straight shot. Modern reasoning models are ToT at scale with a learned verifier, in spirit. The part I'd flag: the search is only as good as the value function, and a weak scorer turns the tree into an expensive way to wander.
+ToT is a blueprint for **deliberate reasoning**:
 
-## References
+- **Planning:** explore plan branches before committing.
+- **Agentic search:** an agent tries an action, evaluates, retries — ToT formalizes that loop.
+- **Reliability:** evaluation + backtracking catch catastrophic early errors a single chain would hide.
 
-- Yao et al. (2023). *Tree of Thoughts: Deliberate Problem Solving with Large Language Models.* [arXiv:2305.10601](https://arxiv.org/abs/2305.10601)
-- Wei et al. (2022). *Chain-of-Thought Prompting.* [arXiv:2201.11903](https://arxiv.org/abs/2201.11903)
+It also connects to how modern "reasoning models" behave: they effectively do more internal search/verification before answering. ToT was an early, explicit version of that.
+
+## The cost, honestly stated
+
+Search is **expensive**. You're now generating many thoughts, scoring each, and possibly re-expanding — easily 5–20x the tokens of a single chain. For most queries that's overkill. I use ToT-style search only for:
+
+- Hard, high-stakes, verifiable problems (math proofs, planning, code that must compile).
+- Tasks where you have a cheap *verifier* (a test, a checker) to score branches — that's the realistic version of "evaluate" in production.
+
+## Practical implementation notes
+
+- You need a **scorer**. The LLM-as-judge scorer is noisy; prefer a deterministic verifier when available (unit tests, solvers).
+- **Breadth and depth** are hyperparameters (how many thoughts per step, how deep to search). Start small.
+- Combine with **self-consistency** (sample many full trees / paths, take majority) for even better results when verification is hard.
+
+## My take
+
+ToT is less a "use it everywhere" technique and more a *conceptual key*: reasoning quality improves when you let the model search and self-correct instead of committing to the first path. Most production systems can't afford full tree search, but the principle shows up constantly — retry loops, branch-and-test agents, verifier-guided generation. If a problem is hard and *checkable*, borrow ToT's shape: generate options, evaluate, backtrack. Don't just ask once and trust it.

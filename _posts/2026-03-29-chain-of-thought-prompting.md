@@ -1,5 +1,4 @@
 ---
-
 layout: post
 title: "Chain-of-Thought Prompting: Let the Model Think Step by Step"
 date: 2026-03-29
@@ -8,64 +7,54 @@ subcat: reasoning
 description: "Chain-of-thought prompting improves reasoning by eliciting intermediate steps before the final answer."
 ---
 
+Chain-of-Thought (CoT) prompting (Wei et al., 2022) is probably the highest-ROI prompting technique ever published. It costs you almost nothing — a sentence in the prompt — and can lift a model's accuracy on math, logic, and multi-step tasks by double digits. I'm writing this because CoT is the foundation of essentially all LLM "reasoning" behavior you see today, and understanding *why* it works changes how you prompt.
 
-**Paper:** Wei et al., *Chain-of-Thought Prompting Elicits Reasoning in Large Language Models*, 2022. [arXiv:2201.11903](https://arxiv.org/abs/2201.11903)
+## The problem: models rush to the answer
 
-On multi-step problems, arithmetic, commonsense, symbolic, LLMs were weak when you asked for the answer directly. The fix was almost embarrassingly simple. Prompt the model to show its intermediate reasoning steps before it commits to a final answer. That "chain of thought" (CoT) unlocked a big chunk of reasoning ability that was sitting there the whole time.
+Give a model a multi-step problem and it often blurts the final answer, skipping the intermediate reasoning. For simple questions that's fine. For anything requiring two or more reasoning steps — arithmetic, logic puzzles, multi-hop questions — skipping steps means mistakes compound and you get a confident wrong answer with no way to see where it broke.
 
-## Two ways to do it
+## The fix: ask for the steps
 
-**Few-shot CoT.** Give exemplars that include a worked-out reasoning trace, then the question:
+CoT is trivial to apply. Instead of:
 
 ```
 Q: Roger has 5 tennis balls. He buys 2 cans of 3. How many now?
-A: Roger started with 5. 2 cans of 3 = 6. 5 + 6 = 11. Answer: 11.
-
-Q: <real question>
-A:
+A: 11
 ```
 
-**Zero-shot CoT.** Just append the magic phrase "Let's think step by step." No exemplars needed.
+You prompt with examples that show the *reasoning*:
 
-## Why showing your work helps
-
-Spelling out the reasoning gives the model more compute in the literal sense: more sequential steps to break the problem apart, and each step is an easier prediction than a blind leap to the answer. The side benefit is that you can read the reasoning, which makes the model's failures inspectable instead of mysterious.
-
-## Results, briefly
-
-- GSM8K (grade-school math): PaLM 540B jumped from **56%** (direct) to **72%** (CoT).
-- Gains scale with model size. CoT barely helped small models but transformed large ones, which is an emergent property of scale.
-- Improvements across arithmetic, commonsense (StrategyQA), and symbolic reasoning.
-
-## A tiny demo
-
-```python
-prompt = """Solve step by step.
-Q: A shop sells apples at 3 for $2. I buy 12 apples and a $5 bread. Total?
-A: Let's think step by step."""
-# Model returns: 12 apples = 4 sets of 3 -> 4 * $2 = $8. Plus $5 bread = $13. Answer: $13.
+```
+Q: ... 
+A: Roger started with 5. 2 cans of 3 = 6. 5 + 6 = 11. So the answer is 11.
 ```
 
-## The honest take
+Or, even simpler, just append: *"Let's think step by step."* That single phrase reliably triggers the model to generate intermediate steps, and the final answer is usually correct far more often.
 
-CoT is the ancestor of most of what came after. Self-consistency sampling, where you generate many reasoning paths and vote. Tool-use. The explicit reasoning tokens in o1 and R1 style models. The real lesson was that how you ask matters as much as what you ask, and you can pull reasoning out of a model without touching its weights. My honest take: it's a cheap trick that works far better than it has any right to, and we still don't fully know why.
+## Why it works (the honest version)
 
-## References
+- **It forces sequential computation.** A Transformer generates one token at a time; by writing out steps, the model creates intermediate tokens that later tokens can attend to. Each step becomes a "scratchpad" the model reasons over, instead of trying to solve everything in the final hop.
+- **It aligns the output distribution with how the training data looks.** Reasoning examples on the web show workings-out, so generating steps matches the model's learned patterns.
+- **It makes errors inspectable.** When the answer is wrong, you can see *which step* failed — huge for debugging and for building trust.
 
-- Wei et al. (2022). *Chain-of-Thought Prompting.* [arXiv:2201.11903](https://arxiv.org/abs/2201.11903)
-- Wang et al. (2022). *Self-Consistency Improves Chain of Thought.* [arXiv:2203.11171](https://arxiv.org/abs/2203.11171)
+## What surprised the authors
 
-<!-- EXPANDED -->
+The gain **scales with model size**. On small models (e.g. <10B), CoT barely helped. On large models (PaLM 540B, and today's frontier models), the jump was dramatic. This is another emergent capability: the *technique* is the same, but only big enough models can actually use the scratchpad well. I've reproduced this locally — a 7B model does a mediocre job with CoT; a 70B+ does dramatically better.
 
-## Reasoning as generated steps
+## Practical guidance
 
-Chain-of-thought (CoT) prompting asks the model to produce a sequence of intermediate reasoning steps before the answer. Instead of jumping from question to solution, the model writes out "Step 1... Step 2... therefore...". This spreads a hard computation across more tokens, which transformer decoders handle far better than a single leap.
+- **Always try CoT on multi-step tasks** before reaching for more complex methods. It's free.
+- Use **few-shot CoT** (show 2–3 worked examples) when zero-shot ("think step by step") underperforms — especially for domain-specific reasoning.
+- **Extract the final answer reliably.** Models sometimes bury the result; I often ask for "the answer is X" format or parse the last number.
+- Pair CoT with **self-consistency** (covered separately) when you need maximum accuracy on hard problems.
+- CoT isn't magic for factual recall or creative writing; it shines on reasoning/computation.
 
-## Two ways to trigger it
+## Common failure modes
 
-- **Few-shot CoT:** include exemplars that show the worked-out reasoning.
-- **Zero-shot CoT:** simply append "Let's think step by step." -- surprisingly effective.
+- The model can produce a *plausible but wrong* chain — fluent reasoning that arrives at the wrong conclusion. CoT improves *rate* of correctness, not guarantees.
+- Very long chains can drift or contradict themselves; keeping the task scoped helps.
+- On small/local models, the chain quality is weak; don't over-trust it.
 
-## When it helps (and when it doesn't)
+## My take
 
-CoT mainly boosts tasks with arithmetic, commonsense, and symbolic reasoning. On tasks the model already nails in one shot, it adds little. It also depends on the model being large enough; the effect is weak below roughly 10B parameters. The deeper idea -- make the model externalize its reasoning -- became the foundation for ReAct, self-consistency, and modern reasoning models.
+If you learn one prompting technique, make it this one. "Let's think step by step" is the closest thing we have to a universal reasoning amplifier, and it directly enables everything that followed: self-consistency samples many chains, tree-of-thoughts searches over them, and modern "reasoning models" basically train the model to always do CoT internally. The mental model: give the model a scratchpad, and it'll use it. Build your LLM features assuming CoT is on by default for anything that isn't trivial.

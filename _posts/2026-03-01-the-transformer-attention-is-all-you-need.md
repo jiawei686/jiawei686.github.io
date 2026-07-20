@@ -6,88 +6,75 @@ tags: [llm]
 subcat: architecture
 ---
 
-**Paper:** Vaswani et al., *Attention Is All You Need*, NeurIPS 2017. [arXiv:1706.03762](https://arxiv.org/abs/1706.03762)
+Every large language model you use today — GPT, Claude, LLaMA, Gemini — is built on a single 2017 paper that, frankly, I did not fully appreciate when it came out. "Attention Is All You Need" replaced recurrence and convolution with a mechanism called **self-attention**, and in doing so removed the biggest bottleneck in sequence modeling: the need to process text strictly left-to-right.
 
-You've almost certainly used a Transformer today. GPT, LLaMA, Claude, DeepSeek. All of them are the same wager: throw out recurrence and convolutions, keep attention, then scale the hell out of it. In 2017 that was a weird bet. The field ran on RNNs and LSTMs that read tokens one at a time, which meant two things: you couldn't parallelize across the sequence, and anything you needed to "remember" had to survive a long chain of recurrent steps. The Transformer deleted both problems. I'd argue it's still the cleanest architectural move the field has made.
+I'm writing this because the Transformer is no longer just "a paper." It is the substrate of an entire industry, and understanding *why* it won explains almost everything about how modern models behave.
 
-## Reading the math
+## The problem it actually solved
 
-Attention maps a query `Q` against a set of key–value pairs `(K, V)`:
+Before 2017, the dominant architectures were RNNs and LSTMs. They read a sentence one token at a time and tried to compress the whole context into a fixed-size hidden state. That design has two nasty consequences:
 
-$$
-\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^\top}{\sqrt{d_k}}\right)V
-$$
+1. **You can't parallelize training.** Token *t* depends on token *t-1*, so the whole sequence is a serial chain. On a GPU that loves massive parallelism, this is painful.
+2. **Information decays over distance.** By the time the model reads the 50th word, the signal from the 1st word has been squashed through 49 updates. Long-range dependencies get lost.
 
-`QKᵀ` is just a relevance score: how much each key cares about this query. The `√d_k` in the denominator is the part people skip. As `d_k` grows, the dot products get huge, softmax saturates, and the gradient collapses. Dividing first keeps it tame. Then softmax turns the scores into weights and `V` gets averaged by them.
+Convolutions helped a bit (you can look at a few neighboring words at once) but still needed many layers to connect distant positions.
 
-Multi-head attention runs this `h` times in parallel, each with its own learned projections, then concatenates:
+Self-attention throws this out. Every token looks at *every other token directly*, in one step, with no recurrence. Position 1 can attend to position 50 just as easily as to position 2.
 
-$$
-\text{MultiHead}(Q, K, V) = \text{Concat}(\text{head}_1, \dots, \text{head}_h)W^O
-$$
+## What self-attention actually computes
 
-$$
-\text{head}_i = \text{Attention}(QW_i^Q, KW_i^K, VW_i^V)
-$$
+For each token we learn three vectors: a **query** `Q`, a **key** `K`, and a **value** `V`. The intuition I find most useful: think of it like a database lookup.
 
-The point of multiple heads isn't elegance, it's coverage. Different heads learn to track different relationships (syntax, coreference, rough word order) at the same time.
+- The query is *what this token is looking for*.
+- The keys are *what each token offers*.
+- The values are *what each token actually contributes*.
 
-## Positional encoding
+We score how well query matches each key, normalize those scores into weights that sum to 1, and take a weighted average of the values:
 
-No recurrence means no built-in sense of order, so they bolt on a fixed sinusoidal signal to the input embeddings:
-
-$$
-PE_{(pos, 2i)} = \sin\left(\frac{pos}{10000^{2i/d_{model}}}\right), \quad
-PE_{(pos, 2i+1)} = \cos\left(\frac{pos}{10000^{2i/d_{model}}}\right)
-$$
-
-What I like about this: because the signal is a fixed function of position, the model can generalize to sequence lengths it never saw in training, and relative positions fall out as linear offsets. Cheap and it works.
-
-## Architecture
-
-A stack of `N = 6` encoder and `N = 6` decoder layers. Base config: `d_model = 512`, `h = 8` heads, `d_k = d_v = 64`, feed-forward dimension `2048`. They trained it on 8 GPUs for about 3.5 days, which at the time was dramatically cheaper than the prior state of the art.
-
-## A minimal PyTorch implementation
-
-```python
-import torch
-import torch.nn.functional as F
-
-def scaled_dot_product_attention(q, k, v, mask=None):
-    d_k = q.size(-1)
-    scores = q @ k.transpose(-2, -1) / d_k ** 0.5
-    if mask is not None:
-        scores = scores.masked_fill(mask == 0, float("-inf"))
-    attn = F.softmax(scores, dim=-1)
-    return attn @ v
-
-class MultiHeadAttention(torch.nn.Module):
-    def __init__(self, d_model=512, h=8):
-        super().__init__()
-        self.h = h
-        self.linears = torch.nn.ModuleList(
-            [torch.nn.Linear(d_model, d_model) for _ in range(4)])
-
-    def forward(self, q, k, v, mask=None):
-        B, T, D = q.shape
-        q, k, v = [lin(x).view(B, -1, self.h, D // self.h).transpose(1, 2)
-                   for lin, x in zip(self.linears[:3], (q, k, v))]
-        out = scaled_dot_product_attention(q, k, v, mask)
-        out = out.transpose(1, 2).contiguous().view(B, -1, D)
-        return self.linears[3](out)
+```
+scores = Q @ K.T / sqrt(d_k)
+weights = softmax(scores)        # each row sums to 1
+output = weights @ V
 ```
 
-## Results, briefly
+That `sqrt(d_k)` is not decoration. The dot product of two *d_k*-dimensional random vectors grows like `sqrt(d_k)` in magnitude, so without scaling the softmax gets pushed into a region where gradients vanish. I've debugged attention heads that "collapsed" to near-uniform weights — nine times out of ten it was a missing or wrong scaling factor.
 
-- WMT 2014 English–German: **28.4 BLEU**, roughly +2 BLEU over the previous best at about 12× less training cost.
-- WMT 2014 English–French: 41.8 BLEU, again for a fraction of the cost.
-- Quality kept climbing with more layers and heads. The architecture scaled, and that turned out to be the whole story.
+## Multi-head attention
 
-## The part that matters for you
+One attention pattern is rarely enough. The Transformer runs *h* attention operations in parallel ("heads"), each with its own Q/K/V projections, then concatenates the results. In practice different heads learn different things: one tracks subject-verb agreement, another resolves which "it" refers to, another connects a noun to its modifier across a clause. You can actually probe individual heads and find surprisingly interpretable behavior — though most heads are a mush of correlated signals, and that's normal.
 
-Every other post in this series sits on this backbone. Pretraining, RLHF, MoE, efficient attention: none of it exists without the attention math. If your goal is to move past prompting and actually reason about these systems, this is the page to get comfortable with. The Harvard NLP "Annotated Transformer" is the best line-by-line follow-up I know.
+## Positions matter (and recurrence doesn't give them for free)
 
-## References
+Because attention is order-agnostic — it sees a *set* of tokens, not a sequence — we must inject position information ourselves. The original paper used fixed sinusoidal encodings added to the token embeddings:
 
-- Vaswani et al. (2017). *Attention Is All You Need.* [arXiv:1706.03762](https://arxiv.org/abs/1706.03762)
-- Harvard NLP, *The Annotated Transformer*: an excellent line-by-line implementation.
+```
+PE(pos, 2i)   = sin(pos / 10000^(2i/d_model))
+PE(pos, 2i+1) = cos(pos / 10000^(2i/d_model))
+```
+
+These have a neat property: the offset between position *p* and *p+k* is a linear function of the encoding at *p*, which lets the model generalize to sequence lengths it didn't see in training. Later models (like RoPE, which I cover separately) improved on this, but the principle — *position is a first-class signal you must add explicitly* — is still how every Transformer works.
+
+## The encoder-decoder split
+
+The original Transformer was built for translation, so it had two stacks:
+
+- An **encoder** that reads the source sentence and builds a rich contextual representation.
+- A **decoder** that generates the target sentence one token at a time, using *masked* self-attention so it can only look at positions it has already produced (plus cross-attention into the encoder).
+
+The masking is the clever bit: during training we feed the whole target sequence at once (fast!), but we zero out the upper triangle of the attention matrix so token *t* can't peek at *t+1*. This is "teacher forcing" done right.
+
+## Why this architecture ate the world
+
+Three properties compounded:
+
+1. **Parallelism.** Self-attention is `O(1)` sequential steps vs `O(n)` for RNNs. You can train on huge corpora fast.
+2. **Constant path length.** Any two positions are one attention hop apart, so long-range dependencies are learnable.
+3. **It scales.** Bigger models on more data just kept getting better (see the Scaling Laws post). The architecture didn't fight scaling the way RNNs did.
+
+From here the field forked: decoder-only models (GPT) dropped the encoder and became the backbone of chat assistants; encoder-only models (BERT) became the workhorse for classification; and encoder-decoder survived mostly in translation. But the attention core is shared by all of them.
+
+## My take
+
+If you only read one paper in this series, read this one. Not because the math is hard — it isn't — but because *every* subsequent technique (efficient attention, positional embeddings, RLHF, mixture-of-experts) is a modification bolted onto this skeleton. Once self-attention clicks, the rest of the LLM stack stops feeling like magic.
+
+A practical note if you implement it: the naive `Q@K.T` is `O(n^2)` in memory and is exactly what FlashAttention (covered separately) fixes for long sequences. For a toy model on short text you can ignore that; for anything production-scale you cannot.

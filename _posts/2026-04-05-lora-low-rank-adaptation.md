@@ -1,5 +1,4 @@
 ---
-
 layout: post
 title: "LoRA: Low-Rank Adaptation of Large Models"
 date: 2026-04-05
@@ -8,65 +7,48 @@ subcat: training
 description: "LoRA freezes the pretrained weights and learns a low-rank update, enabling cheap fine-tuning and swappable adapters."
 ---
 
+LoRA (Hu et al., 2021) is the technique that made it practical for ordinary people — not just labs with clusters — to *specialize* a large model. If you've ever downloaded a "chat" or "instruct" variant of a base model, or swapped a "style" adapter on a Stable Diffusion model, you've used LoRA's idea. I'm writing this because it's one of the highest-leverage tricks in the entire fine-tuning toolkit, and the math is simpler than its reputation.
 
-**Paper:** Hu et al., *LoRA: Low-Rank Adaptation of Large Language Models*, ICLR 2022. [arXiv:2106.09685](https://arxiv.org/abs/2106.09685)
+## The problem LoRA solves
 
-You could call LoRA the patch that made the open-weight era possible. Fine-tuning a 175B model the old way meant updating and storing all 175B weights for every task, and that math collapses the moment you want a hundred custom models on one machine. Hu et al. asked the obvious question: do we actually have to touch every weight?
+Full fine-tuning updates *every* weight of a model. For a 7B model that's ~7 billion gradient-updated parameters, plus you must store a full copy of the weights for each task. That's expensive in memory, storage, and compute, and it risks "catastrophic forgetting" — overwriting useful general knowledge.
 
-## Freeze the base, learn the delta
+LoRA's observation: the change a model needs to adapt to a task has a **low "intrinsic rank."** You don't need to move every weight; a small, low-rank adjustment captures most of the task-specific behavior.
 
-A weight update `ΔW` has rank `d` (full). LoRA constrains it to a low-rank decomposition:
+## The mechanism, concretely
 
-$$
-W_0 + \Delta W = W_0 + B A, \qquad B \in \mathbb{R}^{d \times r},\; A \in \mathbb{R}^{r \times k},\; r \ll d
-$$
+For a weight matrix `W` (shape `d×k`), instead of learning a full update `ΔW`, LoRA learns it as a product of two small matrices:
 
-- `W_0` (pretrained) is **frozen** and never updated.
-- Only `A` and `B` are trained. With `r = 8`, that is `2·d·r` parameters, a tiny fraction.
-- At inference, `BA` can be merged into `W_0` (no extra latency) or kept separate for cheap task-switching.
-
-The bet behind this: the useful direction of adaptation lives in a low-dimensional subspace, so we only need to learn that subspace.
-
-## What it bought on GPT-3 175B
-
-- Trainable params dropped from 175B to **~4.7M** (≈10,000× fewer).
-- Matched or exceeded full fine-tuning on GLUE and on task-specific benchmarks.
-- No additional inference latency (when merged); multiple LoRA adapters can share one base model.
-
-## Wiring it up with PEFT
-
-```python
-from peft import LoraConfig, get_peft_model
-from transformers import AutoModelForCausalLM
-
-model = AutoModelForCausalLM.from_pretrained("meta-llama/Llama-3-8B")
-config = LoraConfig(
-    r=8, lora_alpha=16, lora_dropout=0.05,
-    target_modules=["q_proj", "v_proj"], task_type="CAUSAL_LM")
-model = get_peft_model(model, config)
-model.print_trainable_parameters()  # ~0.1% of total
+```
+ΔW = B · A        where B is d×r, A is r×k, and r << min(d, k)
 ```
 
-## Why I still reach for it
+- `r` is the **rank** — a small number like 4, 8, 16, 64.
+- `W` itself is **frozen** (no gradient updates).
+- Only `A` and `B` are trained — a tiny fraction of the parameters.
 
-LoRA and its descendants (QLoRA, DoRA, AdaLoRA) are what turned fine-tuning into a hobbyist tool. You can train a task-specific 8B model on one consumer GPU and swap adapters like plugins. The thing worth remembering is that the base stays frozen, so if your new task needs knowledge the base never had, low-rank math will not invent it. You are reshaping what is already there, not adding to it.
+At inference, the adapted weight is just `W + B·A·α` (α scales the contribution). The forward pass is `h = Wx + BAx`, and `BA` is so small you can often keep it merged or added with negligible cost.
 
-## References
+## Why this is such a big deal in practice
 
-- Hu et al. (2021). *LoRA.* [arXiv:2106.09685](https://arxiv.org/abs/2106.09685)
-- Dettmers et al. (2023). *QLoRA: 4-bit quantization + LoRA.* [arXiv:2305.14314](https://arxiv.org/abs/2305.14314)
+1. **Massive memory savings.** Training a 7B model with LoRA might need ~1/3 the VRAM of full fine-tuning, because you don't store optimizer state for the frozen weights.
+2. **Tiny adapters.** The trained `A,B` for one task might be a few megabytes vs. gigabytes for a full model copy. You can keep dozens of adapters and swap them like plugins.
+3. **No catastrophic forgetting.** The base model is untouched; you're adding a small delta on top.
+4. **Cheap experimentation.** Try a rank-8 vs rank-64 run; the cost difference is small.
 
-<!-- EXPANDED -->
+I've fine-tuned 7B–13B models on a single consumer GPU using LoRA where full fine-tuning would have been impossible. The quality gap to full fine-tuning is often surprisingly small for narrow tasks.
 
 ## Practical knobs
 
-Two choices decide most of LoRA's behavior:
+- **Rank `r`:** higher = more capacity but more params. Start at 8 or 16; raise if the task is complex (e.g. learning a new language or very different style).
+- **Alpha `α`:** effective scale is `α/r`. Common to set `α = 2r`.
+- **Which layers to adapt:** usually attention `q,v` projections first; adding `k,o` and MLP layers helps harder tasks but costs more.
+- **QLoRA:** quantize the base model to 4-bit, then train LoRA on top — lets you fine-tune a 65B model on a single 48GB GPU. This combination (QLoRA) is what made "fine-tune a huge model at home" realistic.
 
-- **Rank `r`:** higher `r` lets the adapter express more, at the cost of more parameters. `r = 8` is a common starting point; `16` to `64` for harder tasks.
-- **`target_modules`:** which weight matrices get adapters. For Transformers, attention projections (`q_proj`, `v_proj`, `k_proj`, `o_proj`) matter most; adding MLP layers (`gate_proj`, `up_proj`) can help.
+## When LoRA is NOT enough
 
-A useful detail: `lora_alpha` controls the scaling of the update (`BA` divided by `alpha/r`). Keeping `alpha = 2 * r` is a sane default.
+If the task requires the model to *forget* or substantially *restructure* its knowledge (not just steer style or add a narrow format), full fine-tuning or a stronger method may be needed. And LoRA won't fix a base model that fundamentally lacks the capability — you can't LoRA your way to reasoning a 7B model doesn't have.
 
-## The family
+## My take
 
-LoRA spawned a lineage -- **QLoRA** (4-bit base plus LoRA, fits 65B on one GPU), **DoRA** (decomposes into magnitude and direction), and **AdaLoRA** (allocates rank per layer). The shared insight is that adaptation lives in a low-rank subspace, so you can specialize a frozen model cheaply and swap adapters like plugins.
+LoRA is the closest thing we have to "model customization as a commodity." It turned fine-tuning from a cluster-only operation into something you can do on a workstation, and it's the reason the open-model ecosystem has thousands of community adapters. If you're doing any model specialization — a company tone, a domain vocabulary, a specific output format — LoRA (ideally QLoRA) should be your default before you even consider full fine-tuning. Start small, measure, scale rank only if needed.
