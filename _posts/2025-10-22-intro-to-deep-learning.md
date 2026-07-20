@@ -1,9 +1,12 @@
 ---
+
 layout: post
 title: "Deep Learning"
 date: 2025-10-22
 tags: [ai]
+description: "A practical intro to deep learning: from perceptrons to backprop, CNNs, RNNs, and Transformers."
 ---
+
 
 **Core Idea**: Deep learning, a subfield of machine learning, utilizes neural networks with many layers (hence "deep") to model and understand complex patterns in data. This course introduces the fundamentals of building and training neural networks for structured data using TensorFlow and Keras.
 
@@ -87,3 +90,19 @@ layers.BatchNormalization()
 *   SGD is the core training algorithm, guided by a loss function and an optimizer.
 *   Overfitting is a major challenge in deep learning.
 *   Techniques like early stopping, dropout, and batch normalization can help to prevent overfitting.
+
+<!-- EXPANDED -->
+
+## The arc of the field
+
+Deep learning is just stacking parameterized functions and learning their parameters from data with gradient descent. The arc:
+
+- **Perceptron to MLP:** one neuron becomes layers of them.
+- **Backpropagation:** the chain rule computes gradients of the loss w.r.t. every weight, so you can update millions of parameters.
+- **CNNs:** weight sharing and locality for images.
+- **RNNs / LSTMs:** sequences, though they struggle with long-range dependence.
+- **Transformers:** attention replaces recurrence and scales to huge data.
+
+## Why "deep" won
+
+Three things converged: more data, more compute (GPUs), and tricks (better initialization, normalization, residual connections) that let very deep networks train stably. The practical loop is always the same: define a model, compute a loss, backprop, and step.

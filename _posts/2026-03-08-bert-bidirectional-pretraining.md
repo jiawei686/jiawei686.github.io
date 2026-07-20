@@ -1,10 +1,13 @@
 ---
+
 layout: post
 title: "BERT: Bidirectional Pretraining from Transformers"
 date: 2026-03-08
 tags: [llm]
 subcat: training
+description: "Pre-trained BERT with masked language modeling became the default backbone for NLP before decoder-only models took over."
 ---
+
 
 **Paper:** Devlin et al., *BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding*, NAACL 2019. [arXiv:1810.04805](https://arxiv.org/abs/1810.04805)
 
@@ -60,3 +63,26 @@ BERT locked in the pretrain → fine-tune pattern and showed one bidirectional m
 
 - Devlin et al. (2018). *BERT.* [arXiv:1810.04805](https://arxiv.org/abs/1810.04805)
 - Liu et al. (2019). *RoBERTa: A Robustly Optimized BERT Pretraining Approach.* [arXiv:1907.11692](https://arxiv.org/abs/1907.11692)
+
+<!-- EXPANDED -->
+
+## Why bidirectional changes everything
+
+Earlier language models read text left-to-right, so a word's representation only saw the tokens before it. BERT's masked language model (MLM) randomly hides 15% of tokens and trains the model to reconstruct them from both directions at once. That means the representation of a word like "bank" can lean on "river" later in the sentence, not just "sat on the" before it.
+
+The second objective, next-sentence prediction (NSP), taught the model whether two spans follow each other -- useful for question answering and entailment.
+
+## Using BERT today
+
+You rarely train BERT from scratch. You load a pretrained checkpoint and either:
+
+- **Feature extraction:** take the hidden states as inputs to another model.
+- **Fine-tuning:** add a task head (a classifier layer) and train end-to-end -- this is what dominates.
+
+```python
+from transformers import AutoModelForSequenceClassification, AutoTokenizer
+tok = AutoTokenizer.from_pretrained("bert-base-uncased")
+model = AutoModelForSequenceClassification.from_pretrained("bert-base-uncased", num_labels=2)
+```
+
+The takeaway: BERT shifted the field from task-specific architectures to a single pretrain-then-adapt recipe, and it stayed the backbone of NLP until decoder-only models took over inference.

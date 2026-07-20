@@ -1,10 +1,13 @@
 ---
+
 layout: post
 title: "LoRA: Low-Rank Adaptation of Large Models"
 date: 2026-04-05
 tags: [llm]
 subcat: training
+description: "LoRA freezes the pretrained weights and learns a low-rank update, enabling cheap fine-tuning and swappable adapters."
 ---
+
 
 **Paper:** Hu et al., *LoRA: Low-Rank Adaptation of Large Language Models*, ICLR 2022. [arXiv:2106.09685](https://arxiv.org/abs/2106.09685)
 
@@ -52,3 +55,18 @@ LoRA and its descendants (QLoRA, DoRA, AdaLoRA) are what turned fine-tuning into
 
 - Hu et al. (2021). *LoRA.* [arXiv:2106.09685](https://arxiv.org/abs/2106.09685)
 - Dettmers et al. (2023). *QLoRA: 4-bit quantization + LoRA.* [arXiv:2305.14314](https://arxiv.org/abs/2305.14314)
+
+<!-- EXPANDED -->
+
+## Practical knobs
+
+Two choices decide most of LoRA's behavior:
+
+- **Rank `r`:** higher `r` lets the adapter express more, at the cost of more parameters. `r = 8` is a common starting point; `16` to `64` for harder tasks.
+- **`target_modules`:** which weight matrices get adapters. For Transformers, attention projections (`q_proj`, `v_proj`, `k_proj`, `o_proj`) matter most; adding MLP layers (`gate_proj`, `up_proj`) can help.
+
+A useful detail: `lora_alpha` controls the scaling of the update (`BA` divided by `alpha/r`). Keeping `alpha = 2 * r` is a sane default.
+
+## The family
+
+LoRA spawned a lineage -- **QLoRA** (4-bit base plus LoRA, fits 65B on one GPU), **DoRA** (decomposes into magnitude and direction), and **AdaLoRA** (allocates rank per layer). The shared insight is that adaptation lives in a low-rank subspace, so you can specialize a frozen model cheaply and swap adapters like plugins.

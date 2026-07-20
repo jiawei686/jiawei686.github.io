@@ -1,10 +1,13 @@
 ---
+
 layout: post
 title: "AutoGen: Multi-Agent Conversation as Computation"
 date: 2026-06-14
 tags: [llm]
 subcat: agents
+description: "AutoGen is a framework for building multi-agent conversations where LLM and tool-using agents collaborate to solve tasks."
 ---
+
 
 **Paper:** Wu, Bansal, Zhang, Wu, Zhang, Zhu, Li, Jiang, Zhang, Wang, Krishna, Wu, *AutoGen: Enabling Next-Gen LLM Applications via Multi-Agent Conversation*, 2023. [arXiv:2308.08155](https://arxiv.org/abs/2308.08155)
 
@@ -51,3 +54,20 @@ Complex agent pipelines are almost never one model in a loop. They are teams: a 
 ## References
 
 - Wu et al. (2023). *AutoGen: Enabling Next-Gen LLM Applications via Multi-Agent Conversation.* [arXiv:2308.08155](https://arxiv.org/abs/2308.08155)
+
+<!-- EXPANDED -->
+
+## Agents that talk to each other
+
+AutoGen models a task as a conversation among **conversable agents**. The two you meet first:
+
+- **AssistantAgent:** an LLM that reasons and writes code.
+- **UserProxyAgent:** represents the human (or a tool) and can execute code and return results.
+
+You wire them together, and they pass messages back and forth until the task is done -- the assistant proposes code, the proxy runs it, errors bounce back, the assistant fixes them.
+
+## Group chat and orchestration
+
+For harder workflows, a `GroupChat` lets many agents (a coder, a critic, a retriever, a human) discuss and converge. The value is decomposition: each agent has one job, and the conversation orchestrates them without you hand-coding the control flow.
+
+The pattern -- modular agents plus a message bus -- is the same idea behind many agent frameworks, and it pairs naturally with tool-calling and code execution.

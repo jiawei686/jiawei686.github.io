@@ -1,9 +1,12 @@
 ---
+
 layout: post
 title: "Geospatial Analysis"
 date: 2026-01-02
 tags: [data]
+description: "Geospatial data analysis: coordinate systems, spatial joins, and the Python stack for working with maps and geometries."
 ---
+
 
 **Core Idea**: Geospatial analysis unlocks insights from data that has a location component. This course introduces the tools and techniques for working with geospatial data, creating interactive maps, and uncovering spatial patterns using libraries like GeoPandas.
 
@@ -67,3 +70,19 @@ buffers = gdf.buffer(1000) # 1000-meter buffer
 *   GeoPandas is the essential tool for working with vector data in Python.
 *   Folium makes it easy to create beautiful and interactive maps.
 *   Spatial joins and proximity analysis are fundamental techniques for combining and analyzing geospatial data.
+
+<!-- EXPANDED -->
+
+## Working with space as data
+
+Geospatial analysis handles data tied to locations -- points, lines, polygons. The first thing to get right is the **coordinate reference system (CRS)**: the same longitude and latitude means different things in different projections, and you must reproject before measuring distances or overlapping layers.
+
+## The Python stack
+
+- **GeoPandas:** pandas with geometry columns; you get `merge` and `groupby` plus spatial operations like `sjoin` (spatial join) and `buffer`.
+- **Shapely:** predicates and operations on geometries (`intersects`, `within`, `union`).
+- **Folium / Kepler.gl:** quick interactive map visualizations.
+
+## Typical workflow
+
+Load shapefiles or GeoJSON, reproject to one CRS, spatially join your points to regions, aggregate, and map the result. The common bug is mixing CRSs, which silently offsets every feature by kilometers.

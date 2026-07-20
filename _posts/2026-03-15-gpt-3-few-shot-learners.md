@@ -1,10 +1,13 @@
 ---
+
 layout: post
 title: "GPT-3 and Few-Shot Learning at Scale"
 date: 2026-03-15
 tags: [llm]
 subcat: training
+description: "GPT-3 showed that scaling to 175B parameters enables in-context few-shot learning with no gradient updates."
 ---
+
 
 **Paper:** Brown et al., *Language Models are Few-Shot Learners*, NeurIPS 2020. [arXiv:2005.14165](https://arxiv.org/abs/2005.14165)
 
@@ -60,3 +63,21 @@ GPT-3 moved the field from "train a model per task" to "prompt one giant model."
 ## References
 
 - Brown et al. (2020). *Language Models are Few-Shot Learners.* [arXiv:2005.14165](https://arxiv.org/abs/2005.14165)
+
+<!-- EXPANDED -->
+
+## In-context learning, not fine-tuning
+
+The headline result of GPT-3 is not raw accuracy -- it is that a 175B-parameter model can perform a new task from a handful of examples placed in the prompt, with **no weight updates**. Give it a few (input, output) pairs and it continues the pattern. This "in-context learning" behaves like a tiny program the model runs over the context.
+
+Brown et al. framed this as meta-learning: during pretraining the model learns to learn from the prompt at inference time.
+
+## Three regimes
+
+- **Zero-shot:** just a description of the task.
+- **One-shot / few-shot:** a few demonstrations.
+- **Fine-tuning:** (optional) updating weights -- but the paper's point was you often do not need it.
+
+## What it exposed
+
+GPT-3 made prompting a first-class skill and showed that raw scale alone unlocks capabilities smaller models lack. Its weaknesses -- expensive decoding, no real grounding, brittle prompts -- motivated the alignment and instruction-tuning work that followed (InstructGPT, RLHF).

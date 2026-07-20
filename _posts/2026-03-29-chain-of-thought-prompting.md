@@ -1,10 +1,13 @@
 ---
+
 layout: post
 title: "Chain-of-Thought Prompting: Let the Model Think Step by Step"
 date: 2026-03-29
 tags: [llm]
 subcat: reasoning
+description: "Chain-of-thought prompting improves reasoning by eliciting intermediate steps before the final answer."
 ---
+
 
 **Paper:** Wei et al., *Chain-of-Thought Prompting Elicits Reasoning in Large Language Models*, 2022. [arXiv:2201.11903](https://arxiv.org/abs/2201.11903)
 
@@ -51,3 +54,18 @@ CoT is the ancestor of most of what came after. Self-consistency sampling, where
 
 - Wei et al. (2022). *Chain-of-Thought Prompting.* [arXiv:2201.11903](https://arxiv.org/abs/2201.11903)
 - Wang et al. (2022). *Self-Consistency Improves Chain of Thought.* [arXiv:2203.11171](https://arxiv.org/abs/2203.11171)
+
+<!-- EXPANDED -->
+
+## Reasoning as generated steps
+
+Chain-of-thought (CoT) prompting asks the model to produce a sequence of intermediate reasoning steps before the answer. Instead of jumping from question to solution, the model writes out "Step 1... Step 2... therefore...". This spreads a hard computation across more tokens, which transformer decoders handle far better than a single leap.
+
+## Two ways to trigger it
+
+- **Few-shot CoT:** include exemplars that show the worked-out reasoning.
+- **Zero-shot CoT:** simply append "Let's think step by step." -- surprisingly effective.
+
+## When it helps (and when it doesn't)
+
+CoT mainly boosts tasks with arithmetic, commonsense, and symbolic reasoning. On tasks the model already nails in one shot, it adds little. It also depends on the model being large enough; the effect is weak below roughly 10B parameters. The deeper idea -- make the model externalize its reasoning -- became the foundation for ReAct, self-consistency, and modern reasoning models.

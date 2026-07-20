@@ -1,9 +1,12 @@
 ---
+
 layout: post
 title: "Game AI and Reinforcement Learning"
 date: 2025-12-20
 tags: [ai]
+description: "How reinforcement learning powers game AI, from Q-learning and DQN to AlphaGo and AlphaZero."
 ---
+
 
 **Core Idea**: This course explores the fascinating world of game AI, from classic algorithms to the cutting-edge field of reinforcement learning. You'll learn how to build agents that can make intelligent decisions in game environments.
 
@@ -54,3 +57,19 @@ A fundamental challenge in RL is the trade-off between exploration (trying new a
 *   Reinforcement learning offers a powerful framework for training agents to learn optimal behaviors through trial and error.
 *   Q-learning and DQNs are fundamental algorithms in the RL toolkit.
 *   The exploration-exploitation trade-off is a key consideration when designing RL agents.
+
+<!-- EXPANDED -->
+
+## Agents that learn by playing
+
+Reinforcement learning (RL) trains an agent from trial and error: it takes actions in an environment, gets a reward, and learns a policy that maximizes cumulative reward. Games are the classic testbed because they have clear rules and scores.
+
+Key milestones:
+
+- **Q-learning / DQN:** learn the value of state-action pairs from pixels (DeepMind's Atari agents).
+- **Policy gradients:** directly optimize the policy (REINFORCE, PPO).
+- **AlphaGo / AlphaZero:** combine search (Monte Carlo tree search) with learned value and policy networks; AlphaZero learns purely from self-play, no human data.
+
+## The hard parts
+
+Reward shaping (what to reward), sample efficiency (RL needs a lot of interaction), and sim-to-real (policies trained in simulation failing in the real world) are the recurring headaches.

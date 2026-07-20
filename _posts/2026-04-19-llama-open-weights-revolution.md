@@ -1,10 +1,13 @@
 ---
+
 layout: post
 title: "LLaMA: The Open-Weight Catalyst"
 date: 2026-04-19
 tags: [llm]
 subcat: training
+description: "LLaMA proved smaller models trained on more high-quality tokens can match much larger ones, igniting the open-weight era."
 ---
+
 
 **Paper:** Touvron et al., *LLaMA: Open and Efficient Foundation Language Models*, 2023. [arXiv:2302.13971](https://arxiv.org/abs/2302.13971) — followed by *LLaMA 2* (arXiv:2307.09288) and *LLaMA 3* (2024).
 
@@ -47,3 +50,15 @@ print(tok.decode(out[0]))
 
 - Touvron et al. (2023). *LLaMA.* [arXiv:2302.13971](https://arxiv.org/abs/2302.13971)
 - Touvron et al. (2023). *LLaMA 2.* [arXiv:2307.09288](https://arxiv.org/abs/2307.09288)
+
+<!-- EXPANDED -->
+
+## The open-weight flywheel
+
+What made LLaMA matter was not a new architecture but a licensing and distribution choice: Meta released the **weights** (with a research license), not just a paper. That turned a frontier-capable model into something anyone could download and run. Within weeks the community produced Alpaca, Vicuna, and WizardLM, and the open lineage -- Mistral, Mixtral, Qwen, DeepSeek, Phi -- grew from there.
+
+## Why data quality, not size
+
+LLaMA's core lesson is compute-optimal training: a 13B model trained on ~1.4T carefully deduplicated tokens can beat a 175B model trained on fewer. The modern recipe (RMSNorm, SwiGLU, RoPE, more tokens) is now the default for open models.
+
+If you only remember one thing: LLaMA is the point where open source stopped being an afterthought and became a real lane in foundation models.

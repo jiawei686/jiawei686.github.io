@@ -1,10 +1,13 @@
 ---
+
 layout: post
 title: "RLHF: Deep Reinforcement Learning from Human Preferences"
 date: 2026-07-05
 tags: [llm]
 subcat: alignment
+description: "RLHF aligns language models to human preferences by training a reward model on comparisons and optimizing the policy with PPO."
 ---
+
 
 **Paper:** Christiano, P., et al., *Deep Reinforcement Learning from Human Preferences*, NeurIPS 2017. [arXiv:1706.03741](https://arxiv.org/abs/1706.03741)
 
@@ -42,3 +45,17 @@ This is chapter one of how models learn what we want. InstructGPT picks up at st
 
 - Christiano et al. (2017). *Deep Reinforcement Learning from Human Preferences.* NeurIPS 2017. [arXiv:1706.03741](https://arxiv.org/abs/1706.03741)
 - Ouyang et al. (2022). *Training language models to follow instructions with human feedback (InstructGPT).* [arXiv:2203.02155](https://arxiv.org/abs/2203.02155)
+
+<!-- EXPANDED -->
+
+## From comparisons to a reward
+
+RLHF (as in InstructGPT) has three stages. First, collect human-written demonstrations and do supervised fine-tuning. Then, for a batch of model outputs, have humans **rank** them -- which answer is better? These pairwise comparisons train a **reward model** using a Bradley-Terry objective: it learns a scalar score `r(x, y)` such that preferred answers score higher.
+
+## Optimizing the policy
+
+Finally, treat the LM as a policy and run **PPO** to maximize the reward model's score, with a KL penalty that stops the model from drifting too far from the base distribution (otherwise it degenerates into reward-hacking gibberish).
+
+## The alignment tax
+
+RLHF trades a little raw capability for usefulness and safety -- outputs become more helpful, less toxic, better at following instructions. The catch is that the model is now only as good as the preferences it was shown, and the reward model can be gamed. This pipeline is the direct ancestor of ChatGPT's style.

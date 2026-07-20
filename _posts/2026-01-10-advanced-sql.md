@@ -1,9 +1,12 @@
 ---
+
 layout: post
 title: "Advanced SQL"
 date: 2026-01-10
 tags: [data]
+description: "Advanced SQL: window functions, CTEs, query optimization, and indexing for analytical workloads."
 ---
+
 
 **Core Idea**: Go beyond basic `SELECT-FROM-WHERE` queries and master the advanced SQL techniques needed to analyze complex datasets. This course focuses on window functions, common table expressions (CTEs), and performance optimization.
 
@@ -71,3 +74,18 @@ Using the most appropriate and efficient data types for your columns can reduce 
 *   CTEs improve the readability and modularity of your SQL code.
 *   Query optimization is an essential skill for working with large-scale data.
 *   Understanding execution plans and proper indexing are key to high-performance SQL.
+
+<!-- EXPANDED -->
+
+## Beyond SELECT and JOIN
+
+Analytical SQL lives or dies on a few features:
+
+- **Window functions:** `ROW_NUMBER()`, `RANK()`, `SUM(...) OVER (PARTITION BY ... ORDER BY ...)` compute per-row aggregates without collapsing rows -- essential for running totals, rankings, and period-over-period changes.
+- **CTEs (`WITH`):** name subqueries for readable, composable pipelines instead of nested subqueries.
+- **Indexing:** B-tree indexes speed filters and joins; understand when they help (high-selectivity predicates) and when they don't (full scans).
+- **Query plans:** `EXPLAIN` shows whether the engine scans sequentially or uses an index, and where the cost is.
+
+## The mindset
+
+SQL is declarative -- you describe the result, the planner decides the path. Learning to read the plan and design indexes is what separates reports that take seconds from ones that take minutes.

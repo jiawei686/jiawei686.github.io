@@ -1,4 +1,5 @@
 ---
+
 layout: post
 title: "Self-Consistency: Improving Chain-of-Thought Reasoning"
 description: "Self-Consistency explained: sample many reasoning paths, take the majority vote. The cheapest accuracy win for LLM reasoning. arXiv:2203.11171"
@@ -6,6 +7,7 @@ date: 2026-07-10
 tags: [llm]
 subcat: reasoning
 ---
+
 
 **Paper:** Wang, X., et al., *Self-Consistency Improves Chain-of-Thought Reasoning in Language Models*, ICLR 2023. [arXiv:2203.11171](https://arxiv.org/abs/2203.11171)
 
@@ -49,3 +51,15 @@ Self-Consistency is the practical companion to the CoT post. CoT hands the model
 
 - Wang et al. (2022). *Self-Consistency Improves Chain-of-Thought Reasoning in Language Models.* ICLR 2023. [arXiv:2203.11171](https://arxiv.org/abs/2203.11171)
 - Wei et al. (2022). *Chain-of-Thought Prompting Elicits Reasoning in Large Language Models.* [arXiv:2201.11903](https://arxiv.org/abs/2201.11903)
+
+<!-- EXPANDED -->
+
+## Marginalizing over reasoning
+
+Chain-of-thought is powerful but fragile: change the phrasing and you may get a different final answer. Self-consistency fixes this by treating reasoning as a **latent variable**. Instead of one greedy chain, you sample many diverse CoT trajectories with a high temperature, then take the **majority vote** over their final answers.
+
+The intuition: a single wrong arithmetic step can derail one chain, but if most independent chains converge on the same answer, that answer is far more trustworthy. It is approximate marginalization -- "what answer do most valid reasoning paths support?"
+
+## Trade-offs
+
+It costs multiple forward passes per question, so it is a test-time compute trick, not a training change. On math and commonsense benchmarks it gives large, reliable gains over greedy CoT, and it pairs naturally with verifier-style scoring.

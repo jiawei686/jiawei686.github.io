@@ -1,9 +1,12 @@
 ---
+
 layout: post
 title: "Computer Vision"
 date: 2026-01-15
 tags: [ai]
+description: "Foundations of computer vision: from convolutional nets and ImageNet to transfer learning and vision transformers."
 ---
+
 
 **Core Idea**: Computer vision is a field of AI that trains computers to interpret and understand the visual world. This course focuses on using Convolutional Neural Networks (CNNs) with TensorFlow and Keras to build powerful image classification models.
 
@@ -80,3 +83,18 @@ You can then add your own classifier on top of the frozen base and train it on y
 *   Convolutional and pooling layers are the core building blocks of a CNN.
 *   Data augmentation is a crucial technique for preventing overfitting in image models.
 *   Transfer learning allows you to leverage the knowledge from pre-trained models to achieve high performance with less data.
+
+<!-- EXPANDED -->
+
+## How machines see
+
+Computer vision turns pixels into understanding. The modern stack:
+
+- **CNNs:** convolutions exploit local patterns and translation invariance; AlexNet's 2012 ImageNet win started the deep-vision era.
+- **ImageNet pretraining:** models trained on millions of labeled images learn features reusable everywhere; you then **fine-tune** on your smaller dataset.
+- **Object detection and segmentation:** frameworks like YOLO and Mask R-CNN localize and outline objects, not just classify.
+- **Vision Transformers (ViT):** treat an image as a sequence of patches and apply attention -- now competitive with or beating CNNs when data is abundant.
+
+## Practical note
+
+For most tasks today you do not train from scratch: take a pretrained backbone, swap the head, and fine-tune. Data and augmentation usually matter more than architecture.

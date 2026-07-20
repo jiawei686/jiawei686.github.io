@@ -1,4 +1,5 @@
 ---
+
 layout: post
 title: "DeepSeek-R1: Reasoning via Reinforcement Learning"
 description: "DeepSeek-R1 explained: open-weight reasoning from pure RL, no supervised reasoning data. How it matches o1, and the recipe. arXiv:2501.12948"
@@ -6,6 +7,7 @@ date: 2026-05-03
 tags: [llm]
 subcat: reasoning
 ---
+
 
 **Paper:** DeepSeek-AI, *DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning*, 2025. [arXiv:2501.12948](https://arxiv.org/abs/2501.12948)
 
@@ -48,3 +50,17 @@ R1 is the clearest proof that **reasoning can be grown with RL, not just prompte
 
 - DeepSeek-AI (2025). *DeepSeek-R1.* [arXiv:2501.12948](https://arxiv.org/abs/2501.12948)
 - Shao et al. (2024). *GRPO (DeepSeekMath).* [arXiv:2402.03300](https://arxiv.org/abs/2402.03300)
+
+<!-- EXPANDED -->
+
+## Learning to reason with RL
+
+DeepSeek-R1 starts from a base model and applies reinforcement learning directly to reasoning. Its policy optimizes a verifiable reward -- answer correctness (e.g., math solutions check out) plus a format reward that forces the model to place its thinking inside a `<think:6124c78e>` block. The algorithm is **GRPO**, a group-relative policy optimizer that skips the separate value network used by PPO.
+
+## The "aha moment"
+
+During RL the model was observed spontaneously lengthening its reasoning, backtracking, and self-checking -- emergent behavior, not something hand-scripted. This is why R1-style models "think" before answering.
+
+## Distillation
+
+Because long reasoning traces are expensive to run, DeepSeek also distilled R1 into smaller dense models (1.5B to 70B) by training them to mimic the big model's outputs. The practical lesson: you can get much of the reasoning quality on hardware that cannot afford the full model.

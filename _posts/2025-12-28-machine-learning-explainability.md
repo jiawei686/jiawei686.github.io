@@ -1,9 +1,12 @@
 ---
+
 layout: post
 title: "Machine Learning Explainability"
 date: 2025-12-28
 tags: [ai]
+description: "Model explainability techniques: feature importance, LIME, SHAP, and the trade-off between accuracy and interpretability."
 ---
+
 
 **Core Idea**: As machine learning models become more complex (i.e., "black boxes"), understanding *why* they make certain predictions is increasingly important. Machine learning explainability (or interpretability) provides tools to dissect and understand model behavior, building trust and enabling better debugging.
 
@@ -67,3 +70,18 @@ shap.summary_plot(shap_values, val_X)
 *   Permutation importance provides a global understanding of feature importance.
 *   Partial dependence plots help to visualize the relationship between a feature and the target.
 *   SHAP values offer a powerful and unified framework for explaining both individual predictions and overall model behavior.
+
+<!-- EXPANDED -->
+
+## Why explain?
+
+A model that predicts loan defaults but cannot say why is a liability in finance, healthcare, and hiring. Explainability is about trust, debugging, and compliance.
+
+Two families:
+
+- **Model-specific:** coefficients in linear or logistic regression, feature importances in tree models -- exact and cheap.
+- **Model-agnostic:** treat the model as a black box. **LIME** fits a local surrogate (e.g., a linear model) around one prediction. **SHAP** assigns each feature a contribution using Shapley values from cooperative game theory -- more principled, more expensive.
+
+## The trade-off
+
+The most accurate models (deep nets, gradient-boosted trees) are usually the least interpretable. Often you keep an accurate model for prediction and a simpler surrogate for explanation, or accept that "why" is approximate.

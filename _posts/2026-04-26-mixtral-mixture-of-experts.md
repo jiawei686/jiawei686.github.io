@@ -1,10 +1,13 @@
 ---
+
 layout: post
 title: "Mixtral of Experts: Sparse Mixture of Experts"
 date: 2026-04-26
 tags: [llm]
 subcat: training
+description: "Mixtral is a sparse mixture-of-experts model that activates only a few experts per token, combining dense-model quality with cheaper inference."
 ---
+
 
 **Paper:** Jiang et al., *Mixtral of Experts*, 2024. [arXiv:2401.04088](https://arxiv.org/abs/2401.04088)
 
@@ -59,3 +62,17 @@ MoE is how a lot of frontier models (Gemini, Grok, DeepSeek, Qwen-MoE) reach abs
 
 - Jiang et al. (2024). *Mixtral of Experts.* [arXiv:2401.04088](https://arxiv.org/abs/2401.04088)
 - Shazeer et al. (2017). *Outrageously Large Neural Networks: MoE.* [arXiv:1701.06538](https://arxiv.org/abs/1701.06538)
+
+<!-- EXPANDED -->
+
+## Sparse activation
+
+Mixtral-8x7B has eight feed-forward "experts" per layer but routes each token to only **two** of them. So although the model holds ~47B parameters, every token uses about **13B** -- you get near-47B quality at roughly 13B inference cost. This is the whole point of mixture-of-experts (MoE): capacity without proportional compute.
+
+## The router
+
+A small gating network scores the experts and picks the top-2. To keep experts balanced (so one doesn't dominate), training adds an auxiliary load-balancing loss. If routing collapses, you lose the efficiency gain.
+
+## Why it mattered
+
+Mixtral beat models like LLaMA-2-70B on many benchmarks while decoding much faster, showing MoE was practical at scale. It set the template for a wave of sparse models and made "active parameters vs total parameters" a standard spec line.

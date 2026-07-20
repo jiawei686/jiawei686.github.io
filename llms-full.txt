@@ -159,6 +159,29 @@ BERT locked in the pretrain → fine-tune pattern and showed one bidirectional m
 - Devlin et al. (2018). *BERT.* [arXiv:1810.04805](https://arxiv.org/abs/1810.04805)
 - Liu et al. (2019). *RoBERTa: A Robustly Optimized BERT Pretraining Approach.* [arXiv:1907.11692](https://arxiv.org/abs/1907.11692)
 
+
+
+## Why bidirectional changes everything
+
+Earlier language models read text left-to-right, so a word's representation only saw the tokens before it. BERT's masked language model (MLM) randomly hides 15% of tokens and trains the model to reconstruct them from both directions at once. That means the representation of a word like "bank" can lean on "river" later in the sentence, not just "sat on the" before it.
+
+The second objective, next-sentence prediction (NSP), taught the model whether two spans follow each other -- useful for question answering and entailment.
+
+## Using BERT today
+
+You rarely train BERT from scratch. You load a pretrained checkpoint and either:
+
+- **Feature extraction:** take the hidden states as inputs to another model.
+- **Fine-tuning:** add a task head (a classifier layer) and train end-to-end -- this is what dominates.
+
+```python
+from transformers import AutoModelForSequenceClassification, AutoTokenizer
+tok = AutoTokenizer.from_pretrained("bert-base-uncased")
+model = AutoModelForSequenceClassification.from_pretrained("bert-base-uncased", num_labels=2)
+```
+
+The takeaway: BERT shifted the field from task-specific architectures to a single pretrain-then-adapt recipe, and it stayed the backbone of NLP until decoder-only models took over inference.
+
 ---
 
 ### GPT-3 and Few-Shot Learning at Scale
@@ -218,6 +241,24 @@ GPT-3 moved the field from "train a model per task" to "prompt one giant model."
 ## References
 
 - Brown et al. (2020). *Language Models are Few-Shot Learners.* [arXiv:2005.14165](https://arxiv.org/abs/2005.14165)
+
+
+
+## In-context learning, not fine-tuning
+
+The headline result of GPT-3 is not raw accuracy -- it is that a 175B-parameter model can perform a new task from a handful of examples placed in the prompt, with **no weight updates**. Give it a few (input, output) pairs and it continues the pattern. This "in-context learning" behaves like a tiny program the model runs over the context.
+
+Brown et al. framed this as meta-learning: during pretraining the model learns to learn from the prompt at inference time.
+
+## Three regimes
+
+- **Zero-shot:** just a description of the task.
+- **One-shot / few-shot:** a few demonstrations.
+- **Fine-tuning:** (optional) updating weights -- but the paper's point was you often do not need it.
+
+## What it exposed
+
+GPT-3 made prompting a first-class skill and showed that raw scale alone unlocks capabilities smaller models lack. Its weaknesses -- expensive decoding, no real grounding, brittle prompts -- motivated the alignment and instruction-tuning work that followed (InstructGPT, RLHF).
 
 ---
 
@@ -323,6 +364,21 @@ CoT is the ancestor of most of what came after. Self-consistency sampling, where
 - Wei et al. (2022). *Chain-of-Thought Prompting.* [arXiv:2201.11903](https://arxiv.org/abs/2201.11903)
 - Wang et al. (2022). *Self-Consistency Improves Chain of Thought.* [arXiv:2203.11171](https://arxiv.org/abs/2203.11171)
 
+
+
+## Reasoning as generated steps
+
+Chain-of-thought (CoT) prompting asks the model to produce a sequence of intermediate reasoning steps before the answer. Instead of jumping from question to solution, the model writes out "Step 1... Step 2... therefore...". This spreads a hard computation across more tokens, which transformer decoders handle far better than a single leap.
+
+## Two ways to trigger it
+
+- **Few-shot CoT:** include exemplars that show the worked-out reasoning.
+- **Zero-shot CoT:** simply append "Let's think step by step." -- surprisingly effective.
+
+## When it helps (and when it doesn't)
+
+CoT mainly boosts tasks with arithmetic, commonsense, and symbolic reasoning. On tasks the model already nails in one shot, it adds little. It also depends on the model being large enough; the effect is weak below roughly 10B parameters. The deeper idea -- make the model externalize its reasoning -- became the foundation for ReAct, self-consistency, and modern reasoning models.
+
 ---
 
 ### LoRA: Low-Rank Adaptation of Large Models
@@ -374,6 +430,21 @@ LoRA and its descendants (QLoRA, DoRA, AdaLoRA) are what turned fine-tuning into
 
 - Hu et al. (2021). *LoRA.* [arXiv:2106.09685](https://arxiv.org/abs/2106.09685)
 - Dettmers et al. (2023). *QLoRA: 4-bit quantization + LoRA.* [arXiv:2305.14314](https://arxiv.org/abs/2305.14314)
+
+
+
+## Practical knobs
+
+Two choices decide most of LoRA's behavior:
+
+- **Rank `r`:** higher `r` lets the adapter express more, at the cost of more parameters. `r = 8` is a common starting point; `16` to `64` for harder tasks.
+- **`target_modules`:** which weight matrices get adapters. For Transformers, attention projections (`q_proj`, `v_proj`, `k_proj`, `o_proj`) matter most; adding MLP layers (`gate_proj`, `up_proj`) can help.
+
+A useful detail: `lora_alpha` controls the scaling of the update (`BA` divided by `alpha/r`). Keeping `alpha = 2 * r` is a sane default.
+
+## The family
+
+LoRA spawned a lineage -- **QLoRA** (4-bit base plus LoRA, fits 65B on one GPU), **DoRA** (decomposes into magnitude and direction), and **AdaLoRA** (allocates rank per layer). The shared insight is that adaptation lives in a low-rank subspace, so you can specialize a frozen model cheaply and swap adapters like plugins.
 
 ---
 
@@ -461,6 +532,18 @@ print(tok.decode(out[0]))
 - Touvron et al. (2023). *LLaMA.* [arXiv:2302.13971](https://arxiv.org/abs/2302.13971)
 - Touvron et al. (2023). *LLaMA 2.* [arXiv:2307.09288](https://arxiv.org/abs/2307.09288)
 
+
+
+## The open-weight flywheel
+
+What made LLaMA matter was not a new architecture but a licensing and distribution choice: Meta released the **weights** (with a research license), not just a paper. That turned a frontier-capable model into something anyone could download and run. Within weeks the community produced Alpaca, Vicuna, and WizardLM, and the open lineage -- Mistral, Mixtral, Qwen, DeepSeek, Phi -- grew from there.
+
+## Why data quality, not size
+
+LLaMA's core lesson is compute-optimal training: a 13B model trained on ~1.4T carefully deduplicated tokens can beat a 175B model trained on fewer. The modern recipe (RMSNorm, SwiGLU, RoPE, more tokens) is now the default for open models.
+
+If you only remember one thing: LLaMA is the point where open source stopped being an afterthought and became a real lane in foundation models.
+
 ---
 
 ### Mixtral of Experts: Sparse Mixture of Experts
@@ -520,6 +603,20 @@ MoE is how a lot of frontier models (Gemini, Grok, DeepSeek, Qwen-MoE) reach abs
 - Jiang et al. (2024). *Mixtral of Experts.* [arXiv:2401.04088](https://arxiv.org/abs/2401.04088)
 - Shazeer et al. (2017). *Outrageously Large Neural Networks: MoE.* [arXiv:1701.06538](https://arxiv.org/abs/1701.06538)
 
+
+
+## Sparse activation
+
+Mixtral-8x7B has eight feed-forward "experts" per layer but routes each token to only **two** of them. So although the model holds ~47B parameters, every token uses about **13B** -- you get near-47B quality at roughly 13B inference cost. This is the whole point of mixture-of-experts (MoE): capacity without proportional compute.
+
+## The router
+
+A small gating network scores the experts and picks the top-2. To keep experts balanced (so one doesn't dominate), training adds an auxiliary load-balancing loss. If routing collapses, you lose the efficiency gain.
+
+## Why it mattered
+
+Mixtral beat models like LLaMA-2-70B on many benchmarks while decoding much faster, showing MoE was practical at scale. It set the template for a wave of sparse models and made "active parameters vs total parameters" a standard spec line.
+
 ---
 
 ### DeepSeek-R1: Reasoning via Reinforcement Learning
@@ -566,6 +663,20 @@ R1 is the clearest proof that **reasoning can be grown with RL, not just prompte
 
 - DeepSeek-AI (2025). *DeepSeek-R1.* [arXiv:2501.12948](https://arxiv.org/abs/2501.12948)
 - Shao et al. (2024). *GRPO (DeepSeekMath).* [arXiv:2402.03300](https://arxiv.org/abs/2402.03300)
+
+
+
+## Learning to reason with RL
+
+DeepSeek-R1 starts from a base model and applies reinforcement learning directly to reasoning. Its policy optimizes a verifiable reward -- answer correctness (e.g., math solutions check out) plus a format reward that forces the model to place its thinking inside a `<think:6124c78e>` block. The algorithm is **GRPO**, a group-relative policy optimizer that skips the separate value network used by PPO.
+
+## The "aha moment"
+
+During RL the model was observed spontaneously lengthening its reasoning, backtracking, and self-checking -- emergent behavior, not something hand-scripted. This is why R1-style models "think" before answering.
+
+## Distillation
+
+Because long reasoning traces are expensive to run, DeepSeek also distilled R1 into smaller dense models (1.5B to 70B) by training them to mimic the big model's outputs. The practical lesson: you can get much of the reasoning quality on hardware that cannot afford the full model.
 
 ---
 
@@ -889,6 +1000,23 @@ Complex agent pipelines are almost never one model in a loop. They are teams: a 
 
 - Wu et al. (2023). *AutoGen: Enabling Next-Gen LLM Applications via Multi-Agent Conversation.* [arXiv:2308.08155](https://arxiv.org/abs/2308.08155)
 
+
+
+## Agents that talk to each other
+
+AutoGen models a task as a conversation among **conversable agents**. The two you meet first:
+
+- **AssistantAgent:** an LLM that reasons and writes code.
+- **UserProxyAgent:** represents the human (or a tool) and can execute code and return results.
+
+You wire them together, and they pass messages back and forth until the task is done -- the assistant proposes code, the proxy runs it, errors bounce back, the assistant fixes them.
+
+## Group chat and orchestration
+
+For harder workflows, a `GroupChat` lets many agents (a coder, a critic, a retriever, a human) discuss and converge. The value is decomposition: each agent has one job, and the conversation orchestrates them without you hand-coding the control flow.
+
+The pattern -- modular agents plus a message bus -- is the same idea behind many agent frameworks, and it pairs naturally with tool-calling and code execution.
+
 ---
 
 ### Tree of Thoughts: Deliberate Problem Solving
@@ -1078,6 +1206,20 @@ Chinchilla's point was blunt: match or beat them with far fewer parameters, just
 
 Every serious training run since 2022 sizes its corpus from Chinchilla's math, not Kaplan's. The 1:20 intuition carries over to vision and multimodal work too, with caveats. Read it alongside the Scaling Laws post and you have the "how big, how much data" chapter of any LLM course. The open question for me is whether the 20× rule still holds now that we are scraping the bottom of the high-quality-data barrel.
 
+
+
+## The scaling law that changed training
+
+Before Chinchilla, large models were trained on fixed, relatively small datasets (GPT-3 used ~300B tokens for 175B params). Chinchilla showed the optimal rule: **parameters and training tokens should grow in proportion** -- roughly 20 tokens per parameter. So a 70B model should train on ~1.4T tokens, not the few hundred billion used previously.
+
+## What they did
+
+Hoffmann et al. fit a loss model `L = A/N^alpha + B/D^beta` over compute, params, and data, then solved for the compute-optimal split. Chinchilla (70B, ~1.4T tokens) matched or beat Gopher (280B) and GPT-3 (175B) while using a fraction of the parameters.
+
+## The takeaway
+
+Undertrained giants were a mistake of the era. Chinchilla is why modern models ship with trillion-token datasets and why "how many tokens did you train on?" matters as much as "how big is the model?"
+
 ---
 
 ### RLHF: Deep Reinforcement Learning from Human Preferences
@@ -1119,6 +1261,20 @@ This is chapter one of how models learn what we want. InstructGPT picks up at st
 
 - Christiano et al. (2017). *Deep Reinforcement Learning from Human Preferences.* NeurIPS 2017. [arXiv:1706.03741](https://arxiv.org/abs/1706.03741)
 - Ouyang et al. (2022). *Training language models to follow instructions with human feedback (InstructGPT).* [arXiv:2203.02155](https://arxiv.org/abs/2203.02155)
+
+
+
+## From comparisons to a reward
+
+RLHF (as in InstructGPT) has three stages. First, collect human-written demonstrations and do supervised fine-tuning. Then, for a batch of model outputs, have humans **rank** them -- which answer is better? These pairwise comparisons train a **reward model** using a Bradley-Terry objective: it learns a scalar score `r(x, y)` such that preferred answers score higher.
+
+## Optimizing the policy
+
+Finally, treat the LM as a policy and run **PPO** to maximize the reward model's score, with a KL penalty that stops the model from drifting too far from the base distribution (otherwise it degenerates into reward-hacking gibberish).
+
+## The alignment tax
+
+RLHF trades a little raw capability for usefulness and safety -- outputs become more helpful, less toxic, better at following instructions. The catch is that the model is now only as good as the preferences it was shown, and the reward model can be gamed. This pipeline is the direct ancestor of ChatGPT's style.
 
 ---
 
@@ -1260,6 +1416,18 @@ Self-Consistency is the practical companion to the CoT post. CoT hands the model
 
 - Wang et al. (2022). *Self-Consistency Improves Chain-of-Thought Reasoning in Language Models.* ICLR 2023. [arXiv:2203.11171](https://arxiv.org/abs/2203.11171)
 - Wei et al. (2022). *Chain-of-Thought Prompting Elicits Reasoning in Large Language Models.* [arXiv:2201.11903](https://arxiv.org/abs/2201.11903)
+
+
+
+## Marginalizing over reasoning
+
+Chain-of-thought is powerful but fragile: change the phrasing and you may get a different final answer. Self-consistency fixes this by treating reasoning as a **latent variable**. Instead of one greedy chain, you sample many diverse CoT trajectories with a high temperature, then take the **majority vote** over their final answers.
+
+The intuition: a single wrong arithmetic step can derail one chain, but if most independent chains converge on the same answer, that answer is far more trustworthy. It is approximate marginalization -- "what answer do most valid reasoning paths support?"
+
+## Trade-offs
+
+It costs multiple forward passes per question, so it is a test-time compute trick, not a training change. On math and commonsense benchmarks it gives large, reliable gains over greedy CoT, and it pairs naturally with verifier-style scoring.
 
 ---
 
@@ -1452,40 +1620,7 @@ If you have read the Transformer post, you have already seen softmax doing the h
 
 ---
 
-## Software Engineering (17)
-
-### IPv6技术
-URL: https://cuijiawei.cn/2016/12/20/IPv6%E6%8A%80%E6%9C%AF/
-
-##### IPv6报头结构
-
-##### IPv6地址技术
-
-IPv6地址长度是128位，所以理论上IPv6地址一共有$2^{128}$个。
-
-- **首选格式**
-
-  把128位分成8段，每段16位，用4个十六进制数（一个占4位）表示，并用冒号等间距分隔。
-
-- **压缩格式**
-
-  如果地址包含了长串的“0”，则可以用冒号来取代。
-
-  比如`1623:0:0:0:6330:20BC:411A`可以用`1623::8:6330:20BC:411A`来代替。但是为了避免出现地址表示不清晰，一个地址中只能出现一次冒号压缩。
-
-- 内嵌IPv4的IPv6地址
-
-  在当下网络还没有全部从IPv4过渡到IPv6，就可能出现某些设备既连接了IPv4网络，又连接了IPv6网络。对于这样的情况，就需要一个地址即可以表示IPv4地址，又可以表示IPv6地址。
-
-  IPv4地址分为四段，每段0-255是8位，总共32位。而IPv6地址总共128位，所以将IPv4地址扩展成IPv6地址要在前面加上96个0。比如`0:0:0:0:0:0:172.18.1.1`或者压缩为`::172.18.1.1` 
-
-- “地址／前缀长度”表示法
-
-  例如`2001:A304:6101:1::E0:F726:4E58/64`表示一个子网前缀，64位也就是前4段用来表示结点所在的单个子网。
-
-  ​
-
----
+## Software Engineering (6)
 
 ### Advanced Javascript题目
 URL: https://cuijiawei.cn/2017/03/16/Learning Advanced Javascript/
@@ -1762,134 +1897,6 @@ loop([0, 1, 2], function(value, i){
 
 ---
 
-### wget工具的安装及使用
-URL: https://cuijiawei.cn/2017/04/24/wget%E5%B7%A5%E5%85%B7%E7%9A%84%E5%AE%89%E8%A3%85%E5%8F%8A%E4%BD%BF%E7%94%A8/
-
-#### Mac下wget工具的安装
-
-- 使用homebrew
-
-  ```shell
-  sudo brew install wget
-  ```
-
-- 使用mac ports
-
-  ```shell
-  sudo port install wget
-  ```
-
-  ​
-
-#### 使用wget爬取全站数据
-
-- 确定需要爬取的网站URL$Route_{remote}$ ，需要放置的本地路径$Route_{local}$
-
-- 输入命令
-
-  ```shell
-  wget -r -p -np -k -P ~/usr/web/ https://jiawei1996.github.io
-  ```
-
-- 其中
-
-  - -P 表示下载到哪个目录
-  - -r 表示递归下载
-  - -np 表示不下载旁站连接.
-  - -k 表示将下载的网页里的链接修改为本地链接.
-  - -p 获得所有显示网页所需的元素
-
----
-
-### MySQL安装方法
-URL: https://cuijiawei.cn/2017/05/02/MySQL%E5%AE%89%E8%A3%85%E6%96%B9%E6%B3%95/
-
-##### MySQL for MAC
-
-- 从 https://dev.mysql.com/downloads/ 也就是官方地址，选择MySQL Community Server 一项来下载MySQL。可以下载不同方式安装的版本，我则选择的是.dmg（最方便）。
-
-- 下载安装后，不能使用mysql命令，或是mysqladmin。在命令行里面用where、which、whereis都找不到。但是在偏好设置里面明明看到了可以开启MySQL Server。于是寻找教程，发现要手动配置环境变量。在命令行里输入
-
-  ```shell 
-  alias mysql=/usr/local/mysql/bin/mysql
-  alias mysqladmin=/usr/local/mysql/bin/mysqladmin
-  ```
-
-  于是就可以通过命令启动mysql了，然而每次重启命令行还是要设置。所以下面我们想办法设置环境变量使得每一次重启命令行不用再配置alias。
-
-- 环境变量
-
-  - 修改etc/paths 无效
-
-  - 有效方法
-
-    ```shell
-    vim ~/.zshrc //打开zsh配置文件
-
-    在其中添加
-    alias mysql=/usr/local/mysql/bin/mysql
-    alias mysqladmin=/usr/local/mysql/bin/mysqladmin
-    ```
-
-    ​
-
----
-
-### Git初始化操作
-URL: https://cuijiawei.cn/2017/05/12/Gitlab Commands/
-
-|总是忘记，写在这里没事看一看
-
-### Command line instructions
-
-##### Git global setup
-
-`git config --global user.name "Cui Jiawei"`
-
-`git config --global user.email "892001108@qq.com"`
-
-##### Create a new repository
-
-`git clone git@gitlab.com:We-InvoiceHelper/WeInvoiceHelper.git`
-
-`cd WeInvoiceHelper`
-
-`touch README.md`
-
-`git add README.md`
-
-`git commit -m "add README"`
-
-`git push -u origin master`
-
-##### Existing folder
-
-`cd existing_folder`
-
-`git init`
-
-`git remote add origin git@gitlab.com:We-InvoiceHelper/WeInvoiceHelper.git`
-
-`git add .`
-
-`git commit -m "Initial commit"`
-
-`git push -u origin master`
-
-##### Existing Git repository
-
-`cd existing_repo`
-
-`git remote rename origin old-origin`
-
-`git remote add origin git@gitlab.com:We-InvoiceHelper/WeInvoiceHelper.git`
-
-`git push -u origin --all`
-
-`git push -u origin --tags`
-
----
-
 ### 面向连接的运输：TCP
 URL: https://cuijiawei.cn/2017/05/18/面向连接的运输：TCP/
 
@@ -1963,40 +1970,6 @@ URL: https://cuijiawei.cn/2017/05/18/面向连接的运输：TCP/
 
 ---
 
-### 罗朗展式及孤立奇点
-URL: https://cuijiawei.cn/2017/06/14/%E7%BD%97%E6%9C%97%E5%B1%95%E5%BC%8F%E5%8F%8A%E5%AD%A4%E7%AB%8B%E5%A5%87%E7%82%B9/
-
-#### 罗朗展式及孤立奇点
-
-#####  4.3.1 罗朗展式
-
-罗朗展式是幂级数的一个推广，是“双向”幂级数，当所有负幂项系数为零时就是幂级数
-
-$$ f(z) = \sum_{n=-\infty}^{+\infty} \alpha_n (z-z_0)^n \nonumber$$
-
-上式称为f(z)在z0处的**罗朗展式**，右端的级数称为f(z)的**罗朗级数**，$\alpha_n$称为f(z)的**罗朗系数**
-
-##### 4.3.3 解析函数的孤立奇点
-
-**定义**
-
-对于在$z_0$点的罗朗展式
-
-1. 若其中不含有负幂项，则称$z_0$为f的**可去奇点**
-2. 若其中含有有限个负幂项，则称$z_0$为**极点**
-   - 单极点、**m阶极点**
-3. 若其中含有无穷多个负幂项，则称$z_0$为f的**本性奇点**
-
-
-
-若$z_0$为f的孤立奇点，则下列三个条件等价
-
-1. $z_0$是f的**可去奇点**
-2. $$ lim_{z\to z_0} f(z) = \alpha_0 \nonumber $$ (有限)
-3. f在$z_0$的某空心邻域有界
-
----
-
 ### 经济学原理
 URL: https://cuijiawei.cn/2017/06/26/曼昆--经济学原理/
 
@@ -2058,64 +2031,6 @@ URL: https://cuijiawei.cn/2017/06/26/曼昆--经济学原理/
   1. 确定该事件是使供给曲线移动还是使需求曲线移动(还是都移动)
   2. 确定曲线移动的方向
   3. 用供求图说明这种移动如何改变均衡价格和均衡数量
-
----
-
-### jekyll linux 安装方法
-URL: https://cuijiawei.cn/2017/09/25/jekyll linux 安装方法/
-
-#### jekyll linux 安装方法
-
-##### 安装gcc
-
-`sudo apt-get install gcc`
-
-##### 安装ruby
-
-把大象装进冰箱需要三步
-
-1. 类似node的安装需要nvm，经测试ruby安装最方便的方法是安装rvm
-
-   ```shell
-   gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3
-   curl -sSL https://get.rvm.io | bash -s stable
-   # 如果上面的连接失败，可以尝试: 
-   curl -L https://raw.githubusercontent.com/wayneeseguin/rvm/master/binscripts/rvm-installer | bash -s stable
-   ```
-
-2. 接下来安装ruby
-
-   ```shell
-   rvm requirements
-   # 环境准备
-   rvm install 2.3.0
-   rvm use 2.3.0 --default
-   # 目测有一些版本不行，需要指定2.3.0版本
-   ```
-
-3. 安装jekyll
-
-   ```shell
-   gem install bundler
-   gem install jekyll
-   ```
-
-
-最后，有人说需要nodejs环境，那么就可以安装一下nvm，装一个node上去，到此为止，一切准备就绪。
-
----
-
-### pm2管理node进程
-URL: https://cuijiawei.cn/2017/10/11/pm2 node进程管理/
-
-#### pm2 node进程管理
-
-- pm2 Git `https://github.com/Unitech/pm2`
-- pm2 中文Gitbook`https://wohugb.gitbooks.io/pm2/content/features/quick-start.html`
-
-
-- pm2无法启动express app
-  - 解决办法`pm2 start bin/www`
 
 ---
 
@@ -2566,304 +2481,6 @@ Jun 26 12:28:40 localhost dovecot: master: Dovecot v2.2.10 starting up for imap,
 
 ---
 
-### MPI编程学习
-URL: https://cuijiawei.cn/2017/12/25/MPI%E7%BC%96%E7%A8%8B/
-
-|张永东老师的《高性能计算》课程代码
-
-#### MPI编程
-
-
-
-##### 6.同步
-
-```c
-int MPI_Barrier(MPI_Comm comm)
-// MPI_Comm comm 通信子
-```
-
-实例
-
-```c
-#include<stdio.h>
-#include<mpi.h>
-
-int main(int argc, char **argv)
-{
-	int myid, numprocs;
-	double start, finish;
-	
-	MPI_Init(&argc, &argv);
-
-    MPI_Comm_rank(MPI_COMM_WORLD, &myid);
-    MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
-
-	//your code here
-	MPI_Barrier(MPI_COMM_WORLD);
-  	//阻止调用直到communicator中所有进程已经完成调用，就是说，任意一次进程的调用只能在所有communicator中的成员已经开始调用之后进行。
-	//end of your code
-	
-	start = MPI_Wtime();
-	
-	printf("The precision is: %f\n", MPI_Wtick());
-	
-	finish = MPI_Wtime();
-	
-	printf("Hello World!I'm rank %d of %d, running %f seconds.\n", myid, numprocs, finish-start);
-
-	MPI_Finalize();
-	return 0;
-}
-
-```
-
-
-
-
-
-##### 7.消息传递
-
-```c
-int MPI_Send(void* msg_buf_p, int msg_size, MPI_Datatype msg_type, int dest, int tag, MPI_Comm comm)
-int MPI_Recv(void* msg_buf_p, int buf_size, MPI_Datatype msg_type, int source, int tag, MPI_Comm communicator, MPI_Status *status_p)
-```
-
-
-
-> ```
-> void* msg_buf_p ： 发送缓冲区的起始地址；
-> int buf_size ： 缓冲区大小；
-> MPI_Datatype msg_type ： 发送信息的数据类型；
-> int dest ：目标进程的id值；
-> int tag ： 消息标签；
-> MPI_Comm communicator ： 通信子；
-> ```
-
-
-
-```c
-#include <stdio.h>
-#include <mpi.h>
-
-int main(int argc, char **argv)
-{
-	int myid, numprocs, source;
-	MPI_Status status;
-	char message[100];
-
-	MPI_Init(&argc, &argv);
-	MPI_Comm_rank(MPI_COMM_WORLD, &myid);
-    MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
-    
-    if(myid != 0) {
-    	strcpy(message, "hello world!");
-    	
-    	//your code here
-    	MPI_Send(message, strlen(message)+1, MPI_CHAR, 0, 99, MPI_COMM_WORLD);
-    	//end of your code
-	}
-	else { //myid == 0
-		for(source=1; source<numprocs; source++) {
-			//your code here
-			MPI_Recv(message, 100, MPI_CHAR, source, 99, MPI_COMM_WORLD, &status);
-			//end of your code
-			
-			printf("%s\n", message);
-		}
-	}
-
-	MPI_Finalize();
-	return 0;
-}
-```
-
-
-
-##### 8. 地址偏移量
-
-```c
-int MPI_Address(void* location, MPI_Aint *address)
-用法： MPI_Address(&a, &address1);
-```
-
-##### 9. 数据打包
-
-
-
-> ```c
-> int MPI_Pack(void* inbuf, int incount, MPI_datatype datatype, void *outbuf, int outcount, int *position, MPI_Comm comm) 
->
-> void* inbuf ： 输入缓冲区地址;
-> int incount ：输入数据项数目;
-> MPI_datatype datatype ：数据项的类型;
-> void *outbuf ：输出缓冲区地址;
-> int outcount ：输出缓冲区大小;
-> int *position ：缓冲区当前位置;
-> MPI_Comm comm ：通信子;
-> ```
-
-
-
-> ```c
-> int MPI_Unpack(void* inbuf, int insize, int *position, void *outbuf, int outcount, MPI_Datatype datatype, MPI_Comm comm) 
->
-> void* inbuf ： 输入缓冲区地址;
-> int insize ：输入数据项数目;
-> MPI_datatype datatype ：数据项的类型;
-> void *outbuf ：输出缓冲区地址;
-> int outcount ：输出缓冲区大小;
-> int *position ：缓冲区当前位置;
-> MPI_Comm comm ：通信子;
-> ```
-
-
-
-```c
-#include <stdio.h>
-#include <mpi.h>
-
-int main(int argc, char **argv)
-{
-	int myid, numprocs, source;
-	MPI_Status status;
-	int i, j, position;
-	int k[2];
-	int buf[1000];
-
-	MPI_Init(&argc, &argv);
-	MPI_Comm_rank(MPI_COMM_WORLD, &myid);
-    MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
-    
-    i = 1;
-    j = 2;
-    
-    if(myid == 0) {
-        
-        position = 0 ;
-        
-    	// your code here
-    	MPI_Pack(&i, 1, MPI_INT, buf, 1000, &position, MPI_COMM_WORLD); 
-        MPI_Pack(&j, 1, MPI_INT, buf, 1000, &position, MPI_COMM_WORLD); 
-    	// end of your code
-    	
-    	MPI_Send(buf, position, MPI_PACKED, 1, 99, MPI_COMM_WORLD); 
-	}
-	else if (myid == 1){ 
-		MPI_Recv(k, 2, MPI_INT, 0, 99, MPI_COMM_WORLD, &status);
-		
-		position = 0 ;
-		
-		MPI_Unpack(k, 2, &position, &i, 1, MPI_INT, MPI_COMM_WORLD);
-		MPI_Unpack(k, 2, &position, &j, 1, MPI_INT, MPI_COMM_WORLD);
-		
-		printf("The number is %d and %d", i, j);
-	}
-
-	MPI_Finalize();
-	return 0;
-}
-
-```
-
-
-
-##### 10. MPI_reduce 规约
-
----
-
-### https网站禁止调用http资源解决办法
-URL: https://cuijiawei.cn/2018/03/17/Some Web Problems/
-
-**#https网站禁止调用http资源**
-
-有时我们在Git Pages上放前端代码时，可能会遇到引用的外部资源加载不了，有着类似的提示`Mixed Content: The page was loaded over HTTPS, but requested an insecure XMLHttpRequest endpoint HTTP` 。这是因为https协议网站的内容不能引用http内容，此时我们可以在引用处省略协议名称，从而可以避免这个问题。如`src="//cdn.static.runoob.com/libs/jquery/2.1.1/jquery.min.js"` ，但是要记得//不可以去掉。
-
----
-
-### 本地localhost环境浏览器禁止跨域请求解决办法
-URL: https://cuijiawei.cn/2018/03/17/%E6%B5%8F%E8%A7%88%E5%99%A8%E7%A6%81%E6%AD%A2%E8%B7%A8%E5%9F%9F%E8%AF%B7%E6%B1%82/
-
-**#浏览器禁止跨域请求**
-
-有时我们在本地测试前端代码时，可能会出现`No 'Access-Control-Allow-Origin' header is present on the requested resource`这样的提示，原因是浏览器出于安全因素，不允许我们的页面使用来自多个页面的资源。此时我们需要开放浏览器的跨域请求。
-
-###### Mac-Chrome-Safari开放跨域请求：
-
-- chrome49以前版本
-
-  ```
-   open -a "Google Chrome" --args --disable-web-security
-  ```
-
-- chrome49以后版本
-
-  ```
-   open -a /Applications/Google\ Chrome.app --args --disable-web-security --user-data-dir
-  ```
-
-- Safari
-
-  ```
-  open -a '/Applications/Safari.app' --args --disable-web-security
-  ```
-
----
-
-### 树莓派最新教程整理
-URL: https://cuijiawei.cn/2018/03/30/%E6%A0%91%E8%8E%93%E6%B4%BE%E6%9C%80%E6%96%B0%E6%95%99%E7%A8%8B%E6%95%B4%E7%90%86/
-
-#### 当前有效教程
-
-- mac下烧录Rasbian进SD卡官方教程
-
-  `https://www.raspberrypi.org/documentation/installation/installing-images/mac.md`
-
-- 配置默认设置，如用户
-
-  `http://www.jianshu.com/p/68af9e3239ea`
-
-- 更换阿里云镜像源
-
-  `http://bbs.shumeipaiba.com/thread-5-1-1.html` 
-
-  有坑，评论区中把sources.list.d文件夹内raspi.list的源注释掉是正确做法。
-
-- 初次安装vim失败，要卸载vim-common才行
-
-  `http://blog.csdn.net/zsscy/article/details/8628311`
-
-- vim与terminal的**solarize**配色
-
-  `http://www.cnblogs.com/RandyXu/p/3279090.html`
-
-- 让树莓派支持中文编码和下载字体
-
-  `http://www.shumeipaiba.com/wanpai/jiaocheng/5.html`
-
-- 树莓派配置**shadowsocks**客户端
-
-  `http://www.wuliaole.com/post/raspberry_pi_and_shadowsocks/`
-
-- 树莓派上安装**node.js**
-
-  `https://cnodejs.org/topic/54032efa9769c2e93797cd06`
-
-- 树莓派配置**ftp**服务器
-
-  `http://blog.csdn.net/wxlguitar/article/details/52162748`
-
-- 树莓派安装**Pathogen**
-
-  `http://blog.csdn.net/z460189852/article/details/51525728`
-
-- 树莓派配置**zsh**
-
-  `http://www.cnblogs.com/jikexianfeng/p/5859496.html`
-
-  ​
-
----
-
 ### IE浏览器button标签不能嵌套a标签解决办法
 URL: https://cuijiawei.cn/2018/04/26/IE%E4%B8%8Bbutton%E6%A0%87%E7%AD%BE%E4%B8%8D%E8%83%BD%E5%B5%8C%E5%A5%97a%E6%A0%87%E7%AD%BE%E8%A7%A3%E5%86%B3%E5%8A%9E%E6%B3%95/
 
@@ -2918,88 +2535,140 @@ if(isIE()){
 ### Deep Learning
 URL: https://cuijiawei.cn/2025/10/22/intro-to-deep-learning/
 
-**Core Idea**: Deep learning, a subfield of machine learning, utilizes neural networks with many layers (hence "deep") to model and understand complex patterns in data. This course introduces the fundamentals of building and training neural networks for structured data using TensorFlow and Keras.
+Every time a language model predicts the next word, or an image classifier picks among a thousand labels, there is a softmax at the very end turning raw numbers into a probability distribution. It is the function that answers the only question that matters at decision time: *how sure are we, and across which options?* This post builds it from scratch, fixes its one famous numerical trap, and then shows where it does the heavy lifting in modern LLMs.
 
-## 1. The Neuron and the Layer
+## The problem: raw scores are not probabilities
 
-A neural network is composed of layers, and each layer is composed of neurons. A neuron receives inputs, applies a transformation (a linear combination followed by an activation function), and produces an output.
+A model's final layer usually emits **logits** — unbounded real numbers, one per class. They are comparable within a row but they do not mean "probability." We need a function that:
 
-*   **Linear Unit**: `y = w[0] * x[0] + w[1] * x[1] + ... + b`
-*   **Activation Function**: Introduces non-linearity, allowing the network to learn complex patterns. The Rectified Linear Unit (ReLU) is a common choice: `relu(x) = max(0, x)`.
+- maps every output into the range $[0, 1]$, and
+- makes them sum to exactly $1$,
 
-## 2. Building a Sequential Model in Keras
+so the outputs read as a proper distribution. That function is softmax.
 
-Keras is a high-level API for building and training deep learning models. The `Sequential` model is a simple stack of layers.
+## The formula
 
-```python
-from tensorflow import keras
-from tensorflow.keras import layers
+For a vector of logits $z = (z_1, \dots, z_C)$ over $C$ classes:
 
-model = keras.Sequential([
-    # the hidden ReLU layers
-    layers.Dense(units=4, activation='relu', input_shape=[2]),
-    layers.Dense(units=3, activation='relu'),
-    # the linear output layer 
-    layers.Dense(units=1),
-])
-```
+$$
+\text{softmax}(z_i) = \frac{e^{z_i}}{\sum_{c=1}^{C} e^{z_c}}
+$$
 
-## 3. Stochastic Gradient Descent (SGD)
+Each class receives a share of the total probability mass proportional to $e^{z_i}$.
 
-SGD is the optimization algorithm used to train neural networks. It iteratively adjusts the network's weights to minimize the loss function (the error between the model's predictions and the true values).
+## Soft vs hard max
 
-*   **Loss Function**: Measures the model's error. Common choices include Mean Absolute Error (MAE) and Mean Squared Error (MSE).
-*   **Optimizer**: Implements the SGD algorithm. 'Adam' is a popular and effective optimizer.
+`hardmax` simply takes the largest element:
 
 ```python
-model.compile(
-    optimizer='adam',
-    loss='mae',
-)
+import numpy as np
+np.max([1, 2, 3, 4, 5])   # -> 5
 ```
 
-## 4. Overfitting and Underfitting
+It is a winner-take-all switch — fine when there is exactly one answer. But a news article can be 60% sports and 40% politics; a sentence can be partly angry and partly sad. Softmax keeps a *distribution* over all classes, so you see the model's **confidence**, not just its pick. (The name: a "soft" version of "max".)
 
-*   **Underfitting**: The model has not learned the patterns in the training data well enough. The training loss remains high.
-*   **Overfitting**: The model has learned the training data too well, including the noise. It performs poorly on new, unseen data. The validation loss is much higher than the training loss.
+Worked example, inputs $[2, 3, 5]$:
 
-## 5. Preventing Overfitting
+- Naive normalization $[0.2, 0.3, 0.5]$ — it *flattens* the gaps.
+- Softmax $[0.042, 0.114, 0.844]$ — the exponential *amplifies* them.
 
-### 5.1 Early Stopping
+The model was not "a bit" more confident in class 3; it was *much* more confident. That sharpening is the whole point of the exponential.
 
-Monitor the validation loss and stop training when it stops improving.
+## Why the exponential?
+
+Two reasons $e^x$ is the right choice:
+
+1. **Monotonic and steep.** Small differences in logits become large, well-separated probabilities — exactly the margin you want for classification.
+2. **Trivial derivative.** $(e^x)' = e^x$, which keeps backprop clean (below).
+
+## The catch: overflow
+
+The exponential is also dangerous. Feed it large logits and you overflow to `inf`, then divide `inf / inf` and get `nan`:
 
 ```python
-early_stopping = keras.callbacks.EarlyStopping(
-    patience=10, # how many epochs to wait before stopping
-    min_delta=0.001, # minimum change to count as an improvement
-    restore_best_weights=True,
-)
+scores = np.array([123, 456, 789])
+np.exp(scores) / np.sum(np.exp(scores))
+# array([0., 0., nan])   # overflow -> 0/0
 ```
 
-### 5.2 Dropout
+## Numerical stability: subtract the max
 
-Randomly sets a fraction of neuron outputs to zero during training. This forces the network to learn more robust features.
+The fix is the oldest trick in the book — subtract the maximum value before exponentiating. It is mathematically identical, because a constant cancels in both numerator and denominator:
+
+$$
+\text{softmax}(z_i) = \frac{e^{z_i - \max(z)}}{\sum_{c=1}^{C} e^{z_c - \max(z)}}
+$$
 
 ```python
-layers.Dropout(rate=0.3) # apply 30% dropout
+scores = np.array([123, 456, 789])
+scores -= scores.max()
+p = np.exp(scores) / np.sum(np.exp(scores))
+# array([5.75e-290, 2.40e-145, 1.0])   # stable
 ```
 
-### 5.3 Batch Normalization
+This is the **log-sum-exp** trick, and it is exactly what `F.softmax` / `tf.nn.softmax` do internally. Rule of thumb: if you ever hand-roll softmax, always subtract the max. Better yet, in frameworks pass `from_logits=True` and let the fused kernel handle stability inside the loss op.
 
-Normalizes the inputs to a layer. This helps to stabilize the learning process and can significantly reduce training time.
+## A minimal stable implementation
 
 ```python
-layers.BatchNormalization()
+import numpy as np
+
+def softmax(z, axis=-1):
+    z = z - np.max(z, axis=axis, keepdims=True)
+    e = np.exp(z)
+    return e / np.sum(e, axis=axis, keepdims=True)
+
+logits = np.array([2.0, 1.0, 0.1])
+print(softmax(logits))   # [0.659, 0.242, 0.099]
 ```
 
-**Key Takeaways**:
+## Softmax meets cross-entropy
 
-*   Deep learning models are built from layers of neurons.
-*   Keras provides a user-friendly API for building and training models.
-*   SGD is the core training algorithm, guided by a loss function and an optimizer.
-*   Overfitting is a major challenge in deep learning.
-*   Techniques like early stopping, dropout, and batch normalization can help to prevent overfitting.
+Softmax is almost never used alone — it pairs with **cross-entropy loss**. For a one-hot label $y$ (1 at the true class, 0 elsewhere) and predicted probabilities $p = \text{softmax}(z)$:
+
+$$
+L = -\sum_{c=1}^{C} y_c \log p_c = -\log p_{\text{true}}
+$$
+
+The gradient is beautifully simple:
+
+$$
+\frac{\partial L}{\partial z_i} = p_i - y_i
+$$
+
+"Push all, pull one": every logit gets pushed down by its predicted probability, and the true class gets pulled up by one. That is the entire update rule — no separate softmax derivative needed if you fuse it with the loss.
+
+## Where softmax lives in modern LLMs
+
+This is where it gets interesting for the rest of this series:
+
+1. **Attention.** Scaled dot-product attention ends with a softmax over the key scores:
+   $$
+   \text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^\top}{\sqrt{d_k}}\right)V
+   $$
+   The softmax turns raw relevance scores into a *normalized weighting* of the values. The $\sqrt{d_k}$ keeps the dot products small enough that softmax does not saturate and kill the gradient.
+
+2. **Next-token prediction.** The final linear layer of a language model emits logits over the entire vocabulary (tens of thousands of tokens). Softmax turns them into the distribution you sample the next token from.
+
+3. **Temperature.** Divide the logits by $T$ before softmax:
+   $$
+   p_i = \frac{e^{z_i/T}}{\sum_c e^{z_c/T}}
+   $$
+   Low $T$ → sharper, more confident, more repetitive; high $T$ → flatter, more diverse, sometimes incoherent. It is the single knob that controls how "creative" a model sounds.
+
+## Takeaways
+
+- Softmax converts logits into a normalized probability distribution over classes.
+- The exponential sharpens differences but risks overflow — always subtract the max (or use a fused `from_logits` op).
+- Its gradient through cross-entropy collapses to $p - y$, which is why training is so clean.
+- In LLMs it does two jobs at once: normalizing attention weights and producing the next-token distribution, with temperature as the creativity dial.
+
+If you have read the Transformer post, you have already seen softmax doing the heavy lifting inside attention. Everything downstream — pretraining, RLHF, mixture-of-experts — inherits this same primitive.
+
+## References
+
+- Goodfellow, Bengio & Courville, *Deep Learning* (MIT Press), chapter on softmax and cross-entropy.
+- Bridging the classic "softmax from logits to loss" treatment with its modern LLM usage.
 
 ---
 
@@ -3055,6 +2724,22 @@ A fundamental challenge in RL is the trade-off between exploration (trying new a
 *   Reinforcement learning offers a powerful framework for training agents to learn optimal behaviors through trial and error.
 *   Q-learning and DQNs are fundamental algorithms in the RL toolkit.
 *   The exploration-exploitation trade-off is a key consideration when designing RL agents.
+
+
+
+## Agents that learn by playing
+
+Reinforcement learning (RL) trains an agent from trial and error: it takes actions in an environment, gets a reward, and learns a policy that maximizes cumulative reward. Games are the classic testbed because they have clear rules and scores.
+
+Key milestones:
+
+- **Q-learning / DQN:** learn the value of state-action pairs from pixels (DeepMind's Atari agents).
+- **Policy gradients:** directly optimize the policy (REINFORCE, PPO).
+- **AlphaGo / AlphaZero:** combine search (Monte Carlo tree search) with learned value and policy networks; AlphaZero learns purely from self-play, no human data.
+
+## The hard parts
+
+Reward shaping (what to reward), sample efficiency (RL needs a lot of interaction), and sim-to-real (policies trained in simulation failing in the real world) are the recurring headaches.
 
 ---
 
@@ -3123,6 +2808,21 @@ shap.summary_plot(shap_values, val_X)
 *   Permutation importance provides a global understanding of feature importance.
 *   Partial dependence plots help to visualize the relationship between a feature and the target.
 *   SHAP values offer a powerful and unified framework for explaining both individual predictions and overall model behavior.
+
+
+
+## Why explain?
+
+A model that predicts loan defaults but cannot say why is a liability in finance, healthcare, and hiring. Explainability is about trust, debugging, and compliance.
+
+Two families:
+
+- **Model-specific:** coefficients in linear or logistic regression, feature importances in tree models -- exact and cheap.
+- **Model-agnostic:** treat the model as a black box. **LIME** fits a local surrogate (e.g., a linear model) around one prediction. **SHAP** assigns each feature a contribution using Shapley values from cooperative game theory -- more principled, more expensive.
+
+## The trade-off
+
+The most accurate models (deep nets, gradient-boosted trees) are usually the least interpretable. Often you keep an accurate model for prediction and a simpler surrogate for explanation, or accept that "why" is approximate.
 
 ---
 
@@ -3204,6 +2904,21 @@ You can then add your own classifier on top of the frozen base and train it on y
 *   Convolutional and pooling layers are the core building blocks of a CNN.
 *   Data augmentation is a crucial technique for preventing overfitting in image models.
 *   Transfer learning allows you to leverage the knowledge from pre-trained models to achieve high performance with less data.
+
+
+
+## How machines see
+
+Computer vision turns pixels into understanding. The modern stack:
+
+- **CNNs:** convolutions exploit local patterns and translation invariance; AlexNet's 2012 ImageNet win started the deep-vision era.
+- **ImageNet pretraining:** models trained on millions of labeled images learn features reusable everywhere; you then **fine-tune** on your smaller dataset.
+- **Object detection and segmentation:** frameworks like YOLO and Mask R-CNN localize and outline objects, not just classify.
+- **Vision Transformers (ViT):** treat an image as a sequence of patches and apply attention -- now competitive with or beating CNNs when data is abundant.
+
+## Practical note
+
+For most tasks today you do not train from scratch: take a pretrained backbone, swap the head, and fine-tune. Data and augmentation usually matter more than architecture.
 
 ---
 
@@ -4493,6 +4208,22 @@ buffers = gdf.buffer(1000) # 1000-meter buffer
 *   Folium makes it easy to create beautiful and interactive maps.
 *   Spatial joins and proximity analysis are fundamental techniques for combining and analyzing geospatial data.
 
+
+
+## Working with space as data
+
+Geospatial analysis handles data tied to locations -- points, lines, polygons. The first thing to get right is the **coordinate reference system (CRS)**: the same longitude and latitude means different things in different projections, and you must reproject before measuring distances or overlapping layers.
+
+## The Python stack
+
+- **GeoPandas:** pandas with geometry columns; you get `merge` and `groupby` plus spatial operations like `sjoin` (spatial join) and `buffer`.
+- **Shapely:** predicates and operations on geometries (`intersects`, `within`, `union`).
+- **Folium / Kepler.gl:** quick interactive map visualizations.
+
+## Typical workflow
+
+Load shapefiles or GeoJSON, reproject to one CRS, spatially join your points to regions, aggregate, and map the result. The common bug is mixing CRSs, which silently offsets every feature by kilometers.
+
 ---
 
 ### Advanced SQL
@@ -4565,5 +4296,19 @@ Using the most appropriate and efficient data types for your columns can reduce 
 *   Query optimization is an essential skill for working with large-scale data.
 *   Understanding execution plans and proper indexing are key to high-performance SQL.
 
----
 
+
+## Beyond SELECT and JOIN
+
+Analytical SQL lives or dies on a few features:
+
+- **Window functions:** `ROW_NUMBER()`, `RANK()`, `SUM(...) OVER (PARTITION BY ... ORDER BY ...)` compute per-row aggregates without collapsing rows -- essential for running totals, rankings, and period-over-period changes.
+- **CTEs (`WITH`):** name subqueries for readable, composable pipelines instead of nested subqueries.
+- **Indexing:** B-tree indexes speed filters and joins; understand when they help (high-selectivity predicates) and when they don't (full scans).
+- **Query plans:** `EXPLAIN` shows whether the engine scans sequentially or uses an index, and where the cost is.
+
+## The mindset
+
+SQL is declarative -- you describe the result, the planner decides the path. Learning to read the plan and design indexes is what separates reports that take seconds from ones that take minutes.
+
+---
