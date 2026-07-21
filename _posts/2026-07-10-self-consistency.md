@@ -45,4 +45,4 @@ Substantially. On arithmetic and commonsense reasoning benchmarks the paper repo
 
 ## My take
 
-Self-consistency is the technique I reach for first whenever a reasoning task is *important and checkable by majority*. It's almost free to implement (a loop and a counter) and routinely beats a single精心-crafted chain. The mental model: don't ask the model once and trust it; ask several times, let the answers vote. Combine with CoT (the paths) and you get most of the "reasoning model" behavior without training one. For production, the only real cost is latency — and you can dial k to fit your budget.
+Self-consistency is the technique I reach for first whenever a reasoning task is *important and checkable by majority*. It's almost free to implement (a loop and a counter) and routinely beats a single carefully-crafted chain. The mental model: don't ask the model once and trust it; ask several times, let the answers vote. Combine with CoT (the paths) and you get most of the "reasoning model" behavior without training one. For production, the only real cost is latency — and you can dial k to fit your budget.
