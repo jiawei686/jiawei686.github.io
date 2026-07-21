@@ -1,6 +1,7 @@
 ---
 layout: post
-title: "IE Quirk: Clicks on `<a>` Inside `<button>` Don't Fire"
+title: "IE Quirk: Clicks on &lt;a&gt; Inside &lt;button&gt; Don't Fire"
+date: 2018-04-26
 tags: [engineering]
 ---
 

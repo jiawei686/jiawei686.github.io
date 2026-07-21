@@ -1,6 +1,7 @@
 ---
 layout: post
 title: Connection-Oriented Transport - TCP
+date: 2017-05-18
 tags: [engineering]
 ---
 

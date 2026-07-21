@@ -1,6 +1,7 @@
 ---
 layout: post
 title: Advanced JavaScript - Exercises and Gotchas
+date: 2017-03-16
 tags: [engineering]
 ---
 

@@ -1,66 +1,61 @@
-# Jiawei's Blog
+# cuijiawei.cn
 
-> Notes on LLMs, deep learning, and building things that work. Paper deep-dives, engineering notes, and data-science practice.
+> A blog on large language models, deep learning, and engineering. Paper deep-dives, tutorials, and build notes.
 
-## Index
+## Posts by topic
+### [AI]
+- [Deep Learning](https://cuijiawei.cn/2025/10/22/intro-to-deep-learning/)
+- [Game AI and Reinforcement Learning](https://cuijiawei.cn/2025/12/20/intro-to-game-ai-and-reinforcement-learning/)
+- [Machine Learning Explainability](https://cuijiawei.cn/2025/12/28/machine-learning-explainability/)
+- [Computer Vision](https://cuijiawei.cn/2026/01/15/computer-vision/)
 
-- [Home](https://cuijiawei.cn/) - Latest posts and writing
-- [About](https://cuijiawei.cn/about/) - Who I am and what I work on
-- [Playground](https://cuijiawei.cn/playground/) - Interactive ML demos
+### [DATA]
+- [Kaggle & Data Science - Practical Tips and Best Practices](https://cuijiawei.cn/2025/09/15/kaggle-data-science-practical-notes/)
+- [Geospatial Analysis](https://cuijiawei.cn/2026/01/02/geospatial-analysis/)
+- [Advanced SQL](https://cuijiawei.cn/2026/01/10/advanced-sql/)
 
-## Engineering
-
+### [ENGINEERING]
 - [Advanced JavaScript - Exercises and Gotchas](https://cuijiawei.cn/2017/03/16/advanced-javascript-exercises/)
 - [Connection-Oriented Transport - TCP](https://cuijiawei.cn/2017/05/18/connection-oriented-transport-tcp/)
 - [Principles of Economics (Mankiw)](https://cuijiawei.cn/2017/06/26/principles-of-economics/)
 - [Getting Started with iptables](https://cuijiawei.cn/2017/11/25/getting-started-with-iptables/)
 - [Building a Linux Mail Server with Postfix and Dovecot](https://cuijiawei.cn/2017/12/01/linux-mail-server-postfix-dovecot/)
-- [IE Quirk: Clicks on `<a>` Inside `<button>` Don't Fire](https://cuijiawei.cn/2018/04/26/ie-button-a-tag-click-fix/)
+- [IE Quirk: Clicks on <a> Inside <button> Don't Fire](https://cuijiawei.cn/2018/04/26/ie-button-a-tag-click-fix/)
 
-## Data
+### [LLM]
+- [The Transformer: Attention Is All You Need](https://cuijiawei.cn/2026/03/01/the-transformer-attention-is-all-you-need/)
+- [BERT: Bidirectional Pretraining from Transformers](https://cuijiawei.cn/2026/03/08/bert-bidirectional-pretraining/)
+- [GPT-3 and Few-Shot Learning at Scale](https://cuijiawei.cn/2026/03/15/gpt-3-few-shot-learners/)
+- [InstructGPT: Aligning LLMs with Human Preference (RLHF)](https://cuijiawei.cn/2026/03/22/instructgpt-rlhf-alignment/)
+- [Chain-of-Thought Prompting: Let the Model Think Step by Step](https://cuijiawei.cn/2026/03/29/chain-of-thought-prompting/)
+- [LoRA: Low-Rank Adaptation of Large Models](https://cuijiawei.cn/2026/04/05/lora-low-rank-adaptation/)
+- [FlashAttention: IO-Aware Exact Attention](https://cuijiawei.cn/2026/04/12/flashattention-efficient-attention/)
+- [LLaMA: The Open-Weight Catalyst](https://cuijiawei.cn/2026/04/19/llama-open-weights-revolution/)
+- [Mixtral of Experts: Sparse Mixture of Experts](https://cuijiawei.cn/2026/04/26/mixtral-mixture-of-experts/)
+- [DeepSeek-R1: Reasoning via Reinforcement Learning](https://cuijiawei.cn/2026/05/03/deepseek-r1-reasoning-rl/)
+- [RAG: Retrieval-Augmented Generation](https://cuijiawei.cn/2026/05/10/rag-retrieval-augmented-generation/)
+- [ReAct: Reasoning + Acting in Language Models](https://cuijiawei.cn/2026/05/17/react-reasoning-acting/)
+- [Toolformer: Language Models That Teach Themselves to Use Tools](https://cuijiawei.cn/2026/05/24/toolformer-tools/)
+- [Reflexion: Verbal Reinforcement Learning for Language Agents](https://cuijiawei.cn/2026/05/31/reflexion-verbal-rl/)
+- [Generative Agents: Believable Simulacra of Human Behavior](https://cuijiawei.cn/2026/06/07/generative-agents/)
+- [AutoGen: Multi-Agent Conversation as Computation](https://cuijiawei.cn/2026/06/14/autogen-multi-agent/)
+- [Tree of Thoughts: Deliberate Problem Solving](https://cuijiawei.cn/2026/06/21/tree-of-thoughts/)
+- [Scaling Laws for Neural Language Models](https://cuijiawei.cn/2026/06/28/scaling-laws/)
+- [RoPE: Rotary Position Embedding](https://cuijiawei.cn/2026/07/03/rope/)
+- [Chinchilla: Training Compute-Optimal Large Language Models](https://cuijiawei.cn/2026/07/05/chinchilla/)
+- [RLHF: Deep Reinforcement Learning from Human Preferences](https://cuijiawei.cn/2026/07/05/rlhf-from-human-preferences/)
+- [DPO: Direct Preference Optimization](https://cuijiawei.cn/2026/07/07/dpo/)
+- [Constitutional AI: Harmlessness from AI Feedback](https://cuijiawei.cn/2026/07/09/constitutional-ai/)
+- [Self-Consistency: Improving Chain-of-Thought Reasoning](https://cuijiawei.cn/2026/07/10/self-consistency/)
+- [CLIP: Learning Transferable Visual Models From Language Supervision](https://cuijiawei.cn/2026/07/11/clip/)
+- [Softmax: Turning Logits into Probabilities](https://cuijiawei.cn/2026/07/18/softmax/)
 
-- [Kaggle & Data Science - Practical Tips and Best Practices](https://cuijiawei.cn/2025/09/15/kaggle-data-science-practical-notes/)
-- [Geospatial Analysis](https://cuijiawei.cn/2026/01/02/geospatial-analysis/) - Geospatial data analysis: coordinate systems, spatial joins, and the Python stack for working with maps and geometries.
-- [Advanced SQL](https://cuijiawei.cn/2026/01/10/advanced-sql/) - Advanced SQL: window functions, CTEs, query optimization, and indexing for analytical workloads.
-
-## Ai
-
-- [Deep Learning](https://cuijiawei.cn/2025/10/22/intro-to-deep-learning/) - A practical intro to deep learning: from perceptrons to backprop, CNNs, RNNs, and Transformers.
-- [Game AI and Reinforcement Learning](https://cuijiawei.cn/2025/12/20/intro-to-game-ai-and-reinforcement-learning/) - How reinforcement learning powers game AI, from Q-learning and DQN to AlphaGo and AlphaZero.
-- [Machine Learning Explainability](https://cuijiawei.cn/2025/12/28/machine-learning-explainability/) - Model explainability techniques: feature importance, LIME, SHAP, and the trade-off between accuracy and interpretability.
-- [Computer Vision](https://cuijiawei.cn/2026/01/15/computer-vision/) - Foundations of computer vision: from convolutional nets and ImageNet to transfer learning and vision transformers.
-
-## Projects
-
+### [PROJECTS]
 - [wechat-dev-mcp: Bridging AI and WeChat Mini-Program Development](https://cuijiawei.cn/2026/01/31/wechat-dev-mcp/)
 - [Homeware Sense: Open Source Smart Home Integration for OpenClaw AI](https://cuijiawei.cn/2026/02/02/introducing-homeware-sense-skill-unified-smart-home-integration-for-openclaw-ai/)
 - [Deploy OpenClaw AI on Raspberry Pi: Our Open Source Guide](https://cuijiawei.cn/2026/02/04/complete-raspberry-pi-openclaw-deployment-guide/)
 
-## Llm
+## Other resources
+- [About](https://cuijiawei.cn/about/)
+- [Playground](https://cuijiawei.cn/playground/)
 
-- [The Transformer: Attention Is All You Need](https://cuijiawei.cn/2026/03/01/the-transformer-attention-is-all-you-need/)
-- [BERT: Bidirectional Pretraining from Transformers](https://cuijiawei.cn/2026/03/08/bert-bidirectional-pretraining/) - Pre-trained BERT with masked language modeling became the default backbone for NLP before decoder-only models took over.
-- [GPT-3 and Few-Shot Learning at Scale](https://cuijiawei.cn/2026/03/15/gpt-3-few-shot-learners/) - GPT-3 showed that scaling to 175B parameters enables in-context few-shot learning with no gradient updates.
-- [InstructGPT: Aligning LLMs with Human Preference (RLHF)](https://cuijiawei.cn/2026/03/22/instructgpt-rlhf-alignment/) - InstructGPT is the paper that turned RLHF into the standard recipe for making LLMs helpful and follow instructions — the direct ancestor of ChatGPT.
-- [Chain-of-Thought Prompting: Let the Model Think Step by Step](https://cuijiawei.cn/2026/03/29/chain-of-thought-prompting/) - Chain-of-thought prompting improves reasoning by eliciting intermediate steps before the final answer.
-- [LoRA: Low-Rank Adaptation of Large Models](https://cuijiawei.cn/2026/04/05/lora-low-rank-adaptation/) - LoRA freezes the pretrained weights and learns a low-rank update, enabling cheap fine-tuning and swappable adapters.
-- [FlashAttention: IO-Aware Exact Attention](https://cuijiawei.cn/2026/04/12/flashattention-efficient-attention/) - FlashAttention explained clearly: IO-aware exact attention that speeds up transformers. The tiling + online-softmax trick, intuition, and code. arXiv:2205.14135
-- [LLaMA: The Open-Weight Catalyst](https://cuijiawei.cn/2026/04/19/llama-open-weights-revolution/) - LLaMA proved smaller models trained on more high-quality tokens can match much larger ones, igniting the open-weight era.
-- [Mixtral of Experts: Sparse Mixture of Experts](https://cuijiawei.cn/2026/04/26/mixtral-mixture-of-experts/) - Mixtral is a sparse mixture-of-experts model that activates only a few experts per token, combining dense-model quality with cheaper inference.
-- [DeepSeek-R1: Reasoning via Reinforcement Learning](https://cuijiawei.cn/2026/05/03/deepseek-r1-reasoning-rl/) - DeepSeek-R1 explained: open-weight reasoning from pure RL, no supervised reasoning data. How it matches o1, and the recipe. arXiv:2501.12948
-- [RAG: Retrieval-Augmented Generation](https://cuijiawei.cn/2026/05/10/rag-retrieval-augmented-generation/) - RAG explained: marry a generative model with an external knowledge index so it can look things up. The seed of every production LLM app. arXiv:2005.11401
-- [ReAct: Reasoning + Acting in Language Models](https://cuijiawei.cn/2026/05/17/react-reasoning-acting/) - ReAct interleaves reasoning traces and actions so a language model can plan, use tools, and observe results — the blueprint for most LLM agents today.
-- [Toolformer: Language Models That Teach Themselves to Use Tools](https://cuijiawei.cn/2026/05/24/toolformer-tools/) - Toolformer explained: a 6B model teaches itself to use tools from unlabeled text. The ancestor of GPT-4 function calling, with code. arXiv:2302.04761
-- [Reflexion: Verbal Reinforcement Learning for Language Agents](https://cuijiawei.cn/2026/05/31/reflexion-verbal-rl/) - Reflexion explained: improve language agents with verbal RL, no weight updates, just memory of mistakes. The self-reflect loop, with code. arXiv:2303.11366
-- [Generative Agents: Believable Simulacra of Human Behavior](https://cuijiawei.cn/2026/06/07/generative-agents/) - Generative Agents showed that LLM-driven characters with memory, planning, and reflection produce surprisingly believable behavior — the architecture behind AI towns and sims.
-- [AutoGen: Multi-Agent Conversation as Computation](https://cuijiawei.cn/2026/06/14/autogen-multi-agent/) - AutoGen is a framework for building multi-agent conversations where LLM and tool-using agents collaborate to solve tasks.
-- [Tree of Thoughts: Deliberate Problem Solving](https://cuijiawei.cn/2026/06/21/tree-of-thoughts/) - Tree of Thoughts explained: how LLMs explore, judge, and backtrack through a search tree instead of one greedy chain. Intuition + examples. arXiv:2305.10601
-- [Scaling Laws for Neural Language Models](https://cuijiawei.cn/2026/06/28/scaling-laws/) - Scaling laws describe how language-model loss predictably improves as compute, data, and parameters grow — the empirical foundation for training ever-larger models.
-- [RoPE: Rotary Position Embedding](https://cuijiawei.cn/2026/07/03/rope/)
-- [Chinchilla: Training Compute-Optimal Large Language Models](https://cuijiawei.cn/2026/07/05/chinchilla/) - Chinchilla established the compute-optimal scaling law: model size and training tokens should scale together, favoring far more data than was common.
-- [RLHF: Deep Reinforcement Learning from Human Preferences](https://cuijiawei.cn/2026/07/05/rlhf-from-human-preferences/) - RLHF aligns language models to human preferences by training a reward model on comparisons and optimizing the policy with PPO.
-- [DPO: Direct Preference Optimization](https://cuijiawei.cn/2026/07/07/dpo/) - DPO skips the reward model and RL loop entirely: it frames preference learning as a simple classification loss over the policy itself. Stable, cheap, and now the default alignment method.
-- [Constitutional AI: Harmlessness from AI Feedback](https://cuijiawei.cn/2026/07/09/constitutional-ai/) - Constitutional AI (RLAIF) explained: how Anthropic trained harmlessness from AI feedback instead of human raters. The recipe, with code. arXiv:2212.08073
-- [Self-Consistency: Improving Chain-of-Thought Reasoning](https://cuijiawei.cn/2026/07/10/self-consistency/) - Self-Consistency explained: sample many reasoning paths, take the majority vote. The cheapest accuracy win for LLM reasoning. arXiv:2203.11171
-- [CLIP: Learning Transferable Visual Models From Language Supervision](https://cuijiawei.cn/2026/07/11/clip/) - CLIP trains image and text encoders together on 400M captioned images, enabling zero-shot classification and powering modern text-to-image and multimodal models.
-- [Softmax: Turning Logits into Probabilities](https://cuijiawei.cn/2026/07/18/softmax/)

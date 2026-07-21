@@ -1,6 +1,7 @@
 ---
 layout: post
 title: Principles of Economics (Mankiw)
+date: 2017-06-26
 tags: [engineering]
 ---
 

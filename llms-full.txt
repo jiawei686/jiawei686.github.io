@@ -1,4 +1,4 @@
-# Jiawei's Blog - Full Content
+# cuijiawei.cn - Full Content
 
 ## Advanced JavaScript - Exercises and Gotchas
 URL: https://cuijiawei.cn/2017/03/16/advanced-javascript-exercises/
@@ -10,15 +10,7 @@ A while back I worked through a set of JavaScript exercises designed to expose t
 
 The goal was to understand this snippet (the `bind` polyfill from early Prototype.js):
 
-```javascript
-Function.prototype.bind = function(){
-  var fn = this, args = Array.prototype.slice.call(arguments), object = args.shift();
-  return function(){
-    return fn.apply(object,
-      args.concat(Array.prototype.slice.call(arguments)));
-  };
-};
-```
+
 
 To read it you need three basics:
 
@@ -28,10 +20,7 @@ To read it you need three basics:
 
 The subtle part is `call` vs. `apply`. They do the same thing — bind a function to a `this` object — the only difference is how you pass arguments: `call` takes them individually, `apply` takes an array.
 
-```javascript
-func.call(this, arg1, arg2);
-func.apply(this, [arg1, arg2]);
-```
+
 
 In the polyfill, `arguments` is **not** a real array, so it has no `slice` method. The trick `Array.prototype.slice.call(arguments)` borrows `slice` from `Array.prototype` and runs it against `arguments`. The later `concat` folds in any arguments that were bound up front. Once you see that, the whole function reads cleanly.
 
@@ -39,35 +28,17 @@ In the polyfill, `arguments` is **not** a real array, so it has no `slice` metho
 
 **#11 — a function with a name:**
 
-```javascript
-var ninja = function myNinja(){
-  assert( ninja == myNinja, "This function is named two things - at once!" );
-};
-ninja();
-assert( typeof myNinja == "undefined", "But myNinja isn't defined outside of the function." );
-log( ninja );
-```
+
 
 Output:
 
-```
-PASS This function is named two things - at once!
-PASS But myNinja isn't defined outside of the function.
-LOG function myNinja(){ ... }
-```
+
 
 The takeaway: a named function expression keeps its name **inside** itself but is invisible outside. An anonymous function is `undefined` when referenced by name from the outside.
 
 **#12 — a method on an object:**
 
-```javascript
-var ninja = {
-  yell: function(n){
-    return n > 0 ? ninja.yell(n-1) + "a" : "hiy";
-  }
-};
-assert( ninja.yell(4) == "hiyaaaa", "A single object isn't too bad, either." );
-```
+
 
 Even though `yell` is defined inside `ninja`, you can still call it from outside via `ninja.yell(...)`.
 
@@ -75,47 +46,17 @@ Even though `yell` is defined inside `ninja`, you can still call it from outside
 
 **#13 — what happens when you delete the original object?**
 
-```javascript
-var ninja = {
-  yell: function(n){
-    return n > 0 ? ninja.yell(n-1) + "a" : "hiy";
-  }
-};
-assert( ninja.yell(4) == "hiyaaaa", "A single object isn't too bad, either." );
 
-var samurai = { yell: ninja.yell };
-var ninja = null;
-
-try {
-  samurai.yell(4);
-} catch(e){
-  assert( false, "Uh, this isn't good! Where'd ninja.yell go?" );
-}
-```
 
 Output:
 
-```
-PASS A single object isn't too bad, either.
-FAIL Uh, this isn't good! Where'd ninja.yell go?
-```
+
 
 Object assignment copies a **reference**, not the function. When `ninja` becomes `null`, the `ninja.yell` inside the method points at nothing.
 
 **#14 — give the inner function a name and it fixes itself:**
 
-```javascript
-var ninja = {
-  yell: function yell(n){
-    return n > 0 ? yell(n-1) + "a" : "hiy";
-  }
-};
-assert( ninja.yell(4) == "hiyaaaa", "Works as we would expect it to!" );
 
-var samurai = { yell: ninja.yell };
-var ninja = {};
-assert( samurai.yell(4) == "hiyaaaa", "The method correctly calls itself." );
-```
 
 Naming the function lets it recurse via its own name instead of `ninja.yell(n-1)`. If you'd rather stay anonymous, `arguments.callee(n-1)` achieves the same (though `arguments.callee` is deprecated in strict mode).
 
@@ -123,19 +64,7 @@ Naming the function lets it recurse via its own name instead of `ninja.yell(n-1)
 
 **#19 — caching via a static property:**
 
-```javascript
-function getElements( name ) {
-  var results;
-  if ( getElements.cache[name] ) {
-    results = getElements.cache[name];
-  } else {
-    results = document.getElementsByTagName(name);
-    getElements.cache[name] = results;
-  }
-  return results;
-}
-getElements.cache = {};
-```
+
 
 Simple and effective: attach a `cache` object to the function itself.
 
@@ -143,39 +72,13 @@ Simple and effective: attach a `cache` object to the function itself.
 
 The real lesson of the exercise, though, is memoization:
 
-```javascript
-function isPrime( num ) {
-  if(isPrime.cache[num]) return isPrime.cache[num];
-  else {
-      var prime = num != 1; // Everything but 1 can be prime
-      for ( var i = 2; i < num; i++ ) {
-        if ( num % i == 0 ) {
-          prime = false;
-          break;
-        }
-      }
-      isPrime.cache[num] = prime;
-      return prime;
-  }
-}
-isPrime.cache = {};
-```
+
 
 ## 5. Looping with a callback
 
 **#27 — implement the body so the callback receives the value and the array as `this`:**
 
-```javascript
-function loop(array, fn){
-  for ( var i = 0; i < array.length; i++ )
-    fn.call( array, array[i], i );
-}
-var num = 0;
-loop([0, 1, 2], function(value, i){
-  assert(value == num++, "Make sure the contents are as we expect it.");
-  assert(this instanceof Array, "The context should be the full array.");
-});
-```
+
 
 The trick is `fn.call(array, ...)` so that `this` inside the callback is the whole array, exactly as the assertion expects.
 
@@ -327,15 +230,11 @@ Tags: [engineering]
 
 Save the help to a file so you can study it offline:
 
-```shell
-sudo iptables -h > ~/iptables_help
-```
+
 
 `iptables` is organized into **tables**, and each table has **chains**. In most cases you only need the `filter` and `nat` tables. List the rules in the `filter` table with:
 
-```shell
-sudo iptables -L -n
-```
+
 
 Flag breakdown:
 - `-L` — list rules.
@@ -347,9 +246,7 @@ By default this shows the `filter` table, which has three built-in chains: `INPU
 
 With no firewall, `ping www.baidu.com` succeeds. Suppose as an admin you don't want this machine to ping a particular server:
 
-```shell
-sudo iptables -I OUTPUT -p icmp -d www.baidu.com -j DROP
-```
+
 
 Flags:
 - `-I` — insert the rule at the **top** of the chain.
@@ -359,35 +256,25 @@ Flags:
 
 **Important:** rules in a chain run top to bottom. A `-j REJECT` that blocks *everything* must sit at the **bottom** of the chain, with the "allow" rules above it — otherwise every packet matches the reject first and all connections die. After the rule, `iptables -L -n` shows the new `OUTPUT` entries with the DNS-resolved Baidu IPs, and `ping` now fails:
 
-```shell
-ping -c 4 www.baidu.com
-PING www.a.shifen.com (220.181.111.188) 56(84) bytes of data.
-ping: sendmsg: Operation not permitted
-```
+
 
 ## Export, edit, import rules
 
 ### Export
 
-```shell
-sudo iptables-save > /home/ubuntu/iptables_rules
-```
+
 
 ### Edit
 
 Open `iptables_rules`, and under the `:OUTPUT ACCEPT` line in the `filter` table, add:
 
-```
--A OUTPUT -p icmp -d 114.114.114.114 -j DROP
-```
+
 
 Save with `Ctrl-S`.
 
 ### Import
 
-```shell
-sudo iptables-restore /home/ubuntu/iptables_rules
-```
+
 
 Verify with `iptables -L -n` and a `ping 114.114.114.114`.
 
@@ -397,22 +284,13 @@ Suppose this machine is a gateway and you want to block two destinations (114.11
 
 Find the local interface IP:
 
-```shell
-sudo ip a show eth0
-```
+
 
 The address after `inet` (e.g. `10.135.166.86`) is your interface IP.
 
 Build a dedicated `BLACKLIST` chain:
 
-```shell
-sudo iptables -F                       # flush existing rules
-sudo iptables -X                       # delete custom chains
-sudo iptables -N BLACKLIST             # create a new chain
-sudo iptables -A OUTPUT -s 10.135.166.86 -j BLACKLIST   # jump to it for local source
-sudo iptables -A BLACKLIST -d 114.114.114.114 -j DROP
-sudo iptables -A BLACKLIST -d 220.181.111.188 -j DROP
-```
+
 
 Now local pings to either address fail. To block a new destination later, just append a rule to `BLACKLIST`. To restrict a *different* PC going through this gateway, add a source-IP match in `OUTPUT` that jumps to `BLACKLIST`.
 
@@ -422,32 +300,23 @@ Normally you'd configure the app to listen on multiple ports or put a load balan
 
 First confirm both are closed:
 
-```shell
-telnet 0 80
-telnet 0 8080
-```
+
 
 Listen on 80 with `netcat`:
 
-```shell
-sudo nc -k -l 80 &
-```
+
 
 Now `telnet 0 80` works. (To exit `telnet`: press `Ctrl + ]`, then `q` + Enter.)
 
 Forward 8080 → 80 on localhost:
 
-```shell
-sudo iptables -t nat -A OUTPUT -p tcp -d 127.0.0.1 --dport 8080 -j DNAT --to 127.0.0.1:80
-```
+
 
 Here `-t nat` selects the NAT table, and `-j DNAT` rewrites the destination to port 80. Now `telnet 0 8080` also works.
 
 For external traffic (not localhost), use `PREROUTING` instead:
 
-```shell
-sudo iptables -t nat -A PREROUTING -p tcp --dport 8080 -j REDIRECT --to-ports 80
-```
+
 
 ## My take
 
@@ -483,17 +352,13 @@ DNS changes need time to propagate.
 
 - Check the A record with `ping`:
 
-```shell
-ping yourdomain.com
-```
+
 
 If the reply shows the IP you set, resolution works.
 
 - Check the MX record:
 
-```shell
-nslookup -q=mx yourdomain.com
-```
+
 
 If the output shows your domain, the MX record is correct.
 
@@ -510,9 +375,7 @@ Configuring a complete mail server is not a trivial task; this lab only builds a
 
 On CentOS 7:
 
-```shell
-yum -y install postfix dovecot
-```
+
 
 ## Postfix
 
@@ -520,25 +383,7 @@ yum -y install postfix dovecot
 
 Replace `yourdomain.com` with your own domain. Set the parameters with `postconf -e`:
 
-```shell
-postconf -e 'myhostname = server.cuijiawei.tk'
-postconf -e 'mydestination = localhost, localhost.localdomain'
-postconf -e 'myorigin = $mydomain'
-postconf -e 'mynetworks = 127.0.0.0/8'
-postconf -e 'inet_interfaces = all'
-postconf -e 'inet_protocols = all'
-postconf -e 'mydestination = $myhostname, localhost.$mydomain, localhost, $mydomain'
-postconf -e 'home_mailbox = Maildir/'
-postconf -e 'smtpd_sasl_type = dovecot'
-postconf -e 'smtpd_sasl_path = private/auth'
-postconf -e 'smtpd_sasl_auth_enable = yes'
-postconf -e 'broken_sasl_auth_clients = yes'
-postconf -e 'smtpd_sasl_authenticated_header = yes'
-postconf -e 'smtpd_recipient_restrictions = permit_mynetworks, permit_sasl_authenticated, reject_unauth_destination'
-postconf -e 'smtpd_use_tls = yes'
-postconf -e 'smtpd_tls_cert_file = /etc/pki/dovecot/certs/dovecot.pem'
-postconf -e 'smtpd_tls_key_file = /etc/pki/dovecot/private/dovecot.pem'
-```
+
 
 Postfix uses **SASL** for authentication and **TLS** to encrypt the connection. The lab reuses Dovecot's default SSL certificate and key; swap the last two paths if you have your own.
 
@@ -546,17 +391,11 @@ Postfix uses **SASL** for authentication and **TLS** to encrypt the connection. 
 
 Some mail clients require encrypted connections on port 465. Edit `/etc/postfix/master.cf` and uncomment these two lines (keep the space before `-o`):
 
-```
-smtps inet n - n - - smtpd
-  -o smtpd_tls_wrappermode=yes
-```
+
 
 ### Start
 
-```shell
-systemctl enable postfix.service
-systemctl start  postfix.service
-```
+
 
 ### Logs
 
@@ -568,47 +407,25 @@ Postfix logs to `/var/log/maillog`, which records the server's runtime status.
 
 Edit `/etc/dovecot/dovecot.conf` and append at the bottom (replace the cert paths if you used your own):
 
-```shell
-ssl_cert = </etc/pki/dovecot/certs/dovecot.pem
-ssl_key = </etc/pki/dovecot/private/dovecot.pem
 
-protocols = imap pop3 lmtp
-listen = *
-mail_location = Maildir:~/Maildir
-disable_plaintext_auth = no
-```
 
 Then edit `/etc/dovecot/conf.d/10-master.conf`, find the `service auth` section, and uncomment:
 
-```shell
-unix_listener /var/spool/postfix/private/auth {
-       mode = 0666
-}
-```
+
 
 ### Start
 
-```shell
-systemctl enable dovecot.service
-systemctl start  dovecot.service
-```
+
 
 Check `/var/log/maillog`. A successful startup looks like:
 
-```shell
-Jun 26 12:00:28 localhost postfix/postfix-script[28338]: starting the Postfix mail system
-Jun 26 12:00:29 localhost postfix/master[28340]: daemon started -- version 2.10.1, configuration /etc/postfix
-Jun 26 12:28:40 localhost dovecot: master: Dovecot v2.2.10 starting up for imap, pop3, lmtp (core dumps disabled)
-```
+
 
 ## Create an account
 
 In this setup, mailbox accounts map to system users. Create one with `useradd`, then set its password:
 
-```shell
-useradd test
-passwd test
-```
+
 
 ## Test
 
@@ -618,31 +435,13 @@ If something fails, check the error messages in `maillog`.
 
 Switch user and send a test message (`xxxx@xxx.com` → your real inbox):
 
-```shell
-su test
-echo "Mail Content" | mail -s "Mail Subject" 892001108@qq.com
-```
+
 
 ### Mail client
 
 You can add the account to a desktop client (Foxmail is recommended in the lab). Example settings:
 
-```
-Server type:     POP3
-Mail account:    test@yourdomain.com
 
-Incoming (POP3):  yourdomain.com
-Port:             995
-SSL:              Yes
-User:             test
-Password:         test user's password
-
-Outgoing (SMTP):  yourdomain.com
-Port:             465
-SSL:              Yes
-User:             test
-Password:         test user's password
-```
 
 (With a self-signed/generic certificate, some clients may warn or misbehave — that's expected.)
 
@@ -652,7 +451,7 @@ The mental model that makes this whole setup click: **Postfix = outgoing/incomin
 
 ---
 
-## IE Quirk: Clicks on `<a>` Inside `<button>` Don't Fire
+## IE Quirk: Clicks on <a> Inside <button> Don't Fire
 URL: https://cuijiawei.cn/2018/04/26/ie-button-a-tag-click-fix/
 Tags: [engineering]
 
@@ -660,9 +459,7 @@ A friend in the US asked me to help with a parent-child education website. Durin
 
 While debugging in IE, I found that an `<a>` tag nested inside a `<button>` simply stopped working. The markup looked roughly like this:
 
-```html
-<button class ="link">Health and Safety <a href ="Health&Safety.html"></a></button>
-```
+
 
 Clicking the link did nothing. My first guess was that IE was rendering the `<button>` *on top of* the `<a>`, so I added `z-index: 1` to the link's stylesheet. No effect whatsoever.
 
@@ -670,32 +467,13 @@ A quick search confirmed IE really does have this bug — and it goes both ways:
 
 I tried a snippet from a blog that solved the "`<a>` outside `<button>` won't navigate" case, hoping it would cover ours too:
 
-```html
-<a href ="1.html" onclick ="Javascript:window.location.href='2.html'"><button>click me</button></a>
-```
+
 
 Still didn't fix our problem.
 
 So I had to solve it myself. I didn't want to manually move every `<a>`'s `href` onto its parent `<button>` and bind a click handler one by one. Instead I wrote a small script: for each button, grab the `href` of the `<a>` inside it, then bind a click handler that navigates. To make the URL correct on every click I used a **closure** to capture the loop index — otherwise every click would jump to whatever the last `<a>` pointed at.
 
-```javascript
-function isIE() { // ie?
-     if (!!window.ActiveXObject || "ActiveXObject" in window) return true;
-     else return false;
-}
-if (isIE()) {
-    var index = 0;
-    $(".small-link").each(function () {
-        $(this).click(function () {
-            var index_inner = index;
-            return function () {
-                window.location.href = $(".small-link a").eq(index_inner).attr('href');
-            }
-        }(index));
-        index++;
-    });
-}
-```
+
 
 Debugging inside a virtual machine was painful, but in the end it worked.
 
@@ -717,56 +495,17 @@ Over Kaggle competitions and real data-science projects I've collected a set of 
 
 Messy timestamp formats are common in time-series data. Here's a robust way to normalize them:
 
-```python
-import pandas as pd
 
-# Load and normalize timestamps
-df = pd.read_csv("data.csv")
-df["time"] = pd.to_datetime(df["time"], utc=True)  # standardize on UTC
-df.set_index("time", inplace=True)  # make it the index
-df = df.sort_index()  # sort by time - crucial for time series
-```
 
 ### 1.2 Handling non-standard numeric formats
 
 Real data often carries units or letters, e.g. `"15k"` or `"20000 yuan"`. Normalize them:
 
-```python
-def clean_numeric_values(value):
-    """Clean numeric values that carry units or letters."""
-    if pd.isna(value):
-        return None
 
-    # Handle the "15k" style
-    if isinstance(value, str) and 'k' in value.lower():
-        return float(value.lower().replace('k', '')) * 1000
-
-    # Handle values with currency symbols
-    if isinstance(value, str):
-        cleaned = ''.join(c for c in value if c.isdigit() or c == '.')
-        return float(cleaned) if cleaned else None
-
-    return float(value)
-
-# Apply the cleaner
-df['cleaned_column'] = df['messy_column'].apply(clean_numeric_values)
-```
 
 ### 1.3 Missing and duplicate values
 
-```python
-# Inspect the basics
-print(df.info())
-print(df.describe())
 
-# Fill missing values
-df.fillna(method='ffill', inplace=True)  # forward fill
-# Or fill with specific values
-df.fillna({'column1': 0, 'column2': df['column2'].median()}, inplace=True)
-
-# Drop duplicates
-df.drop_duplicates(inplace=True)
-```
 
 ## 2. Data visualization techniques
 
@@ -781,29 +520,7 @@ Common tools:
 
 ### 2.2 Reusable visualization templates
 
-```python
-import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
-import plotly.express as px
 
-# Set a font that supports your labels
-plt.rcParams['font.sans-serif'] = ['DejaVu Sans']
-plt.rcParams['axes.unicode_minus'] = False
-
-# Grouped bar chart
-fig, ax = plt.subplots(figsize=(12, 6))
-sns.barplot(data=df, x='category', y='value', hue='region', ax=ax)
-ax.set_title('Performance by category and region')
-plt.xticks(rotation=45)
-plt.tight_layout()
-plt.show()
-
-# Interactive scatter
-fig = px.scatter(df, x='feature1', y='feature2', color='category',
-                 title='Feature relationships')
-fig.show()
-```
 
 ## 3. Time-series feature engineering
 
@@ -815,52 +532,11 @@ Skip the complex time-series models: extract temporal features from the timestam
 
 Capture cyclical patterns (hour, weekday) and long-term trends:
 
-```python
-import pandas as pd
-import numpy as np
 
-def extract_time_features(df, time_col='timestamp'):
-    """Extract useful time features from a timestamp column."""
-    df = df.copy()
-    df[time_col] = pd.to_datetime(df[time_col])
-
-    # Base time features
-    df['year'] = df[time_col].dt.year
-    df['month'] = df[time_col].dt.month
-    df['day'] = df[time_col].dt.day
-    df['hour'] = df[time_col].dt.hour
-    df['weekday'] = df[time_col].dt.weekday
-    df['quarter'] = df[time_col].dt.quarter
-
-    # Cyclical encoding (sin/cos handles wrap-around)
-    df['hour_sin'] = np.sin(2 * np.pi * df['hour'] / 24)
-    df['hour_cos'] = np.cos(2 * np.pi * df['hour'] / 24)
-    df['day_sin'] = np.sin(2 * np.pi * df['day'] / 31)
-    df['day_cos'] = np.cos(2 * np.pi * df['day'] / 31)
-    df['month_sin'] = np.sin(2 * np.pi * df['month'] / 12)
-    df['month_cos'] = np.cos(2 * np.pi * df['month'] / 12)
-
-    return df
-
-# Usage
-df_with_features = extract_time_features(df)
-```
 
 ### 3.3 Rolling-window features
 
-```python
-def add_rolling_features(df, target_col, windows=[3, 7, 14]):
-    """Add rolling-window statistics as features."""
-    for window in windows:
-        df[f'{target_col}_mean_{window}'] = df[target_col].rolling(window=window).mean()
-        df[f'{target_col}_std_{window}'] = df[target_col].rolling(window=window).std()
-        df[f'{target_col}_min_{window}'] = df[target_col].rolling(window=window).min()
-        df[f'{target_col}_max_{window}'] = df[target_col].rolling(window=window).max()
-    return df
 
-# Usage
-df_with_rolling = add_rolling_features(df_with_features, 'target_value')
-```
 
 ## 4. Date-format handling
 
@@ -870,38 +546,11 @@ Messy date formats are an everyday nuisance. Python's `datetime` module handles 
 
 This is the foundation — only once a string is a `datetime` can you freely reformat it.
 
-```python
-from datetime import datetime
 
-date_str1 = "2025-12-02 15:30:00"
-date_obj1 = datetime.strptime(date_str1, "%Y-%m-%d %H:%M:%S")
-
-date_str2 = "2025/12/2"
-date_obj2 = datetime.strptime(date_str2, "%Y/%m/%d")
-
-# Common directives:
-# %Y - 4-digit year
-# %m - 2-digit month
-# %d - 2-digit day
-# %H - hour (24h)
-# %M - minute
-# %S - second
-```
 
 ### 4.2 Pandas date handling
 
-```python
-import pandas as pd
 
-# Parse dates directly on read
-df = pd.read_csv('data.csv', parse_dates=['date_column'])
-
-# Or convert later
-df['date_column'] = pd.to_datetime(df['date_column'])
-
-# Format for output
-df['formatted_date'] = df['date_column'].dt.strftime('%Y-%m-%d')
-```
 
 ## 5. Advanced data cleaning
 
@@ -913,45 +562,19 @@ The right strategy depends on the data's nature and why values are missing:
 - **Fill** — with a constant (0, mean, median) or a more sophisticated model-based imputation.
 - **Analyze** — sometimes the fact that a value is missing is itself a useful feature.
 
-```python
-# Drop rows with few non-missing values
-df_clean = df.dropna(thresh=len(df.columns) - 2)
 
-# Fill numeric column with mean
-df['numeric_col'].fillna(df['numeric_col'].mean(), inplace=True)
-
-# Fill categorical column with mode
-mode_value = df['categorical_col'].mode()[0] if not df['categorical_col'].mode().empty else 'Unknown'
-df['categorical_col'].fillna(mode_value, inplace=True)
-
-# Missingness indicator feature
-df['missing_indicator'] = df['some_col'].isna().astype(int)
-```
 
 ### 5.2 Data-type correction
 
 Make sure every column has the right type (numeric, datetime, categorical). Wrong types cause silent bugs in analysis and modeling.
 
-```python
-df['date'] = pd.to_datetime(df['date'])
-df['zip_code'] = df['zip_code'].astype('category')
-df['integer_col'] = pd.to_numeric(df['integer_col'], downcast='integer')
-df['float_col'] = pd.to_numeric(df['float_col'], downcast='float')
-```
+
 
 ### 5.3 Inconsistent data
 
 Inconsistencies come from typos, mixed formats, or different units. Regex and string ops are your friends.
 
-```python
-# Normalize street names
-df['street'] = df['street'].str.replace('St.', 'Street').str.replace('Rd.', 'Road')
-df['street'] = df['street'].str.title()
 
-# Normalize categorical values
-df['category'] = df['category'].str.lower().str.strip()
-df['category'] = df['category'].replace({'male': 'Male', 'female': 'Female', 'f': 'Female', 'm': 'Male'})
-```
 
 ### 5.4 Outliers
 
@@ -961,36 +584,13 @@ An outlier is a point far from the rest. It may be a measurement error or a legi
 - **Statistical**: use tests or rules of thumb (e.g. more than 3 standard deviations from the mean).
 - **Handle**: depending on cause, drop, cap, or transform.
 
-```python
-import numpy as np
 
-# IQR method
-Q1 = df['value'].quantile(0.25)
-Q3 = df['value'].quantile(0.75)
-IQR = Q3 - Q1
-lower_bound = Q1 - 1.5 * IQR
-upper_bound = Q3 + 1.5 * IQR
-
-outliers = df[(df['value'] < lower_bound) | (df['value'] > upper_bound)]
-
-# Cap instead of drop
-df['value_capped'] = df['value'].clip(lower=lower_bound, upper=upper_bound)
-
-# Or Z-score method
-from scipy import stats
-z_scores = np.abs(stats.zscore(df['value']))
-df_no_outliers = df[z_scores < 3]
-```
 
 ### 5.5 Duplicates
 
 Duplicate rows distort analysis and should usually be removed.
 
-```python
-df_unique = df.drop_duplicates()
-df_unique = df.drop_duplicates(subset=['col1', 'col2'])
-df_unique = df.drop_duplicates(keep='last')
-```
+
 
 ## 6. Feature engineering and ML
 
@@ -1000,25 +600,11 @@ Real-world databases are rarely complete. Blindly dropping rows loses data; impu
 
 **Simple imputation:**
 
-```python
-from sklearn.impute import SimpleImputer
 
-num_imputer = SimpleImputer(strategy='median')
-df[['col1', 'col2']] = num_imputer.fit_transform(df[['col1', 'col2']])
-
-cat_imputer = SimpleImputer(strategy='most_frequent')
-df[['cat_col1', 'cat_col2']] = cat_imputer.fit_transform(df[['cat_col1', 'cat_col2']])
-```
 
 **Advanced imputation:**
 
-```python
-from sklearn.experimental import enable_iterative_imputer
-from sklearn.impute import IterativeImputer
 
-imp = IterativeImputer(random_state=0)
-df_imputed = imp.fit_transform(df)
-```
 
 ### 6.2 The core idea of feature engineering
 
@@ -1026,46 +612,11 @@ The features in your data ultimately determine model success. Feature engineerin
 
 **Mutual information (MI)** measures the relationship between two variables and helps identify features with the most predictive power for the target.
 
-```python
-from sklearn.feature_selection import mutual_info_regression
-import pandas as pd
-import numpy as np
 
-def make_mi_scores(X, y, discrete_features):
-    """Compute mutual-information scores."""
-    mi_scores = mutual_info_regression(X, y, discrete_features=discrete_features)
-    mi_scores = pd.Series(mi_scores, name="MI Scores", index=X.columns)
-    mi_scores = mi_scores.sort_values(ascending=False)
-    return mi_scores
-
-# Usage:
-# mi_scores = make_mi_scores(X, y, discrete_features)
-# print(mi_scores)
-```
 
 ### 6.3 Common feature-engineering techniques
 
-```python
-# 1. Count encoding - replace category with its frequency
-counts = X_train[col].value_counts()
-X_train.loc[:, col + '_count'] = X_train[col].map(counts)
 
-# 2. Target encoding - replace category with target mean from training set
-encoding = X_train.groupby(col)['target'].mean()
-X_train.loc[:, col + '_target'] = X_train[col].map(encoding)
-
-# 3. Binning - turn a continuous feature into discrete buckets
-X['feature_binned'] = pd.cut(X['continuous_feature'], bins=5, labels=False)
-
-# 4. Interaction features - combine two or more features
-X['interaction'] = X['feature1'] * X['feature2']
-
-# 5. Aggregation features - derive stats from grouped data
-agg_features = df.groupby('category').agg({
-    'value': ['mean', 'std', 'count'],
-}).reset_index()
-agg_features.columns = ['category', 'value_mean', 'value_std', 'value_count']
-```
 
 ## 7. Lessons learned
 
@@ -1095,9 +646,7 @@ Deep learning is the subfield of machine learning built around **neural networks
 
 A single artificial neuron takes several numbers, weights them, sums them, adds a bias, and passes the result through a non-linear **activation function**:
 
-```
-output = activation( w1·x1 + w2·x2 + ... + b )
-```
+
 
 The "weights" `w` and bias `b` are the *learned* parameters. A neural network is just many of these arranged in layers: layer 1 reads the input, the last layer produces the output, and the layers in between ("hidden layers") learn progressively richer representations.
 
@@ -1146,10 +695,7 @@ Reinforcement learning (RL) is the branch of ML where an agent learns by **trial
 
 RL formalizes learning as a loop:
 
-```
-observe state s → choose action a → environment returns reward r and next state s'
-repeat; goal: maximize cumulative reward
-```
+
 
 - **State:** what the agent currently "sees" (board position, game pixels).
 - **Action:** a move it can take.
@@ -1278,14 +824,7 @@ A typical workflow: load shapefiles/GeoJSON with GeoPandas → set/check CRS →
 
 ## A minimal example
 
-```python
-import geopandas as gpd
 
-points = gpd.read_file("incidents.geojson").to_crs(3857)   # metric
-zones  = gpd.read_file("districts.geojson").to_crs(3857)
-joined = gpd.sjoin(points, zones, how="left", predicate="within")
-counts = joined.groupby("district").size()
-```
 
 That `to_crs(3857)` on both layers is the step people skip and then wonder why the join returns nothing.
 
@@ -1305,15 +844,7 @@ SQL is easy to start and surprisingly deep to master. The "advanced" parts — w
 
 A window function computes a value across a set of rows *related* to the current row, without collapsing them like `GROUP BY` does. This is the feature people most underuse.
 
-```sql
--- running total per user, ordered by date, WITHOUT losing rows
-SELECT user_id, order_date, amount,
-       SUM(amount) OVER (
-         PARTITION BY user_id
-         ORDER BY order_date
-       ) AS running_total
-FROM orders;
-```
+
 
 Key clauses:
 - `PARTITION BY` — the "group" (resets per user).
@@ -1326,16 +857,7 @@ Common patterns: `ROW_NUMBER()` (dedupe, pick latest), `RANK()/DENSE_RANK()` (le
 
 Common Table Expressions (`WITH`) let you name intermediate result sets:
 
-```sql
-WITH active AS (
-  SELECT * FROM users WHERE last_seen > now() - interval '30 days'
-), spend AS (
-  SELECT user_id, SUM(amount) AS total
-  FROM orders JOIN active USING (user_id)
-  GROUP BY user_id
-)
-SELECT * FROM spend ORDER BY total DESC;
-```
+
 
 CTEs are mostly readability aids (the optimizer usually inlines them) — but `RECURSIVE` CTEs can do real work, like walking a tree/hierarchy (org charts, category trees) in pure SQL.
 
@@ -1499,186 +1021,46 @@ Homeware Sense is an OpenClaw skill designed to solve these challenges by provid
 
 Homeware Sense follows a modular architecture with a hardware abstraction layer:
 
-```
-┌─────────────────┐
-│   AI Assistant │
-├─────────────────┤
-│   Skill Layer   │ ← HomewareSenseSkill
-├─────────────────┤
-│  Abstraction    │ ← SensorHub
-│     Layer       │
-├─────────────────┤
-│ Platform Adapters│ ← HomeKit, MiHome, MQTT, GPIO
-├─────────────────┤
-│   Hardware      │ ← Physical devices
-└─────────────────┘
-```
+
 
 ### Simple Usage Example
 
-```python
-from homeware_sense_skill import HomewareSenseSkill
 
-# Auto-connect to all available platforms
-skill = HomewareSenseSkill.quick_connect('auto')
-data = skill.get_environment_data()
-print(data)
-```
 
 ### Platform-Specific Connections
 
-```python
-# Connect to specific platforms
-skill = HomewareSenseSkill.quick_connect('homekit')  # HomeKit
-skill = HomewareSenseSkill.quick_connect('mihome')   # Mi Home
-skill = HomewareSenseSkill.quick_connect('mqtt')     # MQTT
-skill = HomewareSenseSkill.quick_connect('gpio')     # GPIO
-```
+
 
 ### Advanced Configuration
 
-```python
-config = {
-    'debug': True,
-    'sensors_enabled': {
-        'temperature': True,
-        'humidity': True,
-        'light': True
-    },
-    'hardware_config': {
-        'temperature': {
-            'enabled': True,
-            'type': 'homekit',
-            'accessory_id': 'com.example.sensor',
-            'pin_code': '123-45-678',
-            'sensor_type': 'temperature',
-            'location': 'living_room'
-        }
-    }
-}
 
-skill = HomewareSenseSkill(config)
-data = skill.get_environment_data()
-```
 
 ## Real-World Applications
 
 ### Smart Climate Control
-```python
-from homeware_sense_skill import HomewareSenseSkill
 
-skill = HomewareSenseSkill.quick_connect('auto')
-data = skill.get_environment_data()
-
-temp = data['data']['environment_status']['temperature']
-if temp > 26:
-    print("Temperature too high, suggesting AC activation")
-elif temp < 18:
-    print("Temperature too low, suggesting heating activation")
-```
 
 ### Intelligent Lighting
-```python
-from homeware_sense_skill import HomewareSenseSkill
 
-skill = HomewareSenseSkill.quick_connect('auto')
-data = skill.get_environment_data()
-
-light = data['data']['environment_status']['light_level']
-if light < 100:  # Dark environment
-    print("Suggesting indoor lighting activation")
-```
 
 ### Environmental Alerts
-```python
-from homeware_sense_skill import HomewareSenseSkill
 
-skill = HomewareSenseSkill.quick_connect('auto')
-thresholds = {
-    'temperature': [15, 30],
-    'humidity': [30, 70],
-    'air_quality': [0, 100]
-}
-skill.set_thresholds(thresholds)
-
-data = skill.get_environment_data()
-alerts = data['data']['alerts']
-if alerts:
-    for alert in alerts:
-        print(f"Alert: {alert['message']}")
-```
 
 ## Getting Started
 
 ### Installation
-```bash
-# Clone the repository to your OpenClaw skills directory
-cd ~/.openclaw/skills/
-git clone https://github.com/jiawei686/homeware-sense-skill.git
-```
+
 
 ### Quick Setup
-```python
-from homeware_sense_skill import HomewareSenseSkill
 
-# Start with simulation (no hardware required)
-skill = HomewareSenseSkill()
-data = skill.get_environment_data()
-print(data)
-```
 
 ## Advanced Configuration Examples
 
 ### Multi-Room Setup
-```python
-config = {
-    'hardware_config': {
-        'living_room_temp': {
-            'enabled': True,
-            'type': 'homekit',
-            'accessory_id': 'com.living-room.thermometer',
-            'pin_code': '123-45-678',
-            'sensor_type': 'temperature',
-            'location': 'living_room'
-        },
-        'bedroom_humidity': {
-            'enabled': True,
-            'type': 'mihome',
-            'device_ip': '192.168.1.101',
-            'device_token': 'your_mihome_token',
-            'sensor_type': 'air_monitor',
-            'location': 'bedroom'
-        },
-        'kitchen_light': {
-            'enabled': True,
-            'type': 'mqtt',
-            'host': 'localhost',
-            'port': 1883,
-            'topic': 'sensors/kitchen/light',
-            'location': 'kitchen'
-        }
-    }
-}
 
-skill = HomewareSenseSkill(config)
-data = skill.get_environment_data()
-```
 
 ### Development with Simulated Sensors
-```python
-# Perfect for development without actual hardware
-dev_config = {
-    'hardware_config': {
-        'temperature': {'enabled': True, 'type': 'mock', 'location': 'simulated_room'},
-        'humidity': {'enabled': True, 'type': 'mock', 'location': 'simulated_room'},
-        'light': {'enabled': True, 'type': 'mock', 'location': 'simulated_room'}
-    }
-}
 
-dev_skill = HomewareSenseSkill(dev_config)
-dev_data = dev_skill.get_environment_data()
-print("Simulated environment data:", dev_data['data']['environment_status'])
-```
 
 ## Community and Contributions
 
@@ -1779,470 +1161,65 @@ In this tutorial, we'll detail how to deploy the OpenClaw AI assistant platform 
 
 ### System Initialization
 
-```bash
-# Update system
-sudo apt update && sudo apt upgrade -y
 
-# Expand filesystem
-sudo raspi-config
-# Select "Advanced Options" -> "Expand Filesystem"
-```
 
 ## Raspberry Pi 4B and Above Deployment
 
 ### Environment Configuration
 
-```bash
-# Install basic packages
-sudo apt install -y \
-    build-essential \
-    curl \
-    wget \
-    git \
-    vim \
-    htop \
-    python3-dev \
-    python3-pip \
-    python3-venv \
-    libffi-dev \
-    libssl-dev \
-    zlib1g-dev
 
-# Install Node.js
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
-source ~/.bashrc
-nvm install --lts
-nvm use --lts
-```
 
 ### Python Environment
 
-```bash
-# Create virtual environment
-python3 -m venv ~/openclaw-env
-source ~/openclaw-env/bin/activate
-pip install --upgrade pip setuptools wheel
-```
+
 
 ### OpenClaw Installation
 
-```bash
-# Clone and install
-mkdir -p ~/projects
-cd ~/projects
-git clone https://github.com/openclaw/openclaw.git
-cd openclaw
 
-source ~/openclaw-env/bin/activate
-pip install -e .
-```
 
 ### Configuration File (For Raspberry Pi 4B)
 
-```yaml
-# ~/.openclaw/config.yaml
-server:
-  host: 0.0.0.0
-  port: 3000
-  workers: 2  # Pi 4B can use 2 worker processes
-  timeout: 300
-  debug: false
 
-models:
-  defaults:
-    text: "gpt-3.5-turbo"
-    embedding: "text-embedding-3-small"
-
-ollama:
-  enabled: true
-  host: "http://localhost:11434"
-  model: "llama2:7b"  # Model suitable for Pi 4B
-
-database:
-  type: "sqlite"
-  sqlite:
-    path: "~/.openclaw/data.db"
-
-cache:
-  type: "redis"
-  redis:
-    host: "localhost"
-    port: 6379
-    db: 0
-
-resources:
-  memory_limit: "1G"
-  cpu_limit: 0.8
-  max_concurrent_requests: 4
-
-logging:
-  level: "INFO"
-  file: "~/.openclaw/logs/openclaw.log"
-```
 
 ## Raspberry Pi 2 Deployment (Resource-Optimized Version)
 
 ### System-Level Optimization
 
-```bash
-# Maximize swap space
-sudo dphys-swapfile swapoff
-sudo nano /etc/dphys-swapfile
-# Set CONF_SWAPSIZE=1024
-# Set CONF_MAXSWAP=2048
-sudo dphys-swapfile setup
-sudo dphys-swapfile swapon
 
-# Disable more services to save resources
-sudo systemctl disable bluetooth
-sudo systemctl disable triggerhappy
-sudo systemctl disable avahi-daemon
-sudo systemctl disable alsa-state
-sudo systemctl disable cups
-sudo systemctl disable cups-browsed
-
-# Adjust GPU memory allocation
-echo "gpu_mem=16" | sudo tee -a /boot/config.txt
-```
 
 ### Lightweight Environment Configuration
 
-```bash
-# Install lightweight Node.js version
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
-source ~/.bashrc
-nvm install 16  # Install older but stable version
-nvm use 16
 
-# Lightweight Python environment
-python3 -m venv ~/openclaw-env --without-pip
-source ~/openclaw-env/bin/activate
-curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-python get-pip.py --no-cache-dir
-
-pip install --upgrade pip setuptools wheel
-pip install --upgrade \
-    pip \
-    requests \
-    pyyaml \
-    python-dotenv \
-    flask \
-    gevent \
-    redis \
-    pillow
-```
 
 ### Configuration File (For Raspberry Pi 2)
 
-```yaml
-# ~/.openclaw/config.yaml
-server:
-  host: 0.0.0.0
-  port: 3000
-  workers: 1  # Single worker process
-  timeout: 600  # Longer timeout period
-  debug: false
 
-models:
-  defaults:
-    text: "gpt-3.5-turbo"  # Must use API models
-
-ollama:
-  enabled: false  # Pi 2 cannot run local models
-
-database:
-  type: "sqlite"
-  sqlite:
-    path: "~/.openclaw/data.db"
-    timeout: 60
-
-cache:
-  type: "memory"
-  memory:
-    max_size: 50MB  # Minimal cache
-
-resources:
-  memory_limit: "512M"  # Strict memory limit
-  cpu_limit: 0.5
-  max_concurrent_requests: 1  # Single request processing
-  slow_down_requests: true
-
-network:
-  timeout: 300
-  retry_attempts: 3
-  retry_delay: 5
-
-logging:
-  level: "INFO"
-  file: "~/.openclaw/logs/openclaw.log"
-```
 
 ## Generic Configuration Script
 
 Create a script that can select configuration based on hardware:
 
-```bash
-# ~/setup_openclaw.sh
-#!/bin/bash
 
-# Detect Raspberry Pi model and apply corresponding configuration
-detect_raspberry_pi_model() {
-    # Get CPU info
-    CPU_INFO=$(cat /proc/cpuinfo | grep "model name" | head -1 | cut -d ":" -f 2)
-    
-    if [[ $CPU_INFO == *"ARMv7"* ]]; then
-        # Check CPU cores and frequency
-        CORES=$(nproc)
-        FREQUENCY=$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq 2>/dev/null | head -c 3)
-        
-        if [[ $FREQUENCY -gt 1400 ]]; then
-            echo "pi4"  # Raspberry Pi 4B+
-        elif [[ $FREQUENCY -gt 1000 ]]; then
-            echo "pi3"  # Raspberry Pi 3B+
-        else
-            echo "pi2"  # Raspberry Pi 2 or Zero 2 W
-        fi
-    else
-        echo "unknown"
-    fi
-}
-
-# Create config directory
-mkdir -p ~/.openclaw
-
-# Select config based on model
-MODEL_TYPE=$(detect_raspberry_pi_model)
-echo "Detected Raspberry Pi type: $MODEL_TYPE"
-
-case $MODEL_TYPE in
-    "pi4")
-        echo "Setting up for Raspberry Pi 4B+"
-        cat > ~/.openclaw/config.yaml << 'EOF'
-server:
-  host: 0.0.0.0
-  port: 3000
-  workers: 2
-  timeout: 300
-  debug: false
-
-models:
-  defaults:
-    text: "gpt-3.5-turbo"
-    embedding: "text-embedding-3-small"
-
-ollama:
-  enabled: true
-  host: "http://localhost:11434"
-  model: "llama2:7b"
-
-database:
-  type: "sqlite"
-  sqlite:
-    path: "~/.openclaw/data.db"
-
-cache:
-  type: "redis"
-  redis:
-    host: "localhost"
-    port: 6379
-    db: 0
-
-resources:
-  memory_limit: "1G"
-  cpu_limit: 0.8
-  max_concurrent_requests: 4
-
-logging:
-  level: "INFO"
-  file: "~/.openclaw/logs/openclaw.log"
-EOF
-        ;;
-    "pi2")
-        echo "Setting up for Raspberry Pi 2/Zero 2 W"
-        cat > ~/.openclaw/config.yaml << 'EOF'
-server:
-  host: 0.0.0.0
-  port: 3000
-  workers: 1
-  timeout: 600
-  debug: false
-
-models:
-  defaults:
-    text: "gpt-3.5-turbo"
-
-ollama:
-  enabled: false
-
-database:
-  type: "sqlite"
-  sqlite:
-    path: "~/.openclaw/data.db"
-    timeout: 60
-
-cache:
-  type: "memory"
-  memory:
-    max_size: 50MB
-
-resources:
-  memory_limit: "512M"
-  cpu_limit: 0.5
-  max_concurrent_requests: 1
-  slow_down_requests: true
-
-network:
-  timeout: 300
-  retry_attempts: 3
-  retry_delay: 5
-
-logging:
-  level: "INFO"
-  file: "~/.openclaw/logs/openclaw.log"
-EOF
-        ;;
-    *)
-        echo "Unknown model, using minimal configuration"
-        cat > ~/.openclaw/config.yaml << 'EOF'
-server:
-  host: 0.0.0.0
-  port: 3000
-  workers: 1
-  timeout: 600
-  debug: false
-
-models:
-  defaults:
-    text: "gpt-3.5-turbo"
-
-ollama:
-  enabled: false
-
-database:
-  type: "sqlite"
-  sqlite:
-    path: "~/.openclaw/data.db"
-    timeout: 60
-
-cache:
-  type: "memory"
-  memory:
-    max_size: 25MB
-
-resources:
-  memory_limit: "256M"
-  cpu_limit: 0.4
-  max_concurrent_requests: 1
-
-logging:
-  level: "INFO"
-  file: "~/.openclaw/logs/openclaw.log"
-EOF
-        ;;
-esac
-
-echo "Configuration created for $MODEL_TYPE"
-```
 
 ## Performance Optimization and Monitoring
 
 ### System-Level Optimization
 
-```bash
-# Optimize kernel parameters
-sudo tee -a /etc/sysctl.conf << EOF
-# File descriptor limits
-fs.file-max = 4096
 
-# Network optimization
-net.core.somaxconn = 128
-
-# Memory optimization (adjust based on device)
-vm.swappiness = 20
-vm.vfs_cache_pressure = 200
-EOF
-
-sudo sysctl -p
-```
 
 ### Monitoring Script
 
-```bash
-# ~/openclaw-monitor.sh
-#!/bin/bash
 
-LOG_FILE="$HOME/.openclaw/logs/monitor.log"
-MODEL_TYPE=$(bash -c 'cat /proc/cpuinfo | grep "model name" | head -1 | grep -o "[0-9]*" | head -1')
-
-# Set different thresholds based on model
-if [ "$MODEL_TYPE" -gt 1400 ]; then
-    # Raspberry Pi 4B+
-    MAX_MEM_USAGE=80
-    MAX_DISK_USAGE=85
-else
-    # Raspberry Pi 2/Zero 2 W
-    MAX_MEM_USAGE=70
-    MAX_DISK_USAGE=80
-fi
-
-# Check OpenClaw service status
-if ! pgrep -f "openclaw" > /dev/null; then
-    echo "$(date): OpenClaw service not running, restarting..." >> $LOG_FILE
-    source ~/openclaw-env/bin/activate
-    nohup ~/openclaw-env/bin/openclaw gateway start > ~/.openclaw/logs/openclaw.log 2>&1 &
-fi
-
-# Check memory usage
-MEM_USAGE=$(free | awk 'NR==2{printf "%.0f", $3*100/$2}')
-if (( $(echo "$MEM_USAGE > $MAX_MEM_USAGE" | bc -l) )); then
-    echo "$(date): High memory usage: ${MEM_USAGE}%" >> $LOG_FILE
-    
-    # Restart service if memory usage is too high
-    if [ $MEM_USAGE -gt 90 ]; then
-        echo "$(date): Memory critical (${MEM_USAGE}%), restarting OpenClaw" >> $LOG_FILE
-        pkill -f openclaw
-        sleep 5
-        source ~/openclaw-env/bin/activate
-        nohup ~/openclaw-env/bin/openclaw gateway start > ~/.openclaw/logs/openclaw.log 2>&1 &
-    fi
-fi
-
-# Check disk space
-DISK_USAGE=$(df / | awk 'NR==2{print $5}' | sed 's/%//')
-if [ $DISK_USAGE -gt $MAX_DISK_USAGE ]; then
-    echo "$(date): High disk usage: ${DISK_USAGE}%" >> $LOG_FILE
-    # Clean up old logs
-    find ~/.openclaw/logs -name "*.log" -mtime +7 -delete
-fi
-```
 
 ## Troubleshooting
 
 ### Common Issues
 
 1. **Insufficient Memory**
-   ```bash
-   # Check memory usage
-   free -h
-   htop
    
-   # Increase swap space
-   sudo dphys-swapfile swapoff
-   sudo nano /etc/dphys-swapfile
-   # Adjust CONF_SWAPSIZE
-   sudo dphys-swapfile setup
-   sudo dphys-swapfile swapon
-   ```
 
 2. **Service Startup Failure**
-   ```bash
-   # Check service status
-   sudo systemctl status openclaw
    
-   # View logs
-   journalctl -u openclaw -f
-   tail -f ~/.openclaw/logs/openclaw.log
-   ```
 
 ## Summary
 
@@ -2286,11 +1263,7 @@ For each token we learn three vectors: a **query** `Q`, a **key** `K`, and a **v
 
 We score how well query matches each key, normalize those scores into weights that sum to 1, and take a weighted average of the values:
 
-```
-scores = Q @ K.T / sqrt(d_k)
-weights = softmax(scores)        # each row sums to 1
-output = weights @ V
-```
+
 
 That `sqrt(d_k)` is not decoration. The dot product of two *d_k*-dimensional random vectors grows like `sqrt(d_k)` in magnitude, so without scaling the softmax gets pushed into a region where gradients vanish. I've debugged attention heads that "collapsed" to near-uniform weights — nine times out of ten it was a missing or wrong scaling factor.
 
@@ -2302,10 +1275,7 @@ One attention pattern is rarely enough. The Transformer runs *h* attention opera
 
 Because attention is order-agnostic — it sees a *set* of tokens, not a sequence — we must inject position information ourselves. The original paper used fixed sinusoidal encodings added to the token embeddings:
 
-```
-PE(pos, 2i)   = sin(pos / 10000^(2i/d_model))
-PE(pos, 2i+1) = cos(pos / 10000^(2i/d_model))
-```
+
 
 These have a neat property: the offset between position *p* and *p+k* is a linear function of the encoding at *p*, which lets the model generalize to sequence lengths it didn't see in training. Later models (like RoPE, which I cover separately) improved on this, but the principle — *position is a first-class signal you must add explicitly* — is still how every Transformer works.
 
@@ -2352,10 +1322,7 @@ BERT's breakthrough: **train on both directions at once** via masked language mo
 
 During pretraining, BERT randomly masks ~15% of tokens and asks the model to reconstruct them:
 
-```
-Input:  the man went to the [MASK] to buy [MASK]
-Target:                 store                milk
-```
+
 
 But a naive 15%-mask-all-with-[MASK] has a train/inference mismatch: at test time (fine-tuning) there are no `[MASK]` tokens. BERT handles this with a small trick on the 15% chosen positions:
 
@@ -2404,16 +1371,7 @@ GPT-3 (Brown et al., 2020) is the moment the world stopped thinking of language 
 
 Before GPT-3, adapting a model to a task meant updating its weights (fine-tuning). GPT-3 flipped that: you put a few examples of the task directly in the input, and the model infers the pattern. For instance, to build a translator you don't train anything — you write:
 
-```
-English: sea otter
-French: loutre de mer
 
-English: cheese
-French: fromage
-
-English: snow
-French:
-```
 
 …and the model completes "neige." No gradients, no dataset, no training run. That was genuinely surprising in 2020.
 
@@ -2508,17 +1466,11 @@ Give a model a multi-step problem and it often blurts the final answer, skipping
 
 CoT is trivial to apply. Instead of:
 
-```
-Q: Roger has 5 tennis balls. He buys 2 cans of 3. How many now?
-A: 11
-```
+
 
 You prompt with examples that show the *reasoning*:
 
-```
-Q: ... 
-A: Roger started with 5. 2 cans of 3 = 6. 5 + 6 = 11. So the answer is 11.
-```
+
 
 Or, even simpler, just append: *"Let's think step by step."* That single phrase reliably triggers the model to generate intermediate steps, and the final answer is usually correct far more often.
 
@@ -2568,9 +1520,7 @@ LoRA's observation: the change a model needs to adapt to a task has a **low "int
 
 For a weight matrix `W` (shape `d×k`), instead of learning a full update `ΔW`, LoRA learns it as a product of two small matrices:
 
-```
-ΔW = B · A        where B is d×r, A is r×k, and r << min(d, k)
-```
+
 
 - `r` is the **rank** — a small number like 4, 8, 16, 64.
 - `W` itself is **frozen** (no gradient updates).
@@ -2631,10 +1581,7 @@ Naive softmax needs the row sum over *all* keys. To do it block-by-block we use 
 
 When a new block of keys arrives with scores `s`, update:
 
-```
-m_new = max(m, max(s))
-l_new = exp(m - m_new) * l + exp(s - m_new) * sum(exp(s))
-```
+
 
 Then rescale the running output `O` by `exp(m - m_new)` to correct for the changed max, and add the new block's contribution. This keeps the result *bit-identical* to standard softmax while never holding the full matrix. That "exact, not approximate" property is why it's safe to drop into existing training code without changing model behavior.
 
@@ -2648,18 +1595,7 @@ I've personally watched a training run go from "can't fit 8k context" to "comfor
 
 ## Minimal sketch
 
-```python
-# Conceptual, not a real kernel. Shows the online-softmax idea.
-def flash_block(Q_block, K_blocks, V_blocks, O, m, l):
-    for Kb, Vb in zip(K_blocks, V_blocks):
-        s = Q_block @ Kb.T / d_k**0.5      # scores for this key block
-        m_new = max(m, s.max(axis=-1))
-        l_new = exp(m - m_new) * l + exp(s - m_new).sum(axis=-1)
-        O = exp(m - m_new)[:, None] * O + \
-            (exp(s - m_new)[:, :, None] * Vb).sum(axis=1)
-        m, l = m_new, l_new
-    return O / l[:, None]
-```
+
 
 The real implementation is CUDA with careful SRAM management — don't try to hand-write that — but the logic above is the whole idea.
 
@@ -2830,9 +1766,7 @@ You could fine-tune, but that's expensive, slow to update, and the model still "
 2. **Retrieval (per query):** embed the user's question, find the top-k most similar chunks by vector search.
 3. **Generation:** stuff those chunks into the prompt as context and ask the model to answer *using only the provided context*, ideally with citations.
 
-```
-question → embed → vector search → top-k chunks → prompt → answer
-```
+
 
 The model becomes a reader over retrieved evidence rather than a recall machine over its weights.
 
@@ -2879,13 +1813,7 @@ ReAct (Yao et al., 2022) is the paper that gave us the recognizable shape of an 
 
 A ReAct prompt structures the model's output as an alternating sequence:
 
-```
-Thought: I need to find the population of France.
-Action: search["France population"]
-Observation: France has ~67 million people.
-Thought: Now I can answer the question.
-Action: finish["The population is about 67 million."]
-```
+
 
 The model isn't just chain-of-thought-ing privately; it's **externalizing a plan**, taking a real action (calling a tool), ingesting the **observation**, and updating its reasoning. That observation step is the key — it grounds the next thought in actual results, not the model's possibly-wrong guess.
 
@@ -2949,15 +1877,7 @@ So the model **teaches itself** which tools help and how to use them, using the 
 
 ## A minimal sketch
 
-```python
-# Conceptual: the model proposes a call; we execute; we keep if it helps.
-text = "What is 245 * 372?"
-proposal = model.suggest_call(text)        # -> <call>calc(245*372)</call>
-result   = execute(proposal)               # -> 91140
-augmented = f"{text} <call>calc(245*372)</call> => {result}"
-if helps_predict_continuation(augmented):
-    training_data.append(augmented)
-```
+
 
 The "helps predict continuation" check is the elegant filter — it uses the model's own next-token objective as the teacher.
 
@@ -2988,12 +1908,7 @@ A vanilla agent runs: think, act, observe. If it fails, you can re-run it, but i
 
 After a failed (or suboptimal) trajectory, the agent writes a **verbal reflection**: a short natural-language summary of what went wrong and what to do differently. That reflection is stored in an episodic memory and prepended to the next attempt.
 
-```
-Attempt 1: think → act → observe → FAIL
-Reflection: "I called the search tool with too broad a query and got noise;
-            next time, include the year and specific entity name."
-Attempt 2: [reflection] → think → act → observe → SUCCESS
-```
+
 
 No gradients, no fine-tuning — just text memory of past mistakes.
 
@@ -3008,15 +1923,7 @@ The paper showed meaningful gains on reasoning, coding (where the agent reflects
 
 ## A minimal sketch
 
-```python
-memory = []
-for attempt in range(max_tries):
-    prompt = build_prompt(task, memory)
-    traj, outcome = run_agent(prompt)
-    if outcome.ok: break
-    reflection = model.reflect(traj, outcome)   # "why did this fail?"
-    memory.append(reflection)
-```
+
 
 The `model.reflect` call is just a prompted generation: "Here's what happened and the result. What went wrong, and what should you change?" The output is plain text appended to memory.
 
@@ -3105,13 +2012,7 @@ The framework handles message passing, termination conditions, and tool executio
 
 ## A typical flow
 
-```
-UserProxy: "Plot sales by region from data.csv"
-Assistant: writes pandas code
-UserProxy: executes it, returns the plot / error
-Assistant: if error, debugs; if success, explains
-... until done or max turns
-```
+
 
 The conversation *is* the program. Termination can be "task complete" message, max turns, or a human stop.
 
@@ -3201,9 +2102,7 @@ Scaling Laws (Kaplan et al., 2020) is the paper that turned "make the model bigg
 
 For a fixed compute budget, model loss `L` follows roughly:
 
-```
-L ∝ C^(-α)        # α ≈ 0.076 for compute
-```
+
 
 where `C` is training compute (FLOPs). Equivalent relationships hold for parameters `N` and data size `D`. The striking part: these are **smooth power laws with no obvious kink** — meaning nowhere in the range they tested did "bigger stops helping." That's the empirical green light for scaling.
 
@@ -3260,10 +2159,7 @@ RoPE's elegant move: instead of *adding* a position signal to a token's vector, 
 
 Concretely, take a 2-dimensional slice of a vector. RoPE rotates it by angle `θ·position`:
 
-```
-[cos(θp)  -sin(θp)]   [x0]
-[sin(θp)   cos(θp)] @ [x1]
-```
+
 
 That's just a rotation matrix — it preserves length, only changes direction. We pair up the dimensions of the embedding and apply a different rotation frequency to each pair. The frequencies are spaced geometrically (like `θ_i = base^(-2i/d)`), so different dimension-pairs capture different "scales" of position.
 
@@ -3314,10 +2210,7 @@ The earlier Kaplan scaling laws suggested pouring almost everything into `N` and
 
 Chinchilla's optimal law is approximately:
 
-```
-N_opt ∝ C^0.5
-D_opt ∝ C^0.5
-```
+
 
 In plain terms: **double your compute, increase both model size and data by ~√2 — not model size alone.** Concretely, they found the optimal ratio is roughly **20 tokens per parameter**.
 
@@ -3369,9 +2262,7 @@ This reframes "make the model helpful" as "make the model produce responses a re
 
 Collect comparison data: for a prompt, present several candidate responses to humans and record which they prefer. Train a model `r(x, y)` to predict the human-preferred one — typically via a pairwise loss on the Bradley-Terry model:
 
-```
-loss = -log σ(r(chosen) - r(rejected))
-```
+
 
 After training, `r` outputs a scalar "quality score" for any (prompt, response). This model *encodes* human preference into something differentiable.
 
@@ -3379,9 +2270,7 @@ After training, `r` outputs a scalar "quality score" for any (prompt, response).
 
 Use PPO (a stable policy-gradient algorithm) to update the LM so it generates higher-reward responses. The objective at each token step is roughly:
 
-```
-reward = r(prompt, response)  -  β · KL(π_current || π_ref)
-```
+
 
 - `r(...)` is the reward-model score for the whole response (often assigned to each step or shaped).
 - `KL(π_current || π_ref)` penalizes drifting from the reference (usually the SFT model), preventing the model from collapsing into reward-hacking gibberish. `β` controls the strength.
@@ -3419,9 +2308,7 @@ Recall RLHF: train a reward model from preferences, then run PPO to maximize it 
 
 DPO noticed something elegant: under the RLHF objective, the *optimal policy* has a closed form in terms of the reward and the reference policy. And the reward itself can be expressed in terms of the optimal policy. So instead of:
 
-```
-preferences → reward model → PPO → aligned policy
-```
+
 
 you can **directly optimize the policy** on the preference pairs with a single, stable classification-style loss — no reward model, no RL.
 
@@ -3429,10 +2316,7 @@ you can **directly optimize the policy** on the preference pairs with a single, 
 
 Given a prompt and a "chosen" vs "rejected" response pair, DPO trains the policy to increase the likelihood of the chosen one and decrease the rejected one, *relative to a frozen reference model*:
 
-```
-loss = -log σ( β · (log π(chosen)/π_ref(chosen)
-                   - log π(rejected)/π_ref(rejected) ) )
-```
+
 
 - `π` is the policy you're training; `π_ref` is the frozen starting model.
 - The `log π / log π_ref` ratio is the implicit reward — DPO derives it from the policy itself.
@@ -3503,15 +2387,7 @@ The constitution is a short list of principles the model is told to follow (help
 
 ## A minimal sketch of self-critique
 
-```python
-principles = ["Respond helpfully and harmlessly.",
-              "If a request is harmful, explain why you won't comply and offer a safe alternative."]
 
-draft = model.generate(prompt)
-critique = model.critique(draft, principles)   # "This draft is unsafe because..."
-revised = model.revise(draft, critique)        # safer version
-train_data.append((prompt, revised))
-```
 
 The model plays both the writer and the principled critic — no human in the loop for these steps.
 
@@ -3590,12 +2466,7 @@ Classic computer vision trained a model to map an image to one of *N fixed label
 2. **Two encoders:** an image encoder (ViT or ResNet) and a text encoder (Transformer). Each maps its input to a vector in a shared space.
 3. **Contrastive loss:** within a batch, pull matching (image, caption) pairs closer and push all non-matching pairs apart. So the image of a dog and the text "a photo of a dog" end up near each other; the dog image stays far from "a slice of pizza."
 
-```
-batch of N image-text pairs
-positive: (img_i, text_i)  for each i
-negatives: (img_i, text_j) for i != j
-loss: maximize alignment on positives, minimize on negatives
-```
+
 
 No per-class labels needed — the natural language captions *are* the supervision.
 
@@ -3603,12 +2474,7 @@ No per-class labels needed — the natural language captions *are* the supervisi
 
 Because text and images share a space, you can classify *without training on the target classes*:
 
-```
-embed the image
-embed candidate labels as text:
-  "a photo of a cat", "a photo of a dog", "a photo of a pizza"
-pick the label whose text embedding is closest to the image
-```
+
 
 You just *wrote* a classifier for any categories you can name. No fine-tuning, no labeled data for those classes. This zero-shot ability is what made CLIP revolutionary — and what makes it the standard "bridge" between text prompts and images in generative systems.
 
@@ -3641,9 +2507,7 @@ Softmax is the function that turns a model's raw scores into a probability distr
 
 A language model's final layer produces a vector of **logits** — one score per token in the vocabulary. Those scores are unbounded: they can be -3.2, 11.7, 0.4, anything. We can't sample from unbounded numbers as if they were probabilities. Softmax fixes that:
 
-```
-softmax(z_i) = exp(z_i) / sum_j exp(z_j)
-```
+
 
 After softmax, every output is positive and they all sum to 1. So `softmax(z)` is a proper probability distribution over the vocabulary, and the token with the highest logit gets the highest probability. That's the whole job.
 
@@ -3651,24 +2515,11 @@ After softmax, every output is positive and they all sum to 1. So `softmax(z)` i
 
 Suppose the model is choosing the next word and the logits for three candidate tokens are:
 
-```
-cat:    2.0
-dog:    1.0
-rocket: -1.0
-```
+
 
 Step by step:
 
-```
-exp(2.0)  = 7.389
-exp(1.0)  = 2.718
-exp(-1.0) = 0.368
-sum       = 10.475
 
-P(cat)    = 7.389 / 10.475 = 0.705
-P(dog)    = 2.718 / 10.475 = 0.260
-P(rocket) = 0.368 / 10.475 = 0.035
-```
 
 "cat" had the highest logit, so it ends up with ~70% of the probability mass. Notice the exponential makes the gap *nonlinear*: a 1-point logit lead becomes a roughly 2.7x probability lead, because `exp(1) ≈ 2.718`. That's why softmax is "winner-takes-most" — it sharpens differences rather than preserving them.
 
@@ -3676,14 +2527,7 @@ P(rocket) = 0.368 / 10.475 = 0.035
 
 Here's the bug: `exp(1000)` overflows to infinity, and `inf / inf = NaN`, which poisons the whole batch. In a real LLM, logits can easily exceed 50 or 100 once the model is confident. The standard fix is the **max-subtraction trick**:
 
-```python
-import numpy as np
 
-def softmax(z):
-    z = z - np.max(z)          # shift so the max is 0
-    e = np.exp(z)
-    return e / np.sum(e)
-```
 
 Subtracting the maximum from every element doesn't change the result — `exp(z_i - c) / sum(exp(z_j - c))` simplifies to the original because the `exp(-c)` cancels top and bottom — but it guarantees the largest exponent is `exp(0) = 1`, so nothing overflows. Every serious library (PyTorch, JAX, TensorFlow) does this internally; if you ever hand-roll it, do too. I've seen production inference code break on exactly this after a model update made logits larger.
 
@@ -3691,9 +2535,7 @@ Subtracting the maximum from every element doesn't change the result — `exp(z_
 
 You'll hear "temperature" constantly in LLM settings. All it does is scale the logits before softmax:
 
-```
-softmax(z / T)
-```
+
 
 - `T = 1`: no change.
 - `T > 1`: flattens the distribution → more random, more diverse, sometimes incoherent.
@@ -3719,3 +2561,4 @@ Because the exponential is sensitive to absolute offsets, adding a constant to *
 Softmax is the unglamorous hinge of the entire LLM stack. It's the boundary between "the model computed a score" and "the model made a probabilistic choice." Spend an hour really understanding the max-trick and temperature and you'll debug sampling problems an order of magnitude faster than someone who treats it as a black box. And if you're implementing it yourself: always subtract the max first. Always.
 
 ---
+
