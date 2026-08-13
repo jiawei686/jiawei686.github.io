@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Game AI and Reinforcement Learning — Jiawei Cui</title>
+<meta name="description" content="Reinforcement learning (RL) is the branch of ML where an agent learns by trial and error, receiving rewards for good actions and penalties for bad ones — rather than…">
+<link rel="icon" href="/public/img/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/style.css">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Game AI and Reinforcement Learning — Jiawei Cui">
+<meta property="og:description" content="Reinforcement learning (RL) is the branch of ML where an agent learns by trial and error, receiving rewards for good actions and penalties for bad ones — rather than…">
+<meta property="og:url" content="https://cuijiawei.cn/blog/intro-to-game-ai-and-reinforcement-learning/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Game AI and Reinforcement Learning — Jiawei Cui">
+<meta name="twitter:description" content="Reinforcement learning (RL) is the branch of ML where an agent learns by trial and error, receiving rewards for good actions and penalties for bad ones — rather than…">
+<link rel="canonical" href="https://cuijiawei.cn/blog/intro-to-game-ai-and-reinforcement-learning/">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Person","name":"Jiawei Cui","alternateName":["kiritocui","崔家维","cuijiawei"],"url":"https://cuijiawei.cn/","sameAs":["https://github.com/jiawei686"]}
+</script>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="/"><img src="/public/img/logo.svg" alt="logo"> Jiawei Cui</a>
+      <button class="nav-toggle" id="nav-toggle" aria-label="Menu">☰</button>
+      <div class="nav-links" id="nav-links">
+        <a href="/">Home</a>
+        <a href="/about.html">About</a>
+        <a href="/blog/" class="active">Blog</a>
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <button class="theme-btn" id="theme-btn" aria-label="Toggle theme">☾</button>
+      </div>
+    </div>
+  </nav>
+<main>
+
+  <article class="article">
+    <div class="read">
+      <div class="a-head">
+        <div class="a-meta"><a href="/blog/">Blog</a> · Sat Dec 20 2025 08:00:00 GMT+0800 (Singapore Standard Time) · <span class="tag">ai</span></div>
+        <h1>Game AI and Reinforcement Learning</h1>
+      </div>
+      <div class="content"><p>Reinforcement learning (RL) is the branch of ML where an agent learns by <strong>trial and error</strong>, receiving rewards for good actions and penalties for bad ones — rather than being told the right answer directly. Games have been RL&#39;s perfect laboratory: clear rules, a score to optimize, and a built-in opponent. I&#39;m writing this as an intro because RL is also the engine behind LLM alignment (RLHF, covered separately), so understanding the game-AI lineage makes the modern stuff click.</p>
+<h2>The framing: agent, state, action, reward</h2>
+<p>RL formalizes learning as a loop:</p>
+<pre><code>observe state s → choose action a → environment returns reward r and next state s&#39;
+repeat; goal: maximize cumulative reward
+</code></pre>
+<ul>
+<li><strong>State:</strong> what the agent currently &quot;sees&quot; (board position, game pixels).</li>
+<li><strong>Action:</strong> a move it can take.</li>
+<li><strong>Reward:</strong> a signal of how good that was (won the point = +1, lost = -1).</li>
+<li><strong>Policy:</strong> the strategy — what action to take in each state.</li>
+</ul>
+<p>The hard part: rewards are often <em>sparse and delayed</em>. You make a good move now but only see its value many steps later when you win or lose. Credit assignment — figuring out which early actions caused the eventual win — is the central challenge.</p>
+<h2>From Q-learning to DQN</h2>
+<ul>
+<li><strong>Q-learning</strong> learns a function <code>Q(s, a)</code> = &quot;expected future reward if I take action <code>a</code> in state <code>s</code>.&quot; Act greedily with respect to it. It&#39;s a clean, foundational algorithm.</li>
+<li><strong>DQN (Deep Q-Network, 2013)</strong> made Q-learning scale by using a neural network to approximate <code>Q</code>, and added two crucial tricks: an <strong>experience replay buffer</strong> (reuse past transitions) and a <strong>target network</strong> (a slowly-updated copy for stable targets). With these, an agent learned to play Atari games from raw pixels — a landmark &quot;one method, many games&quot; result.</li>
+</ul>
+<h2>The chess/go breakthrough: AlphaGo and AlphaZero</h2>
+<p>Board games were long considered too hard for brute search + heuristics. Then:</p>
+<ul>
+<li><strong>AlphaGo (2016)</strong> beat Lee Sedol at Go by combining supervised learning from human games, RL (self-play), and <strong>Monte Carlo Tree Search (MCTS)</strong> — a smart lookahead that focuses computation on promising moves. It didn&#39;t just search harder; it <em>learned</em> which positions mattered.</li>
+<li><strong>AlphaZero</strong> went further: no human data at all, just self-play from scratch, learning to master Go, chess, and shogi. It discovered strategies humans hadn&#39;t emphasized. This was a striking demonstration that RL + search could <em>invent</em> expertise.</li>
+</ul>
+<h2>Why this connects to LLMs</h2>
+<p>RL is the same framework behind RLHF/RLAIF (covered in the alignment posts): the &quot;environment&quot; is human preference, the &quot;reward&quot; is a preference score, and the &quot;policy&quot; is the language model. Understanding sparse rewards, credit assignment, and policy optimization in games transfers directly. AlphaGo&#39;s MCTS even rhymes with Tree-of-Thoughts&#39; search over reasoning paths.</p>
+<h2>Practical realities &amp; caveats</h2>
+<ul>
+<li><strong>RL is sample-hungry and unstable</strong> compared to supervised learning — tuning is an art.</li>
+<li><strong>Reward design is everything.</strong> A poorly specified reward leads to degenerate &quot;reward hacking&quot; (the agent finds a loophole that maximizes score without achieving the real goal). This is the same failure mode as reward models in LLMs.</li>
+<li><strong>Simulation helps.</strong> Games are great because you can run millions of trials cheaply; real-world RL (robotics) is far harder due to cost and safety.</li>
+<li>For most applied problems, <strong>supervised or imitation learning</strong> is simpler and sufficient; reach for RL when you truly only have a reward signal.</li>
+</ul>
+<h2>My take</h2>
+<p>Game AI is RL&#39;s best storyteller: it turned an abstract &quot;learn from reward&quot; idea into agents that beat world champions, and it built the intuition (replay, target networks, self-play, search) that modern systems reuse. More than that, it&#39;s the conceptual parent of LLM alignment — same loop, different environment. If you understand why AlphaZero&#39;s self-play works and why reward hacking happens, you already understand the deepest challenges of aligning language models. RL is hard, sample-inefficient, and finicky — but when the only signal you have is &quot;was this good?&quot;, it&#39;s the tool you reach for.</p>
+</div>
+      <div class="a-foot">
+        <a href="/blog/advanced-sql/">← Advanced SQL</a>
+        <a href="/blog/principles-of-economics/">Principles of Economics (Mankiw) →</a>
+      </div>
+    </div>
+  </article>
+</main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="copy">© 2026 Jiawei Cui · Built as hand-written static HTML/CSS/JS.</div>
+      <div class="social">
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <a href="/blog/">Blog</a>
+      </div>
+    </div>
+  </footer>
+<script src="/assets/js/main.js"></script>
+</body>
+</html>

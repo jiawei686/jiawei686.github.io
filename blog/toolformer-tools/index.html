@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Toolformer: Language Models That Teach Themselves to Use Tools — Jiawei Cui</title>
+<meta name="description" content="Toolformer (Schick et al., 2023, arXiv:2302.04761) asked a deceptively simple question: can a model learn to use tools on its own, without humans demonstrating how? The…">
+<link rel="icon" href="/public/img/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/style.css">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Toolformer: Language Models That Teach Themselves to Use Tools — Jiawei Cui">
+<meta property="og:description" content="Toolformer (Schick et al., 2023, arXiv:2302.04761) asked a deceptively simple question: can a model learn to use tools on its own, without humans demonstrating how? The…">
+<meta property="og:url" content="https://cuijiawei.cn/blog/toolformer-tools/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Toolformer: Language Models That Teach Themselves to Use Tools — Jiawei Cui">
+<meta name="twitter:description" content="Toolformer (Schick et al., 2023, arXiv:2302.04761) asked a deceptively simple question: can a model learn to use tools on its own, without humans demonstrating how? The…">
+<link rel="canonical" href="https://cuijiawei.cn/blog/toolformer-tools/">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Person","name":"Jiawei Cui","alternateName":["kiritocui","崔家维","cuijiawei"],"url":"https://cuijiawei.cn/","sameAs":["https://github.com/jiawei686"]}
+</script>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="/"><img src="/public/img/logo.svg" alt="logo"> Jiawei Cui</a>
+      <button class="nav-toggle" id="nav-toggle" aria-label="Menu">☰</button>
+      <div class="nav-links" id="nav-links">
+        <a href="/">Home</a>
+        <a href="/about.html">About</a>
+        <a href="/blog/" class="active">Blog</a>
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <button class="theme-btn" id="theme-btn" aria-label="Toggle theme">☾</button>
+      </div>
+    </div>
+  </nav>
+<main>
+
+  <article class="article">
+    <div class="read">
+      <div class="a-head">
+        <div class="a-meta"><a href="/blog/">Blog</a> · Sun May 24 2026 08:00:00 GMT+0800 (Singapore Standard Time) · <span class="tag">llm</span></div>
+        <h1>Toolformer: Language Models That Teach Themselves to Use Tools</h1>
+      </div>
+      <div class="content"><p>Toolformer (Schick et al., 2023, arXiv:2302.04761) asked a deceptively simple question: <em>can a model learn to use tools on its own, without humans demonstrating how?</em> The answer — yes, by generating its own supervised training data — was a key step toward the tool-use we now take for granted in chat models. I&#39;m writing this because Toolformer&#39;s &quot;self-supervised tool learning&quot; idea is the ancestor of function-calling in modern LLMs, and the method is clever and reusable.</p>
+<h2>The problem: tool use usually needs human demos</h2>
+<p>To make a model call a calculator, a search API, or a translator, the standard approach was to <em>collect demonstrations</em> — humans writing &quot;here&#39;s how you invoke the tool.&quot; That&#39;s expensive and doesn&#39;t scale to many tools. Toolformer removed that bottleneck.</p>
+<h2>The core method: let the model write its own training data</h2>
+<p>Toolformer&#39;s pipeline for each tool:</p>
+<ol>
+<li><strong>Sample candidate tool calls.</strong> Take unlabeled text; have the model propose where a tool <em>could</em> be useful and what arguments to pass.</li>
+<li><strong>Execute the calls</strong> on the real tool (e.g. actually run the calculator, actually query the API).</li>
+<li><strong>Keep only helpful ones.</strong> Feed the tool&#39;s result back and check: did adding this call-and-result <em>improve the model&#39;s ability to predict the rest of the text</em>? If yes, keep it; if no, discard.</li>
+<li><strong>Fine-tune</strong> on the filtered examples.</li>
+</ol>
+<p>So the model <strong>teaches itself</strong> which tools help and how to use them, using the tool&#39;s real output as the quality signal. No human-labeled &quot;how to call a calculator&quot; needed.</p>
+<h2>Why this was a big deal</h2>
+<ul>
+<li><strong>Self-supervised tool learning.</strong> Scaling to new tools is just &quot;let the model propose calls + execute + filter.&quot; Far cheaper than hand-labeling.</li>
+<li><strong>It actually worked</strong> on a 6B model across calculators, Q&amp;A APIs, search, translation, and calendars — matching or beating much larger models that were explicitly trained with demonstrations.</li>
+<li><strong>It prefigured function calling.</strong> Today&#39;s models &quot;call functions&quot; via a similar philosophy: the model decides to invoke a tool, we execute it, the result returns to context. Toolformer showed the <em>learning</em> could be automated.</li>
+</ul>
+<h2>A minimal sketch</h2>
+<pre><code class="language-python"># Conceptual: the model proposes a call; we execute; we keep if it helps.
+text = &quot;What is 245 * 372?&quot;
+proposal = model.suggest_call(text)        # -&gt; &lt;call&gt;calc(245*372)&lt;/call&gt;
+result   = execute(proposal)               # -&gt; 91140
+augmented = f&quot;{text} &lt;call&gt;calc(245*372)&lt;/call&gt; =&gt; {result}&quot;
+if helps_predict_continuation(augmented):
+    training_data.append(augmented)
+</code></pre>
+<p>The &quot;helps predict continuation&quot; check is the elegant filter — it uses the model&#39;s own next-token objective as the teacher.</p>
+<h2>Limitations and honest caveats</h2>
+<ul>
+<li>Toolformer fine-tunes a model per tool set; modern systems instead bake function-calling into pretraining/instruction-tuning, which is more robust.</li>
+<li>The &quot;does it help&quot; filter can be noisy; poorly-executed tools produce garbage signals.</li>
+<li>It was demonstrated on a 6B model; the <em>capability</em> scaled up dramatically in later instruction-tuned models.</li>
+<li>Generating and executing many candidate calls is computationally heavy at training time.</li>
+</ul>
+<h2>My take</h2>
+<p>Toolformer&#39;s lasting contribution isn&#39;t the specific model — it&#39;s the <em>concept</em>: a model can learn to use tools by self-generating and self-filtering training examples against real tool outputs. That idea underpins how modern LLMs acquired function calling without millions of hand-written demos. If you&#39;re designing tool-using agents today, the practical lesson is: <strong>let the model decide when to call, execute for real, and return the result into context</strong> — and make the observation clean and trustworthy, because the model&#39;s behavior hinges on what it sees there. Toolformer proved that loop can be learned, not just programmed.</p>
+</div>
+      <div class="a-foot">
+        <a href="/blog/reflexion-verbal-rl/">← Reflexion: Verbal Reinforcement Learning for Language Agents</a>
+        <a href="/blog/react-reasoning-acting/">ReAct: Reasoning + Acting in Language Models →</a>
+      </div>
+    </div>
+  </article>
+</main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="copy">© 2026 Jiawei Cui · Built as hand-written static HTML/CSS/JS.</div>
+      <div class="social">
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <a href="/blog/">Blog</a>
+      </div>
+    </div>
+  </footer>
+<script src="/assets/js/main.js"></script>
+</body>
+</html>

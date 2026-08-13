@@ -1,73 +1,124 @@
----
-layout: default
-title: Jiawei — Notes on LLMs, Deep Learning & ML Systems
----
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jiawei Cui — Software engineer → AI researcher</title>
+<meta name="description" content="Jiawei Cui — software engineer turned AI researcher. Notes on LLMs, deep learning, and building things that work.">
+<link rel="icon" href="/public/img/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/style.css">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Jiawei Cui — Software engineer → AI researcher">
+<meta property="og:description" content="Jiawei Cui — software engineer turned AI researcher. Notes on LLMs, deep learning, and building things that work.">
+<meta property="og:url" content="https://cuijiawei.cn/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Jiawei Cui — Software engineer → AI researcher">
+<meta name="twitter:description" content="Jiawei Cui — software engineer turned AI researcher. Notes on LLMs, deep learning, and building things that work.">
+<link rel="canonical" href="https://cuijiawei.cn/">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Person","name":"Jiawei Cui","alternateName":["kiritocui","崔家维","cuijiawei"],"url":"https://cuijiawei.cn/","sameAs":["https://github.com/jiawei686"]}
+</script>
+</head>
+<body>
 
-<p class="lead">
-  Notes on LLMs, deep learning, and building things that work.
-</p>
+  <nav class="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="/"><img src="/public/img/logo.svg" alt="logo"> Jiawei Cui</a>
+      <button class="nav-toggle" id="nav-toggle" aria-label="Menu">☰</button>
+      <div class="nav-links" id="nav-links">
+        <a href="/" class="active">Home</a>
+        <a href="/about.html">About</a>
+        <a href="/blog/">Blog</a>
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <button class="theme-btn" id="theme-btn" aria-label="Toggle theme">☾</button>
+      </div>
+    </div>
+  </nav>
+<main>
 
-{% comment %}Hide archived (engineering) posts from the homepage; they remain browsable at /tag/engineering/{% endcomment %}
-{% assign visible_posts = "" | split: "," %}
-{% for post in site.posts %}
-  {% unless post.tags contains 'engineering' %}
-    {% assign visible_posts = visible_posts | push: post %}
-  {% endunless %}
-{% endfor %}
+  <section class="hero">
+    <div class="container hero-grid">
+      <img class="avatar" src="/public/img/logo.svg" alt="Jiawei Cui">
+      <div>
+        <h1>Jiawei Cui</h1>
+        <p class="tag">Software engineer → AI researcher.</p>
+        <p class="lede">I build things, then I train models. Five years shipping front-end systems at Tencent, now all-in on large language models and the path to a PhD. This is where I think in public.</p>
+        <div class="cta-row">
+          <a class="btn btn-primary" href="/blog/">Read the blog →</a>
+          <a class="btn btn-ghost" href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+          <a class="btn btn-ghost" href="mailto:892001108@qq.com">Get in touch</a>
+        </div>
+      </div>
+    </div>
+  </section>
 
-{% comment %}LLM umbrella, subdivided into themes by `subcat`{% endcomment %}
-{% assign llm_posts = visible_posts | where: "tags", "llm" %}
-{% if llm_posts.size > 0 %}
-  <h2 id="llm" class="page-title">
-    <a href="{{ site.baseurl }}/tag/llm/">Paper Deep-Dives</a>
-    <small>{{ llm_posts.size }} posts</small>
-  </h2>
-  {% assign subcats = "architecture:Architecture &amp; Attention|training:Training &amp; Scaling|alignment:Alignment &amp; RLHF|reasoning:Reasoning|agents:Agents &amp; Tools|multimodal:Multimodal" | split: "|" %}
-  {% for sc in subcats %}
-    {% assign parts = sc | split: ":" %}
-    {% assign slug = parts[0] %}
-    {% assign sname = parts[1] %}
-    {% assign sub_posts = llm_posts | where: "subcat", slug %}
-    {% if sub_posts.size > 0 %}
-      <h3 class="sub-title">{{ sname }} <small>{{ sub_posts.size }}</small></h3>
-      <ul class="related-posts">
-        {% for post in sub_posts %}
-          <li>
-            <h4>
-              <a href="{{ site.baseurl }}{{ post.url }}">
-                <span>{{ post.title }}</span>
-                <small>{{ post.date | date: "%m/%d" }}</small>
-              </a>
-            </h4>
-          </li>
-        {% endfor %}
-      </ul>
-    {% endif %}
-  {% endfor %}
-  <hr/>
-{% endif %}
+  <section class="section">
+    <div class="container">
+      <div class="eyebrow">What I do</div>
+      <h2>Three lanes, one trajectory</h2>
+      <p class="sub">Engineering got me here; research is where I'm headed.</p>
+      <div class="cards">
+        <div class="card">
+          <h3>AI &amp; ML Research</h3>
+          <p>Reading the papers behind modern LLMs — transformers, RLHF, mixture-of-experts — and turning them into intuition I can actually use.</p>
+        </div>
+        <div class="card">
+          <h3>Engineering</h3>
+          <p>A decade of shipping software: front-end systems at Tencent, open-source tooling, and pragmatic infrastructure that stays up.</p>
+        </div>
+        <div class="card">
+          <h3>Writing</h3>
+          <p>Thinking in public. Long-form notes on models and methods, written to be understood — not just summarized.</p>
+        </div>
+      </div>
+    </div>
+  </section>
 
-{% assign categories = "ai|data|projects" | split: "|" %}
-{% for cat in categories %}
-  {% assign cat_posts = visible_posts | where: "tags", cat %}
-  {% if cat_posts.size > 0 %}
-    {% assign cat_name = site.data.tags[cat].name %}
-    <h2 id="{{ cat }}" class="page-title">
-      <a href="{{ site.baseurl }}/tag/{{ cat }}/">{{ cat_name }}</a>
-      <small>{{ cat_posts.size }} posts</small>
-    </h2>
-    <ul class="related-posts">
-      {% for post in cat_posts %}
-        <li>
-          <h4>
-            <a href="{{ site.baseurl }}{{ post.url }}">
-              <span>{{ post.title }}</span>
-              <small>{{ post.date | date: "%m/%d" }}</small>
-            </a>
-          </h4>
-        </li>
-      {% endfor %}
-    </ul>
-    <hr/>
-  {% endif %}
-{% endfor %}
+  <section class="section" style="padding-top:0">
+    <div class="container">
+      <div class="eyebrow">Selected projects</div>
+      <h2>Things I've built</h2>
+      <div style="margin-top:18px">
+        <div class="project">
+          <div class="pico">CM</div>
+          <div><h3><a href="https://github.com/Tencent/cherry-markdown" target="_blank" rel="noopener">Cherry Markdown</a></h3>
+          <p>Co-starter &amp; PMC of a modular, extensible Markdown editor — 4.4k★, used by 20+ teams.</p></div>
+        </div>
+        <div class="project">
+          <div class="pico">WX</div>
+          <div><h3><a href="https://github.com/jiawei686/wechat-dev-mcp" target="_blank" rel="noopener">wechat-dev-mcp</a></h3>
+          <p>An MCP server that lets an AI agent drive WeChat DevTools automatically.</p></div>
+        </div>
+        <div class="project">
+          <div class="pico">HV</div>
+          <div><h3><a href="https://github.com/hippy-contrib/hippy-vue-html" target="_blank" rel="noopener">hippy-vue-html</a></h3>
+          <p>Cross-platform rich-text component for the Hippy framework (hippy-contrib).</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:0">
+    <div class="container">
+      <div class="eyebrow">Recent writing</div>
+      <h2>From the blog</h2>
+      <div class="writing" style="margin-top:18px"><div class="wrow"><span class="date">Wed Oct 22 2025 08:00:00 GMT+0800 (Singapore Standard Time)</span><a href="/blog/intro-to-deep-learning/">Deep Learning</a></div><div class="wrow"><span class="date">Tue Jun 30 2026 08:00:00 GMT+0800 (Singapore Standard Time)</span><a href="/blog/chinchilla/">Chinchilla: Training Compute-Optimal Large Language Models</a></div><div class="wrow"><span class="date">Tue Jul 07 2026 08:00:00 GMT+0800 (Singapore Standard Time)</span><a href="/blog/dpo/">DPO: Direct Preference Optimization</a></div><div class="wrow"><span class="date">Thu May 18 2017 08:00:00 GMT+0800 (Singapore Standard Time)</span><a href="/blog/connection-oriented-transport-tcp/">Connection-Oriented Transport - TCP</a></div><div class="wrow"><span class="date">Thu Mar 16 2017 08:00:00 GMT+0800 (Singapore Standard Time)</span><a href="/blog/advanced-javascript-exercises/">Advanced JavaScript - Exercises and Gotchas</a></div><div class="wrow"><span class="date">Thu Jul 09 2026 08:00:00 GMT+0800 (Singapore Standard Time)</span><a href="/blog/constitutional-ai/">Constitutional AI: Harmlessness from AI Feedback</a></div></div>
+      <p style="margin-top:22px"><a class="btn btn-ghost" href="/blog/">Browse all 42 posts →</a></p>
+    </div>
+  </section>
+</main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="copy">© 2026 Jiawei Cui · Built as hand-written static HTML/CSS/JS.</div>
+      <div class="social">
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <a href="/blog/">Blog</a>
+      </div>
+    </div>
+  </footer>
+<script src="/assets/js/main.js"></script>
+</body>
+</html>

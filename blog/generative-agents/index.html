@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Generative Agents: Believable Simulacra of Human Behavior — Jiawei Cui</title>
+<meta name="description" content="Generative Agents (Park et al., 2023) is the famous &quot;AI town&quot; paper — 25 LLMpowered characters who go to work, gossip, throw parties, and form relationships in a…">
+<link rel="icon" href="/public/img/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/style.css">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Generative Agents: Believable Simulacra of Human Behavior — Jiawei Cui">
+<meta property="og:description" content="Generative Agents (Park et al., 2023) is the famous &quot;AI town&quot; paper — 25 LLMpowered characters who go to work, gossip, throw parties, and form relationships in a…">
+<meta property="og:url" content="https://cuijiawei.cn/blog/generative-agents/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Generative Agents: Believable Simulacra of Human Behavior — Jiawei Cui">
+<meta name="twitter:description" content="Generative Agents (Park et al., 2023) is the famous &quot;AI town&quot; paper — 25 LLMpowered characters who go to work, gossip, throw parties, and form relationships in a…">
+<link rel="canonical" href="https://cuijiawei.cn/blog/generative-agents/">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Person","name":"Jiawei Cui","alternateName":["kiritocui","崔家维","cuijiawei"],"url":"https://cuijiawei.cn/","sameAs":["https://github.com/jiawei686"]}
+</script>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="/"><img src="/public/img/logo.svg" alt="logo"> Jiawei Cui</a>
+      <button class="nav-toggle" id="nav-toggle" aria-label="Menu">☰</button>
+      <div class="nav-links" id="nav-links">
+        <a href="/">Home</a>
+        <a href="/about.html">About</a>
+        <a href="/blog/" class="active">Blog</a>
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <button class="theme-btn" id="theme-btn" aria-label="Toggle theme">☾</button>
+      </div>
+    </div>
+  </nav>
+<main>
+
+  <article class="article">
+    <div class="read">
+      <div class="a-head">
+        <div class="a-meta"><a href="/blog/">Blog</a> · Sun Jun 07 2026 08:00:00 GMT+0800 (Singapore Standard Time) · <span class="tag">llm</span></div>
+        <h1>Generative Agents: Believable Simulacra of Human Behavior</h1>
+      </div>
+      <div class="content"><p>Generative Agents (Park et al., 2023) is the famous &quot;AI town&quot; paper — 25 LLM-powered characters who go to work, gossip, throw parties, and form relationships in a sandbox. Beyond the demo&#39;s charm, it contributed a clean <strong>agent architecture</strong> (memory → planning → reflection) that&#39;s now a standard reference for building believable autonomous characters and simulations. I&#39;m writing this because the architecture is a template you can reuse for any &quot;agent with a persistent self,&quot; not just game NPCs.</p>
+<h2>The demo that made it famous</h2>
+<p>The authors built a sandbox world with 25 agents. Left running, they exhibited emergent social behavior: one agent decides to throw a birthday party, invites others, and by the next day most of the town shows up — having planned, coordinated, and remembered on their own. Nobody scripted the party; it emerged from agents pursuing goals informed by memory and observation.</p>
+<h2>The architecture: three modules</h2>
+<p>Each agent runs a loop built on three components:</p>
+<ol>
+<li><strong>Memory stream.</strong> A log of all experiences (observations, actions, conversations), each time-stamped and retrievable by <em>recency</em>, <em>importance</em>, and <em>relevance</em>. This is how an agent &quot;remembers&quot; what matters.</li>
+<li><strong>Planning.</strong> Given memory + goals, the agent generates a plan (a tree of sub-goals over time): &quot;I&#39;m thirsty → go to the cafe → at 2pm.&quot; Plans can react to new events.</li>
+<li><strong>Reflection.</strong> Periodically, the agent summarizes its recent memories into higher-level insights (&quot;I&#39;m friends with Klaus; I should invite him&quot;). This is exactly the Reflexion idea (covered separately) baked into the architecture.</li>
+</ol>
+<p>Crucially, the agent <em>retrieves relevant memories</em> to inform each action — so behavior is consistent over time, not random.</p>
+<h2>Why it felt &quot;believable&quot;</h2>
+<p>Prior chatbots were stateless: each reply forgot the last. Generative Agents made behavior <strong>persistent and contextual</strong> — an agent&#39;s action at time <em>t</em> depends on what it did at <em>t-10</em> and what it learned about others. That continuity is what reads as &quot;a person&quot; rather than &quot;a prompt.&quot;</p>
+<p>The reflection module is the secret sauce for coherence: without it, agents are reactive but not self-consistent; with it, they develop stable traits and relationships.</p>
+<h2>Practical takeaways for builders</h2>
+<ul>
+<li><strong>Memory retrieval &gt; prompt stuffing.</strong> Don&#39;t try to fit everything in the prompt; retrieve by recency/importance/relevance like they do. This scales and stays relevant.</li>
+<li><strong>Reflection creates consistency.</strong> Periodically compress experiences into beliefs; it&#39;s what stops agents from being incoherent across sessions.</li>
+<li><strong>Planning needs grounding in memory.</strong> A plan generated from nothing drifts; a plan generated from retrieved context stays on-character.</li>
+<li><strong>Cost is real.</strong> Every agent step is model calls × agents × time. The demo is charming but expensive to run at scale; I&#39;d prototype with few agents and heavy caching.</li>
+</ul>
+<h2>Limitations</h2>
+<ul>
+<li>Believability ≠ correctness. Agents can still generate false &quot;memories&quot; or act illogically; the demo&#39;s charm can mask shallow reasoning.</li>
+<li>It&#39;s <strong>heavy</strong>: many retrieval + reflection calls per agent per step.</li>
+<li>Behavior is only as good as the underlying LLM&#39;s reasoning and the quality of the memory/retrieval design.</li>
+<li>Replicating the emergent social dynamics requires careful tuning; naive versions just produce agents that wander.</li>
+</ul>
+<h2>My take</h2>
+<p>Generative Agents is less about &quot;AI people&quot; and more about a reusable pattern: <strong>persistent memory + planning + reflection = coherent autonomous behavior.</strong> Strip the NPC framing and you have the skeleton for customer sims, testing agents, personalized assistants that remember you, and multi-agent simulations. The single most useful idea to steal is the <em>memory stream with recency/importance/relevance retrieval</em> — it&#39;s the difference between an agent that feels like a person and one that feels like a stateless chatbot. Build memory first; everything else follows.</p>
+</div>
+      <div class="a-foot">
+        <a href="/blog/autogen-multi-agent/">← AutoGen: Multi-Agent Conversation as Computation</a>
+        <a href="/blog/rlhf-from-human-preferences/">RLHF: Deep Reinforcement Learning from Human Preferences →</a>
+      </div>
+    </div>
+  </article>
+</main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="copy">© 2026 Jiawei Cui · Built as hand-written static HTML/CSS/JS.</div>
+      <div class="social">
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <a href="/blog/">Blog</a>
+      </div>
+    </div>
+  </footer>
+<script src="/assets/js/main.js"></script>
+</body>
+</html>

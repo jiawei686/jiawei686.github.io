@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RAG: Retrieval-Augmented Generation — Jiawei Cui</title>
+<meta name="description" content="RetrievalAugmented Generation (RAG, Lewis et al., 2020, arXiv:2005.11401) is, hands down, the most widely deployed LLM architecture in production. If you've used a…">
+<link rel="icon" href="/public/img/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/style.css">
+<meta property="og:type" content="website">
+<meta property="og:title" content="RAG: Retrieval-Augmented Generation — Jiawei Cui">
+<meta property="og:description" content="RetrievalAugmented Generation (RAG, Lewis et al., 2020, arXiv:2005.11401) is, hands down, the most widely deployed LLM architecture in production. If you've used a…">
+<meta property="og:url" content="https://cuijiawei.cn/blog/rag-retrieval-augmented-generation/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="RAG: Retrieval-Augmented Generation — Jiawei Cui">
+<meta name="twitter:description" content="RetrievalAugmented Generation (RAG, Lewis et al., 2020, arXiv:2005.11401) is, hands down, the most widely deployed LLM architecture in production. If you've used a…">
+<link rel="canonical" href="https://cuijiawei.cn/blog/rag-retrieval-augmented-generation/">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Person","name":"Jiawei Cui","alternateName":["kiritocui","崔家维","cuijiawei"],"url":"https://cuijiawei.cn/","sameAs":["https://github.com/jiawei686"]}
+</script>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="/"><img src="/public/img/logo.svg" alt="logo"> Jiawei Cui</a>
+      <button class="nav-toggle" id="nav-toggle" aria-label="Menu">☰</button>
+      <div class="nav-links" id="nav-links">
+        <a href="/">Home</a>
+        <a href="/about.html">About</a>
+        <a href="/blog/" class="active">Blog</a>
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <button class="theme-btn" id="theme-btn" aria-label="Toggle theme">☾</button>
+      </div>
+    </div>
+  </nav>
+<main>
+
+  <article class="article">
+    <div class="read">
+      <div class="a-head">
+        <div class="a-meta"><a href="/blog/">Blog</a> · Sun May 10 2026 08:00:00 GMT+0800 (Singapore Standard Time) · <span class="tag">llm</span></div>
+        <h1>RAG: Retrieval-Augmented Generation</h1>
+      </div>
+      <div class="content"><p>Retrieval-Augmented Generation (RAG, Lewis et al., 2020, arXiv:2005.11401) is, hands down, the most widely deployed LLM architecture in production. If you&#39;ve used a chatbot that &quot;knows your company&#39;s documents,&quot; it&#39;s almost certainly RAG. I&#39;m writing this because RAG is the practical bridge between a frozen base model and <em>your</em> data, and getting it right is 80% engineering, 20% ML.</p>
+<h2>The core problem RAG solves</h2>
+<p>A base LLM has two hard limits:</p>
+<ol>
+<li><strong>Knowledge cutoff</strong> — it only knows what was in its pretraining data, up to a point in time.</li>
+<li><strong>No private knowledge</strong> — it can&#39;t know your internal docs, tickets, or database.</li>
+</ol>
+<p>You could fine-tune, but that&#39;s expensive, slow to update, and the model still &quot;blends&quot; facts rather than quoting sources. RAG takes a simpler, more honest route: <strong>don&#39;t put the knowledge in the weights — put it next to the model at query time.</strong></p>
+<h2>How RAG works (the standard pipeline)</h2>
+<ol>
+<li><strong>Indexing (offline):</strong> chop your documents into chunks, embed each into a vector, store them in a vector database.</li>
+<li><strong>Retrieval (per query):</strong> embed the user&#39;s question, find the top-k most similar chunks by vector search.</li>
+<li><strong>Generation:</strong> stuff those chunks into the prompt as context and ask the model to answer <em>using only the provided context</em>, ideally with citations.</li>
+</ol>
+<pre><code>question → embed → vector search → top-k chunks → prompt → answer
+</code></pre>
+<p>The model becomes a reader over retrieved evidence rather than a recall machine over its weights.</p>
+<h2>Why RAG beat the alternatives for real use</h2>
+<ul>
+<li><strong>Freshness:</strong> update the index, not the model. New doc? Just re-index it.</li>
+<li><strong>Provenance:</strong> you can show the user <em>which source</em> supported the answer — critical for trust and for regulated domains.</li>
+<li><strong>Cheaper than fine-tuning:</strong> indexing is a one-time (and re-runnable) embedding job; no GPU training.</li>
+<li><strong>Less hallucination:</strong> grounding answers in retrieved text sharply reduces confident fabrication — though it doesn&#39;t eliminate it (the model can still misread or ignore context).</li>
+</ul>
+<p>Almost every &quot;chat with your PDF / docs / codebase&quot; product is RAG under the hood. It&#39;s the seed of the agentic apps we now build.</p>
+<h2>Where RAG actually breaks (and how to fix it)</h2>
+<p>In my experience, RAG fails most often at the <em>retrieval</em> step, not generation:</p>
+<ul>
+<li><strong>Bad chunking:</strong> too large (noise) or too small (lost context). Tune chunk size + overlap.</li>
+<li><strong>Weak embeddings:</strong> the retriever misses relevant docs. Upgrade the embedding model; consider hybrid (vector + keyword/BM25) search.</li>
+<li><strong>No reranking:</strong> top-k by similarity isn&#39;t top-k by relevance. Add a cross-encoder reranker — often the single biggest quality win.</li>
+<li><strong>Missing metadata filtering:</strong> &quot;search only this customer&#39;s tickets&quot; needs metadata, not just vectors.</li>
+<li><strong>Context stuffing:</strong> dumping 20 chunks overwhelms the model. Retrieve more, rerank, keep few.</li>
+</ul>
+<h2>Practical build notes</h2>
+<ul>
+<li>Start simple: a vector DB + a good embedding model + a reranker. That trio beats elaborate pipelines with weak retrieval.</li>
+<li><strong>Hybrid search</strong> (dense + sparse) consistently beats dense-only for factual lookup.</li>
+<li>Cache embeddings; re-index incrementally.</li>
+<li>Evaluate with real queries, not toy sets — measure &quot;did the right chunk get retrieved&quot; before blaming generation.</li>
+<li>For codebases, retrieval over file/function chunks + a good reranker works remarkably well (this is how coding assistants ground answers).</li>
+</ul>
+<h2>My take</h2>
+<p>RAG is the workhorse of practical LLM systems, and its biggest lesson is that <strong>retrieval quality dominates generation quality</strong>. A frontier model with bad retrieval gives wrong answers confidently; a modest model with great retrieval gives correct, sourced answers. If you&#39;re building any &quot;LLM on my data&quot; feature, invest your effort in chunking, embedding choice, and reranking before you touch prompts or models. RAG won&#39;t make a model smarter — it makes it <em>grounded</em>, and for production that&#39;s usually what you actually need.</p>
+</div>
+      <div class="a-foot">
+        <a href="/blog/react-reasoning-acting/">← ReAct: Reasoning + Acting in Language Models</a>
+        <a href="/blog/deepseek-r1-reasoning-rl/">DeepSeek-R1: Reasoning via Reinforcement Learning →</a>
+      </div>
+    </div>
+  </article>
+</main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="copy">© 2026 Jiawei Cui · Built as hand-written static HTML/CSS/JS.</div>
+      <div class="social">
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <a href="/blog/">Blog</a>
+      </div>
+    </div>
+  </footer>
+<script src="/assets/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,577 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Deploy OpenClaw AI on Raspberry Pi: Our Open Source Guide — Jiawei Cui</title>
+<meta name="description" content="In this tutorial, we'll detail how to deploy the OpenClaw AI assistant platform on different Raspberry Pi models. Whether you have a highperformance Raspberry Pi 4B or a…">
+<link rel="icon" href="/public/img/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/style.css">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Deploy OpenClaw AI on Raspberry Pi: Our Open Source Guide — Jiawei Cui">
+<meta property="og:description" content="In this tutorial, we'll detail how to deploy the OpenClaw AI assistant platform on different Raspberry Pi models. Whether you have a highperformance Raspberry Pi 4B or a…">
+<meta property="og:url" content="https://cuijiawei.cn/blog/complete-raspberry-pi-openclaw-deployment-guide/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Deploy OpenClaw AI on Raspberry Pi: Our Open Source Guide — Jiawei Cui">
+<meta name="twitter:description" content="In this tutorial, we'll detail how to deploy the OpenClaw AI assistant platform on different Raspberry Pi models. Whether you have a highperformance Raspberry Pi 4B or a…">
+<link rel="canonical" href="https://cuijiawei.cn/blog/complete-raspberry-pi-openclaw-deployment-guide/">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Person","name":"Jiawei Cui","alternateName":["kiritocui","崔家维","cuijiawei"],"url":"https://cuijiawei.cn/","sameAs":["https://github.com/jiawei686"]}
+</script>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="/"><img src="/public/img/logo.svg" alt="logo"> Jiawei Cui</a>
+      <button class="nav-toggle" id="nav-toggle" aria-label="Menu">☰</button>
+      <div class="nav-links" id="nav-links">
+        <a href="/">Home</a>
+        <a href="/about.html">About</a>
+        <a href="/blog/" class="active">Blog</a>
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <button class="theme-btn" id="theme-btn" aria-label="Toggle theme">☾</button>
+      </div>
+    </div>
+  </nav>
+<main>
+
+  <article class="article">
+    <div class="read">
+      <div class="a-head">
+        <div class="a-meta"><a href="/blog/">Blog</a> · Feb 4, 2026 · <span class="tag">projects</span></div>
+        <h1>Deploy OpenClaw AI on Raspberry Pi: Our Open Source Guide</h1>
+      </div>
+      <div class="content"><p>In this tutorial, we&#39;ll detail how to deploy the OpenClaw AI assistant platform on different Raspberry Pi models. Whether you have a high-performance Raspberry Pi 4B or a classic older Raspberry Pi 2, this guide will provide you with corresponding deployment solutions.</p>
+<h2>Comparison of Different Raspberry Pi Models</h2>
+<h3>Hardware Specifications</h3>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>CPU</th>
+<th>RAM</th>
+<th>Network</th>
+<th>USB</th>
+<th>Use Case</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Raspberry Pi 4B</td>
+<td>Cortex-A72 Quad-core 1.5GHz</td>
+<td>2GB/4GB/8GB</td>
+<td>Gigabit Ethernet, WiFi</td>
+<td>USB 3.0</td>
+<td>Recommended, best performance</td>
+</tr>
+<tr>
+<td>Raspberry Pi 3B+</td>
+<td>Cortex-A53 Quad-core 1.4GHz</td>
+<td>1GB</td>
+<td>Ethernet, WiFi</td>
+<td>USB 2.0</td>
+<td>Medium load</td>
+</tr>
+<tr>
+<td>Raspberry Pi Zero 2 W</td>
+<td>Cortex-A53 Single-core 1GHz</td>
+<td>512MB</td>
+<td>WiFi</td>
+<td>USB 2.0</td>
+<td>Lightweight applications</td>
+</tr>
+<tr>
+<td>Raspberry Pi 2</td>
+<td>Cortex-A7 Quad-core 900MHz</td>
+<td>1GB</td>
+<td>Ethernet</td>
+<td>USB 2.0</td>
+<td>Basic functionality</td>
+</tr>
+</tbody></table>
+<h3>Selection Recommendations</h3>
+<ul>
+<li><strong>Raspberry Pi 4B and above</strong>: Can run full-featured OpenClaw</li>
+<li><strong>Raspberry Pi 3B+</strong>: Can run most features, requires appropriate optimization</li>
+<li><strong>Raspberry Pi Zero 2 W</strong>: Runs core functions only</li>
+<li><strong>Raspberry Pi 2</strong>: Basic functions, highly optimized</li>
+</ul>
+<h2>General System Preparation</h2>
+<h3>Hardware Requirements</h3>
+<ul>
+<li>Power supply: Stable 5V power (Pi 4B requires 3A, other models 2A)</li>
+<li>Storage: At least 32GB Class 10 microSD card</li>
+<li>Network: Wired or WiFi connection</li>
+<li>Cooling: Heat sinks recommended (especially for Pi 4B)</li>
+</ul>
+<h3>System Installation</h3>
+<p><strong>Option 1: Raspberry Pi OS (Recommended for beginners)</strong></p>
+<ol>
+<li>Download Raspberry Pi Imager</li>
+<li>Select Raspberry Pi OS (64-bit)</li>
+<li>Choose SD card and write image</li>
+</ol>
+<p><strong>Option 2: DietPi (Recommended for advanced users, especially older models)</strong></p>
+<ul>
+<li>More lightweight, better suited for resource-constrained devices</li>
+<li>Download address: <a href="https://dietpi.com/#download">https://dietpi.com/#download</a></li>
+</ul>
+<h3>System Initialization</h3>
+<pre><code class="language-bash"># Update system
+sudo apt update &amp;&amp; sudo apt upgrade -y
+
+# Expand filesystem
+sudo raspi-config
+# Select &quot;Advanced Options&quot; -&gt; &quot;Expand Filesystem&quot;
+</code></pre>
+<h2>Raspberry Pi 4B and Above Deployment</h2>
+<h3>Environment Configuration</h3>
+<pre><code class="language-bash"># Install basic packages
+sudo apt install -y \
+    build-essential \
+    curl \
+    wget \
+    git \
+    vim \
+    htop \
+    python3-dev \
+    python3-pip \
+    python3-venv \
+    libffi-dev \
+    libssl-dev \
+    zlib1g-dev
+
+# Install Node.js
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+source ~/.bashrc
+nvm install --lts
+nvm use --lts
+</code></pre>
+<h3>Python Environment</h3>
+<pre><code class="language-bash"># Create virtual environment
+python3 -m venv ~/openclaw-env
+source ~/openclaw-env/bin/activate
+pip install --upgrade pip setuptools wheel
+</code></pre>
+<h3>OpenClaw Installation</h3>
+<pre><code class="language-bash"># Clone and install
+mkdir -p ~/projects
+cd ~/projects
+git clone https://github.com/openclaw/openclaw.git
+cd openclaw
+
+source ~/openclaw-env/bin/activate
+pip install -e .
+</code></pre>
+<h3>Configuration File (For Raspberry Pi 4B)</h3>
+<pre><code class="language-yaml"># ~/.openclaw/config.yaml
+server:
+  host: 0.0.0.0
+  port: 3000
+  workers: 2  # Pi 4B can use 2 worker processes
+  timeout: 300
+  debug: false
+
+models:
+  defaults:
+    text: &quot;gpt-3.5-turbo&quot;
+    embedding: &quot;text-embedding-3-small&quot;
+
+ollama:
+  enabled: true
+  host: &quot;http://localhost:11434&quot;
+  model: &quot;llama2:7b&quot;  # Model suitable for Pi 4B
+
+database:
+  type: &quot;sqlite&quot;
+  sqlite:
+    path: &quot;~/.openclaw/data.db&quot;
+
+cache:
+  type: &quot;redis&quot;
+  redis:
+    host: &quot;localhost&quot;
+    port: 6379
+    db: 0
+
+resources:
+  memory_limit: &quot;1G&quot;
+  cpu_limit: 0.8
+  max_concurrent_requests: 4
+
+logging:
+  level: &quot;INFO&quot;
+  file: &quot;~/.openclaw/logs/openclaw.log&quot;
+</code></pre>
+<h2>Raspberry Pi 2 Deployment (Resource-Optimized Version)</h2>
+<h3>System-Level Optimization</h3>
+<pre><code class="language-bash"># Maximize swap space
+sudo dphys-swapfile swapoff
+sudo nano /etc/dphys-swapfile
+# Set CONF_SWAPSIZE=1024
+# Set CONF_MAXSWAP=2048
+sudo dphys-swapfile setup
+sudo dphys-swapfile swapon
+
+# Disable more services to save resources
+sudo systemctl disable bluetooth
+sudo systemctl disable triggerhappy
+sudo systemctl disable avahi-daemon
+sudo systemctl disable alsa-state
+sudo systemctl disable cups
+sudo systemctl disable cups-browsed
+
+# Adjust GPU memory allocation
+echo &quot;gpu_mem=16&quot; | sudo tee -a /boot/config.txt
+</code></pre>
+<h3>Lightweight Environment Configuration</h3>
+<pre><code class="language-bash"># Install lightweight Node.js version
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+source ~/.bashrc
+nvm install 16  # Install older but stable version
+nvm use 16
+
+# Lightweight Python environment
+python3 -m venv ~/openclaw-env --without-pip
+source ~/openclaw-env/bin/activate
+curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+python get-pip.py --no-cache-dir
+
+pip install --upgrade pip setuptools wheel
+pip install --upgrade \
+    pip \
+    requests \
+    pyyaml \
+    python-dotenv \
+    flask \
+    gevent \
+    redis \
+    pillow
+</code></pre>
+<h3>Configuration File (For Raspberry Pi 2)</h3>
+<pre><code class="language-yaml"># ~/.openclaw/config.yaml
+server:
+  host: 0.0.0.0
+  port: 3000
+  workers: 1  # Single worker process
+  timeout: 600  # Longer timeout period
+  debug: false
+
+models:
+  defaults:
+    text: &quot;gpt-3.5-turbo&quot;  # Must use API models
+
+ollama:
+  enabled: false  # Pi 2 cannot run local models
+
+database:
+  type: &quot;sqlite&quot;
+  sqlite:
+    path: &quot;~/.openclaw/data.db&quot;
+    timeout: 60
+
+cache:
+  type: &quot;memory&quot;
+  memory:
+    max_size: 50MB  # Minimal cache
+
+resources:
+  memory_limit: &quot;512M&quot;  # Strict memory limit
+  cpu_limit: 0.5
+  max_concurrent_requests: 1  # Single request processing
+  slow_down_requests: true
+
+network:
+  timeout: 300
+  retry_attempts: 3
+  retry_delay: 5
+
+logging:
+  level: &quot;INFO&quot;
+  file: &quot;~/.openclaw/logs/openclaw.log&quot;
+</code></pre>
+<h2>Generic Configuration Script</h2>
+<p>Create a script that can select configuration based on hardware:</p>
+<pre><code class="language-bash"># ~/setup_openclaw.sh
+#!/bin/bash
+
+# Detect Raspberry Pi model and apply corresponding configuration
+detect_raspberry_pi_model() {
+    # Get CPU info
+    CPU_INFO=$(cat /proc/cpuinfo | grep &quot;model name&quot; | head -1 | cut -d &quot;:&quot; -f 2)
+    
+    if [[ $CPU_INFO == *&quot;ARMv7&quot;* ]]; then
+        # Check CPU cores and frequency
+        CORES=$(nproc)
+        FREQUENCY=$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq 2&gt;/dev/null | head -c 3)
+        
+        if [[ $FREQUENCY -gt 1400 ]]; then
+            echo &quot;pi4&quot;  # Raspberry Pi 4B+
+        elif [[ $FREQUENCY -gt 1000 ]]; then
+            echo &quot;pi3&quot;  # Raspberry Pi 3B+
+        else
+            echo &quot;pi2&quot;  # Raspberry Pi 2 or Zero 2 W
+        fi
+    else
+        echo &quot;unknown&quot;
+    fi
+}
+
+# Create config directory
+mkdir -p ~/.openclaw
+
+# Select config based on model
+MODEL_TYPE=$(detect_raspberry_pi_model)
+echo &quot;Detected Raspberry Pi type: $MODEL_TYPE&quot;
+
+case $MODEL_TYPE in
+    &quot;pi4&quot;)
+        echo &quot;Setting up for Raspberry Pi 4B+&quot;
+        cat &gt; ~/.openclaw/config.yaml &lt;&lt; &#39;EOF&#39;
+server:
+  host: 0.0.0.0
+  port: 3000
+  workers: 2
+  timeout: 300
+  debug: false
+
+models:
+  defaults:
+    text: &quot;gpt-3.5-turbo&quot;
+    embedding: &quot;text-embedding-3-small&quot;
+
+ollama:
+  enabled: true
+  host: &quot;http://localhost:11434&quot;
+  model: &quot;llama2:7b&quot;
+
+database:
+  type: &quot;sqlite&quot;
+  sqlite:
+    path: &quot;~/.openclaw/data.db&quot;
+
+cache:
+  type: &quot;redis&quot;
+  redis:
+    host: &quot;localhost&quot;
+    port: 6379
+    db: 0
+
+resources:
+  memory_limit: &quot;1G&quot;
+  cpu_limit: 0.8
+  max_concurrent_requests: 4
+
+logging:
+  level: &quot;INFO&quot;
+  file: &quot;~/.openclaw/logs/openclaw.log&quot;
+EOF
+        ;;
+    &quot;pi2&quot;)
+        echo &quot;Setting up for Raspberry Pi 2/Zero 2 W&quot;
+        cat &gt; ~/.openclaw/config.yaml &lt;&lt; &#39;EOF&#39;
+server:
+  host: 0.0.0.0
+  port: 3000
+  workers: 1
+  timeout: 600
+  debug: false
+
+models:
+  defaults:
+    text: &quot;gpt-3.5-turbo&quot;
+
+ollama:
+  enabled: false
+
+database:
+  type: &quot;sqlite&quot;
+  sqlite:
+    path: &quot;~/.openclaw/data.db&quot;
+    timeout: 60
+
+cache:
+  type: &quot;memory&quot;
+  memory:
+    max_size: 50MB
+
+resources:
+  memory_limit: &quot;512M&quot;
+  cpu_limit: 0.5
+  max_concurrent_requests: 1
+  slow_down_requests: true
+
+network:
+  timeout: 300
+  retry_attempts: 3
+  retry_delay: 5
+
+logging:
+  level: &quot;INFO&quot;
+  file: &quot;~/.openclaw/logs/openclaw.log&quot;
+EOF
+        ;;
+    *)
+        echo &quot;Unknown model, using minimal configuration&quot;
+        cat &gt; ~/.openclaw/config.yaml &lt;&lt; &#39;EOF&#39;
+server:
+  host: 0.0.0.0
+  port: 3000
+  workers: 1
+  timeout: 600
+  debug: false
+
+models:
+  defaults:
+    text: &quot;gpt-3.5-turbo&quot;
+
+ollama:
+  enabled: false
+
+database:
+  type: &quot;sqlite&quot;
+  sqlite:
+    path: &quot;~/.openclaw/data.db&quot;
+    timeout: 60
+
+cache:
+  type: &quot;memory&quot;
+  memory:
+    max_size: 25MB
+
+resources:
+  memory_limit: &quot;256M&quot;
+  cpu_limit: 0.4
+  max_concurrent_requests: 1
+
+logging:
+  level: &quot;INFO&quot;
+  file: &quot;~/.openclaw/logs/openclaw.log&quot;
+EOF
+        ;;
+esac
+
+echo &quot;Configuration created for $MODEL_TYPE&quot;
+</code></pre>
+<h2>Performance Optimization and Monitoring</h2>
+<h3>System-Level Optimization</h3>
+<pre><code class="language-bash"># Optimize kernel parameters
+sudo tee -a /etc/sysctl.conf &lt;&lt; EOF
+# File descriptor limits
+fs.file-max = 4096
+
+# Network optimization
+net.core.somaxconn = 128
+
+# Memory optimization (adjust based on device)
+vm.swappiness = 20
+vm.vfs_cache_pressure = 200
+EOF
+
+sudo sysctl -p
+</code></pre>
+<h3>Monitoring Script</h3>
+<pre><code class="language-bash"># ~/openclaw-monitor.sh
+#!/bin/bash
+
+LOG_FILE=&quot;$HOME/.openclaw/logs/monitor.log&quot;
+MODEL_TYPE=$(bash -c &#39;cat /proc/cpuinfo | grep &quot;model name&quot; | head -1 | grep -o &quot;[0-9]*&quot; | head -1&#39;)
+
+# Set different thresholds based on model
+if [ &quot;$MODEL_TYPE&quot; -gt 1400 ]; then
+    # Raspberry Pi 4B+
+    MAX_MEM_USAGE=80
+    MAX_DISK_USAGE=85
+else
+    # Raspberry Pi 2/Zero 2 W
+    MAX_MEM_USAGE=70
+    MAX_DISK_USAGE=80
+fi
+
+# Check OpenClaw service status
+if ! pgrep -f &quot;openclaw&quot; &gt; /dev/null; then
+    echo &quot;$(date): OpenClaw service not running, restarting...&quot; &gt;&gt; $LOG_FILE
+    source ~/openclaw-env/bin/activate
+    nohup ~/openclaw-env/bin/openclaw gateway start &gt; ~/.openclaw/logs/openclaw.log 2&gt;&amp;1 &amp;
+fi
+
+# Check memory usage
+MEM_USAGE=$(free | awk &#39;NR==2{printf &quot;%.0f&quot;, $3*100/$2}&#39;)
+if (( $(echo &quot;$MEM_USAGE &gt; $MAX_MEM_USAGE&quot; | bc -l) )); then
+    echo &quot;$(date): High memory usage: ${MEM_USAGE}%&quot; &gt;&gt; $LOG_FILE
+    
+    # Restart service if memory usage is too high
+    if [ $MEM_USAGE -gt 90 ]; then
+        echo &quot;$(date): Memory critical (${MEM_USAGE}%), restarting OpenClaw&quot; &gt;&gt; $LOG_FILE
+        pkill -f openclaw
+        sleep 5
+        source ~/openclaw-env/bin/activate
+        nohup ~/openclaw-env/bin/openclaw gateway start &gt; ~/.openclaw/logs/openclaw.log 2&gt;&amp;1 &amp;
+    fi
+fi
+
+# Check disk space
+DISK_USAGE=$(df / | awk &#39;NR==2{print $5}&#39; | sed &#39;s/%//&#39;)
+if [ $DISK_USAGE -gt $MAX_DISK_USAGE ]; then
+    echo &quot;$(date): High disk usage: ${DISK_USAGE}%&quot; &gt;&gt; $LOG_FILE
+    # Clean up old logs
+    find ~/.openclaw/logs -name &quot;*.log&quot; -mtime +7 -delete
+fi
+</code></pre>
+<h2>Troubleshooting</h2>
+<h3>Common Issues</h3>
+<ol>
+<li><p><strong>Insufficient Memory</strong></p>
+<pre><code class="language-bash"># Check memory usage
+free -h
+htop
+
+# Increase swap space
+sudo dphys-swapfile swapoff
+sudo nano /etc/dphys-swapfile
+# Adjust CONF_SWAPSIZE
+sudo dphys-swapfile setup
+sudo dphys-swapfile swapon
+</code></pre>
+</li>
+<li><p><strong>Service Startup Failure</strong></p>
+<pre><code class="language-bash"># Check service status
+sudo systemctl status openclaw
+
+# View logs
+journalctl -u openclaw -f
+tail -f ~/.openclaw/logs/openclaw.log
+</code></pre>
+</li>
+</ol>
+<h2>Summary</h2>
+<p>This tutorial provides OpenClaw deployment solutions for different Raspberry Pi models:</p>
+<ul>
+<li><strong>Raspberry Pi 4B and above</strong>: Can run complete features, best performance</li>
+<li><strong>Raspberry Pi 2</strong>: Basic functions, highly optimized</li>
+</ul>
+<p>Through proper configuration and optimization, OpenClaw can run on various Raspberry Pi models to achieve basic AI assistant functionality. Select the appropriate configuration scheme based on your specific hardware to successfully deploy.</p>
+<p>Regardless of which Raspberry Pi model you have, you can enjoy the convenience brought by AI assistants while controlling hardware costs.</p>
+</div>
+      <div class="a-foot">
+        <a href="/blog/linux-mail-server-postfix-dovecot/">← Building a Linux Mail Server with Postfix and Dovecot</a>
+        <a href="/blog/introducing-homeware-sense-skill-unified-smart-home-integration-for-openclaw-ai/">Homeware Sense: Open Source Smart Home Integration for OpenClaw AI →</a>
+      </div>
+    </div>
+  </article>
+</main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="copy">© 2026 Jiawei Cui · Built as hand-written static HTML/CSS/JS.</div>
+      <div class="social">
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <a href="/blog/">Blog</a>
+      </div>
+    </div>
+  </footer>
+<script src="/assets/js/main.js"></script>
+</body>
+</html>

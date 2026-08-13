@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LoRA: Low-Rank Adaptation of Large Models — Jiawei Cui</title>
+<meta name="description" content="LoRA (Hu et al., 2021) is the technique that made it practical for ordinary people — not just labs with clusters — to specialize a large model. If you've ever downloaded…">
+<link rel="icon" href="/public/img/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/style.css">
+<meta property="og:type" content="website">
+<meta property="og:title" content="LoRA: Low-Rank Adaptation of Large Models — Jiawei Cui">
+<meta property="og:description" content="LoRA (Hu et al., 2021) is the technique that made it practical for ordinary people — not just labs with clusters — to specialize a large model. If you've ever downloaded…">
+<meta property="og:url" content="https://cuijiawei.cn/blog/lora-low-rank-adaptation/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="LoRA: Low-Rank Adaptation of Large Models — Jiawei Cui">
+<meta name="twitter:description" content="LoRA (Hu et al., 2021) is the technique that made it practical for ordinary people — not just labs with clusters — to specialize a large model. If you've ever downloaded…">
+<link rel="canonical" href="https://cuijiawei.cn/blog/lora-low-rank-adaptation/">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Person","name":"Jiawei Cui","alternateName":["kiritocui","崔家维","cuijiawei"],"url":"https://cuijiawei.cn/","sameAs":["https://github.com/jiawei686"]}
+</script>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="/"><img src="/public/img/logo.svg" alt="logo"> Jiawei Cui</a>
+      <button class="nav-toggle" id="nav-toggle" aria-label="Menu">☰</button>
+      <div class="nav-links" id="nav-links">
+        <a href="/">Home</a>
+        <a href="/about.html">About</a>
+        <a href="/blog/" class="active">Blog</a>
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <button class="theme-btn" id="theme-btn" aria-label="Toggle theme">☾</button>
+      </div>
+    </div>
+  </nav>
+<main>
+
+  <article class="article">
+    <div class="read">
+      <div class="a-head">
+        <div class="a-meta"><a href="/blog/">Blog</a> · Sun Apr 05 2026 08:00:00 GMT+0800 (Singapore Standard Time) · <span class="tag">llm</span></div>
+        <h1>LoRA: Low-Rank Adaptation of Large Models</h1>
+      </div>
+      <div class="content"><p>LoRA (Hu et al., 2021) is the technique that made it practical for ordinary people — not just labs with clusters — to <em>specialize</em> a large model. If you&#39;ve ever downloaded a &quot;chat&quot; or &quot;instruct&quot; variant of a base model, or swapped a &quot;style&quot; adapter on a Stable Diffusion model, you&#39;ve used LoRA&#39;s idea. I&#39;m writing this because it&#39;s one of the highest-leverage tricks in the entire fine-tuning toolkit, and the math is simpler than its reputation.</p>
+<h2>The problem LoRA solves</h2>
+<p>Full fine-tuning updates <em>every</em> weight of a model. For a 7B model that&#39;s ~7 billion gradient-updated parameters, plus you must store a full copy of the weights for each task. That&#39;s expensive in memory, storage, and compute, and it risks &quot;catastrophic forgetting&quot; — overwriting useful general knowledge.</p>
+<p>LoRA&#39;s observation: the change a model needs to adapt to a task has a <strong>low &quot;intrinsic rank.&quot;</strong> You don&#39;t need to move every weight; a small, low-rank adjustment captures most of the task-specific behavior.</p>
+<h2>The mechanism, concretely</h2>
+<p>For a weight matrix <code>W</code> (shape <code>d×k</code>), instead of learning a full update <code>ΔW</code>, LoRA learns it as a product of two small matrices:</p>
+<pre><code>ΔW = B · A        where B is d×r, A is r×k, and r &lt;&lt; min(d, k)
+</code></pre>
+<ul>
+<li><code>r</code> is the <strong>rank</strong> — a small number like 4, 8, 16, 64.</li>
+<li><code>W</code> itself is <strong>frozen</strong> (no gradient updates).</li>
+<li>Only <code>A</code> and <code>B</code> are trained — a tiny fraction of the parameters.</li>
+</ul>
+<p>At inference, the adapted weight is just <code>W + B·A·α</code> (α scales the contribution). The forward pass is <code>h = Wx + BAx</code>, and <code>BA</code> is so small you can often keep it merged or added with negligible cost.</p>
+<h2>Why this is such a big deal in practice</h2>
+<ol>
+<li><strong>Massive memory savings.</strong> Training a 7B model with LoRA might need ~1/3 the VRAM of full fine-tuning, because you don&#39;t store optimizer state for the frozen weights.</li>
+<li><strong>Tiny adapters.</strong> The trained <code>A,B</code> for one task might be a few megabytes vs. gigabytes for a full model copy. You can keep dozens of adapters and swap them like plugins.</li>
+<li><strong>No catastrophic forgetting.</strong> The base model is untouched; you&#39;re adding a small delta on top.</li>
+<li><strong>Cheap experimentation.</strong> Try a rank-8 vs rank-64 run; the cost difference is small.</li>
+</ol>
+<p>I&#39;ve fine-tuned 7B–13B models on a single consumer GPU using LoRA where full fine-tuning would have been impossible. The quality gap to full fine-tuning is often surprisingly small for narrow tasks.</p>
+<h2>Practical knobs</h2>
+<ul>
+<li><strong>Rank <code>r</code>:</strong> higher = more capacity but more params. Start at 8 or 16; raise if the task is complex (e.g. learning a new language or very different style).</li>
+<li><strong>Alpha <code>α</code>:</strong> effective scale is <code>α/r</code>. Common to set <code>α = 2r</code>.</li>
+<li><strong>Which layers to adapt:</strong> usually attention <code>q,v</code> projections first; adding <code>k,o</code> and MLP layers helps harder tasks but costs more.</li>
+<li><strong>QLoRA:</strong> quantize the base model to 4-bit, then train LoRA on top — lets you fine-tune a 65B model on a single 48GB GPU. This combination (QLoRA) is what made &quot;fine-tune a huge model at home&quot; realistic.</li>
+</ul>
+<h2>When LoRA is NOT enough</h2>
+<p>If the task requires the model to <em>forget</em> or substantially <em>restructure</em> its knowledge (not just steer style or add a narrow format), full fine-tuning or a stronger method may be needed. And LoRA won&#39;t fix a base model that fundamentally lacks the capability — you can&#39;t LoRA your way to reasoning a 7B model doesn&#39;t have.</p>
+<h2>My take</h2>
+<p>LoRA is the closest thing we have to &quot;model customization as a commodity.&quot; It turned fine-tuning from a cluster-only operation into something you can do on a workstation, and it&#39;s the reason the open-model ecosystem has thousands of community adapters. If you&#39;re doing any model specialization — a company tone, a domain vocabulary, a specific output format — LoRA (ideally QLoRA) should be your default before you even consider full fine-tuning. Start small, measure, scale rank only if needed.</p>
+</div>
+      <div class="a-foot">
+        <a href="/blog/flashattention-efficient-attention/">← FlashAttention: IO-Aware Exact Attention</a>
+        <a href="/blog/getting-started-with-iptables/">Getting Started with iptables →</a>
+      </div>
+    </div>
+  </article>
+</main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="copy">© 2026 Jiawei Cui · Built as hand-written static HTML/CSS/JS.</div>
+      <div class="social">
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <a href="/blog/">Blog</a>
+      </div>
+    </div>
+  </footer>
+<script src="/assets/js/main.js"></script>
+</body>
+</html>

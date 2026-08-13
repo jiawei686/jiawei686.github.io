@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Softmax: Turning Logits into Probabilities — Jiawei Cui</title>
+<meta name="description" content="Softmax is the function that turns a model's raw scores into a probability distribution. It is tiny, it is everywhere, and it has a numerical trap that bites almost…">
+<link rel="icon" href="/public/img/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/style.css">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Softmax: Turning Logits into Probabilities — Jiawei Cui">
+<meta property="og:description" content="Softmax is the function that turns a model's raw scores into a probability distribution. It is tiny, it is everywhere, and it has a numerical trap that bites almost…">
+<meta property="og:url" content="https://cuijiawei.cn/blog/softmax/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Softmax: Turning Logits into Probabilities — Jiawei Cui">
+<meta name="twitter:description" content="Softmax is the function that turns a model's raw scores into a probability distribution. It is tiny, it is everywhere, and it has a numerical trap that bites almost…">
+<link rel="canonical" href="https://cuijiawei.cn/blog/softmax/">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Person","name":"Jiawei Cui","alternateName":["kiritocui","崔家维","cuijiawei"],"url":"https://cuijiawei.cn/","sameAs":["https://github.com/jiawei686"]}
+</script>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="/"><img src="/public/img/logo.svg" alt="logo"> Jiawei Cui</a>
+      <button class="nav-toggle" id="nav-toggle" aria-label="Menu">☰</button>
+      <div class="nav-links" id="nav-links">
+        <a href="/">Home</a>
+        <a href="/about.html">About</a>
+        <a href="/blog/" class="active">Blog</a>
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <button class="theme-btn" id="theme-btn" aria-label="Toggle theme">☾</button>
+      </div>
+    </div>
+  </nav>
+<main>
+
+  <article class="article">
+    <div class="read">
+      <div class="a-head">
+        <div class="a-meta"><a href="/blog/">Blog</a> · Sat Jul 18 2026 08:00:00 GMT+0800 (Singapore Standard Time) · <span class="tag">llm</span></div>
+        <h1>Softmax: Turning Logits into Probabilities</h1>
+      </div>
+      <div class="content"><p>Softmax is the function that turns a model&#39;s raw scores into a probability distribution. It is tiny, it is everywhere, and it has a numerical trap that bites almost everyone who implements it from scratch at least once. This post is the explainer I wish I&#39;d had before I spent an afternoon chasing <code>NaN</code>s in a training loop.</p>
+<h2>What it does, intuitively</h2>
+<p>A language model&#39;s final layer produces a vector of <strong>logits</strong> — one score per token in the vocabulary. Those scores are unbounded: they can be -3.2, 11.7, 0.4, anything. We can&#39;t sample from unbounded numbers as if they were probabilities. Softmax fixes that:</p>
+<pre><code>softmax(z_i) = exp(z_i) / sum_j exp(z_j)
+</code></pre>
+<p>After softmax, every output is positive and they all sum to 1. So <code>softmax(z)</code> is a proper probability distribution over the vocabulary, and the token with the highest logit gets the highest probability. That&#39;s the whole job.</p>
+<h2>A concrete example</h2>
+<p>Suppose the model is choosing the next word and the logits for three candidate tokens are:</p>
+<pre><code>cat:    2.0
+dog:    1.0
+rocket: -1.0
+</code></pre>
+<p>Step by step:</p>
+<pre><code>exp(2.0)  = 7.389
+exp(1.0)  = 2.718
+exp(-1.0) = 0.368
+sum       = 10.475
+
+P(cat)    = 7.389 / 10.475 = 0.705
+P(dog)    = 2.718 / 10.475 = 0.260
+P(rocket) = 0.368 / 10.475 = 0.035
+</code></pre>
+<p>&quot;cat&quot; had the highest logit, so it ends up with ~70% of the probability mass. Notice the exponential makes the gap <em>nonlinear</em>: a 1-point logit lead becomes a roughly 2.7x probability lead, because <code>exp(1) ≈ 2.718</code>. That&#39;s why softmax is &quot;winner-takes-most&quot; — it sharpens differences rather than preserving them.</p>
+<h2>The numerical trap (and the fix you should always use)</h2>
+<p>Here&#39;s the bug: <code>exp(1000)</code> overflows to infinity, and <code>inf / inf = NaN</code>, which poisons the whole batch. In a real LLM, logits can easily exceed 50 or 100 once the model is confident. The standard fix is the <strong>max-subtraction trick</strong>:</p>
+<pre><code class="language-python">import numpy as np
+
+def softmax(z):
+    z = z - np.max(z)          # shift so the max is 0
+    e = np.exp(z)
+    return e / np.sum(e)
+</code></pre>
+<p>Subtracting the maximum from every element doesn&#39;t change the result — <code>exp(z_i - c) / sum(exp(z_j - c))</code> simplifies to the original because the <code>exp(-c)</code> cancels top and bottom — but it guarantees the largest exponent is <code>exp(0) = 1</code>, so nothing overflows. Every serious library (PyTorch, JAX, TensorFlow) does this internally; if you ever hand-roll it, do too. I&#39;ve seen production inference code break on exactly this after a model update made logits larger.</p>
+<h2>Why temperature matters</h2>
+<p>You&#39;ll hear &quot;temperature&quot; constantly in LLM settings. All it does is scale the logits before softmax:</p>
+<pre><code>softmax(z / T)
+</code></pre>
+<ul>
+<li><code>T = 1</code>: no change.</li>
+<li><code>T &gt; 1</code>: flattens the distribution → more random, more diverse, sometimes incoherent.</li>
+<li><code>T &lt; 1</code> (e.g. 0.7): sharpens it → the model becomes more confident and repetitive, often more &quot;on topic.&quot;</li>
+</ul>
+<p>At <code>T → 0</code> softmax degenerates to <code>argmax</code> (always pick the top token). At <code>T → ∞</code> it becomes uniform random. So temperature is literally a knob on how much the model explores vs. commits. For code generation I usually want <code>T</code> around 0.2–0.4; for creative writing, 0.8–1.0.</p>
+<h2>Where softmax actually lives in a Transformer</h2>
+<p>Softmax appears in two critical places:</p>
+<ol>
+<li><strong>Attention weights.</strong> Inside each attention head, the <code>Q·K</code> scores are divided by <code>sqrt(d_k)</code> and softmaxed so each query distributes its attention as a probability over all keys (each row sums to 1). This is what lets &quot;it&quot; attend to the right noun.</li>
+<li><strong>The output layer.</strong> The final vocabulary logits are softmaxed to get the next-token distribution we sample from.</li>
+</ol>
+<p>Both are the same function; only the scale and meaning differ.</p>
+<h2>A subtlety people miss: softmax isn&#39;t symmetric</h2>
+<p>Because the exponential is sensitive to absolute offsets, adding a constant to <em>all</em> logits does nothing (the max-trick proves it), but adding a constant to <em>only some</em> logits changes the output. This is why calibrating logits matters: two models can &quot;agree&quot; on ranking yet produce very different sampling behavior if one is systematically shifted.</p>
+<h2>My take</h2>
+<p>Softmax is the unglamorous hinge of the entire LLM stack. It&#39;s the boundary between &quot;the model computed a score&quot; and &quot;the model made a probabilistic choice.&quot; Spend an hour really understanding the max-trick and temperature and you&#39;ll debug sampling problems an order of magnitude faster than someone who treats it as a black box. And if you&#39;re implementing it yourself: always subtract the max first. Always.</p>
+</div>
+      <div class="a-foot">
+        <a href="/blog/getting-started-with-iptables/">← Getting Started with iptables</a>
+        <a href="/blog/clip/">CLIP: Learning Transferable Visual Models From Language Supervision →</a>
+      </div>
+    </div>
+  </article>
+</main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="copy">© 2026 Jiawei Cui · Built as hand-written static HTML/CSS/JS.</div>
+      <div class="social">
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <a href="/blog/">Blog</a>
+      </div>
+    </div>
+  </footer>
+<script src="/assets/js/main.js"></script>
+</body>
+</html>

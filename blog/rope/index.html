@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RoPE: Rotary Position Embedding — Jiawei Cui</title>
+<meta name="description" content="Rotary Position Embedding (RoPE, Su et al., 2021) is the positional encoding used in LLaMA, Mistral, Qwen, and most openweight models you'll actually deploy. If you've…">
+<link rel="icon" href="/public/img/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/style.css">
+<meta property="og:type" content="website">
+<meta property="og:title" content="RoPE: Rotary Position Embedding — Jiawei Cui">
+<meta property="og:description" content="Rotary Position Embedding (RoPE, Su et al., 2021) is the positional encoding used in LLaMA, Mistral, Qwen, and most openweight models you'll actually deploy. If you've…">
+<meta property="og:url" content="https://cuijiawei.cn/blog/rope/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="RoPE: Rotary Position Embedding — Jiawei Cui">
+<meta name="twitter:description" content="Rotary Position Embedding (RoPE, Su et al., 2021) is the positional encoding used in LLaMA, Mistral, Qwen, and most openweight models you'll actually deploy. If you've…">
+<link rel="canonical" href="https://cuijiawei.cn/blog/rope/">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Person","name":"Jiawei Cui","alternateName":["kiritocui","崔家维","cuijiawei"],"url":"https://cuijiawei.cn/","sameAs":["https://github.com/jiawei686"]}
+</script>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="/"><img src="/public/img/logo.svg" alt="logo"> Jiawei Cui</a>
+      <button class="nav-toggle" id="nav-toggle" aria-label="Menu">☰</button>
+      <div class="nav-links" id="nav-links">
+        <a href="/">Home</a>
+        <a href="/about.html">About</a>
+        <a href="/blog/" class="active">Blog</a>
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <button class="theme-btn" id="theme-btn" aria-label="Toggle theme">☾</button>
+      </div>
+    </div>
+  </nav>
+<main>
+
+  <article class="article">
+    <div class="read">
+      <div class="a-head">
+        <div class="a-meta"><a href="/blog/">Blog</a> · Fri Jul 03 2026 08:00:00 GMT+0800 (Singapore Standard Time) · <span class="tag">llm</span></div>
+        <h1>RoPE: Rotary Position Embedding</h1>
+      </div>
+      <div class="content"><p>Rotary Position Embedding (RoPE, Su et al., 2021) is the positional encoding used in LLaMA, Mistral, Qwen, and most open-weight models you&#39;ll actually deploy. If you&#39;ve ever wondered why a fine-tuned LLaMA can extrapolate to longer contexts with a simple tweak, RoPE is the reason. I&#39;m covering it separately from the Transformer post because it&#39;s subtle and, once it clicks, a lot of LLM behavior (and the whole &quot;NTK-aware scaling&quot; scene) makes sense.</p>
+<h2>The limitation of previous approaches</h2>
+<p>The original Transformer added fixed sinusoidal vectors to token embeddings (covered in the Transformer post). Absolute positi\onal embeddings have a downside: they don&#39;t make it <em>easy</em> for the model to reason about relative position. If token at position 5 and token at position 8 are 3 apart, the model has to somehow learn that &quot;position 5 + 3 = position 8&quot; from scratch, because the encoding vectors for 5 and 8 aren&#39;t obviously related by a shift.</p>
+<p>Relative position embeddings (like T5&#39;s) fix this but are awkward to apply inside the attention score and hard to extend to new lengths.</p>
+<h2>The core idea: rotate, don&#39;t add</h2>
+<p>RoPE&#39;s elegant move: instead of <em>adding</em> a position signal to a token&#39;s vector, it <strong>rotates</strong> the query and key vectors by an angle proportional to their position. And it does so in a way where the <em>inner product</em> (the attention score) ends up depending only on the <em>relative</em> distance between two positions.</p>
+<p>Concretely, take a 2-dimensional slice of a vector. RoPE rotates it by angle <code>θ·position</code>:</p>
+<pre><code>[cos(θp)  -sin(θp)]   [x0]
+[sin(θp)   cos(θp)] @ [x1]
+</code></pre>
+<p>That&#39;s just a rotation matrix — it preserves length, only changes direction. We pair up the dimensions of the embedding and apply a different rotation frequency to each pair. The frequencies are spaced geometrically (like <code>θ_i = base^(-2i/d)</code>), so different dimension-pairs capture different &quot;scales&quot; of position.</p>
+<h2>Why this gives relative attention for free</h2>
+<p>Here&#39;s the property that makes RoPE special. If you rotate query <code>q</code> by <code>θ·m</code> and key <code>k</code> by <code>θ·n</code>, then take their dot product, the result mathematically depends only on <code>(m - n)</code> — the relative position — not on <code>m</code> or <code>n</code> individually. You can verify this with the 2D rotation identity; the cross terms cancel and you&#39;re left with a function of the difference.</p>
+<p>So attention &quot;sees&quot; relative distance directly, which is what we wanted. And because it&#39;s a rotation (no information loss, length preserved), it composes cleanly with the rest of the model.</p>
+<h2>Why practitioners care: context extension</h2>
+<p>RoPE has a well-known quirk: it&#39;s trained at one context length, and if you suddenly feed it positions 2x or 10x larger than seen in training, the rotation angles land in unfamiliar territory and quality drops. This spawned the entire &quot;position interpolation&quot; literature:</p>
+<ul>
+<li><strong>Linear interpolation (PI):</strong> squeeze the positions so the longer context maps back into the trained range. Simple, works okay.</li>
+<li><strong>NTK-aware scaling:</strong> adjust the frequency base instead of interpolating positions, which keeps high-frequency dimensions sharp. This was a community discovery (blog posts, not originally a paper) and noticeably outperformed naive PI.</li>
+<li><strong>YaRN, Dynamic NTK:</strong> refinements that combine interpolation with frequency scaling and per-layer adjustments.</li>
+</ul>
+<p>When you see &quot;we extended LLaMA to 32k/64k context,&quot; RoPE rescaling is almost always the mechanism. I&#39;ve run NTK-aware scaling on local models and it&#39;s genuinely a few lines of config — the hard part is re-evaluation to confirm quality didn&#39;t silently degrade.</p>
+<h2>Practical notes</h2>
+<ul>
+<li>RoPE is applied to <code>Q</code> and <code>K</code> <em>after</em> the projection matrices but <em>before</em> the attention score. Applying it to <code>V</code> is a bug I&#39;ve seen in toy implementations.</li>
+<li>The rotation is typically applied per attention head, with the dimension pairs split across the head&#39;s width.</li>
+<li>Base frequency matters: LLaMA uses 10000; changing it changes how position is distributed across dimensions and interacts with context extension.</li>
+</ul>
+<h2>My take</h2>
+<p>RoPE is my favorite example of a design choice that looks like a minor implementation detail but ends up shaping an entire ecosystem of techniques (context extension, long-context training, even some fine-tuning recipes). If you deploy or fine-tune open-weight models, understanding RoPE is not optional — it&#39;s the thing that determines whether your model gracefully handles the long prompts you&#39;ll inevitably throw at it. The math is just 2D rotations; the implications are anything but trivial.</p>
+</div>
+      <div class="a-foot">
+        <a href="/blog/self-consistency/">← Self-Consistency: Improving Chain-of-Thought Reasoning</a>
+        <a href="/blog/geospatial-analysis/">Geospatial Analysis →</a>
+      </div>
+    </div>
+  </article>
+</main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="copy">© 2026 Jiawei Cui · Built as hand-written static HTML/CSS/JS.</div>
+      <div class="social">
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <a href="/blog/">Blog</a>
+      </div>
+    </div>
+  </footer>
+<script src="/assets/js/main.js"></script>
+</body>
+</html>

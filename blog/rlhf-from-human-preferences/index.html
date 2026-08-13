@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RLHF: Deep Reinforcement Learning from Human Preferences — Jiawei Cui</title>
+<meta name="description" content="RLHF — Reinforcement Learning from Human Feedback — is the technique family behind every helpful modern chatbot. While InstructGPT (covered separately) popularized the…">
+<link rel="icon" href="/public/img/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/style.css">
+<meta property="og:type" content="website">
+<meta property="og:title" content="RLHF: Deep Reinforcement Learning from Human Preferences — Jiawei Cui">
+<meta property="og:description" content="RLHF — Reinforcement Learning from Human Feedback — is the technique family behind every helpful modern chatbot. While InstructGPT (covered separately) popularized the…">
+<meta property="og:url" content="https://cuijiawei.cn/blog/rlhf-from-human-preferences/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="RLHF: Deep Reinforcement Learning from Human Preferences — Jiawei Cui">
+<meta name="twitter:description" content="RLHF — Reinforcement Learning from Human Feedback — is the technique family behind every helpful modern chatbot. While InstructGPT (covered separately) popularized the…">
+<link rel="canonical" href="https://cuijiawei.cn/blog/rlhf-from-human-preferences/">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Person","name":"Jiawei Cui","alternateName":["kiritocui","崔家维","cuijiawei"],"url":"https://cuijiawei.cn/","sameAs":["https://github.com/jiawei686"]}
+</script>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="/"><img src="/public/img/logo.svg" alt="logo"> Jiawei Cui</a>
+      <button class="nav-toggle" id="nav-toggle" aria-label="Menu">☰</button>
+      <div class="nav-links" id="nav-links">
+        <a href="/">Home</a>
+        <a href="/about.html">About</a>
+        <a href="/blog/" class="active">Blog</a>
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <button class="theme-btn" id="theme-btn" aria-label="Toggle theme">☾</button>
+      </div>
+    </div>
+  </nav>
+<main>
+
+  <article class="article">
+    <div class="read">
+      <div class="a-head">
+        <div class="a-meta"><a href="/blog/">Blog</a> · Sun Jul 05 2026 08:00:00 GMT+0800 (Singapore Standard Time) · <span class="tag">llm</span></div>
+        <h1>RLHF: Deep Reinforcement Learning from Human Preferences</h1>
+      </div>
+      <div class="content"><p>RLHF — Reinforcement Learning from Human Feedback — is the technique family behind every helpful modern chatbot. While InstructGPT (covered separately) popularized the specific three-step recipe, &quot;RLHF&quot; as a method has a longer lineage (from robotics and preference learning) and a deeper set of moving parts. I&#39;m writing this as the <em>mechanics</em> companion: how the reward model and the PPO optimization actually fit together, and where it breaks.</p>
+<h2>The conceptual loop</h2>
+<p>RLHF treats language generation as a reinforcement learning problem:</p>
+<ul>
+<li><strong>Policy (π):</strong> the language model we&#39;re training — it &quot;acts&quot; by generating tokens.</li>
+<li><strong>Reward (R):</strong> not from the environment, but from a <strong>reward model</strong> trained on human preferences.</li>
+<li><strong>Trajectory:</strong> a generated response (a sequence of token-actions).</li>
+<li><strong>Objective:</strong> maximize expected reward, while staying close to a reference policy.</li>
+</ul>
+<p>This reframes &quot;make the model helpful&quot; as &quot;make the model produce responses a reward model scores highly.&quot; The human input is compressed into the reward model; the RL then scales that signal to billions of generations.</p>
+<h2>Step 1: build the reward model</h2>
+<p>Collect comparison data: for a prompt, present several candidate responses to humans and record which they prefer. Train a model <code>r(x, y)</code> to predict the human-preferred one — typically via a pairwise loss on the Bradley-Terry model:</p>
+<pre><code>loss = -log σ(r(chosen) - r(rejected))
+</code></pre>
+<p>After training, <code>r</code> outputs a scalar &quot;quality score&quot; for any (prompt, response). This model <em>encodes</em> human preference into something differentiable.</p>
+<h2>Step 2: optimize the policy with PPO</h2>
+<p>Use PPO (a stable policy-gradient algorithm) to update the LM so it generates higher-reward responses. The objective at each token step is roughly:</p>
+<pre><code>reward = r(prompt, response)  -  β · KL(π_current || π_ref)
+</code></pre>
+<ul>
+<li><code>r(...)</code> is the reward-model score for the whole response (often assigned to each step or shaped).</li>
+<li><code>KL(π_current || π_ref)</code> penalizes drifting from the reference (usually the SFT model), preventing the model from collapsing into reward-hacking gibberish. <code>β</code> controls the strength.</li>
+</ul>
+<p>The KL term is essential — without it, the policy quickly exploits loopholes in the reward model and produces degenerate text that scores high but is garbage. I&#39;ve seen this happen: reward goes up, outputs become repetitive nonsense. The KL penalty is what keeps it sane.</p>
+<h2>Where RLHF breaks (and what to watch)</h2>
+<ul>
+<li><strong>Reward hacking:</strong> the policy finds behaviors the reward model rewards but humans don&#39;t value (verbosity, flattery, certain phrases). Mitigate with KL penalty, diverse data, and periodic reward-model updates.</li>
+<li><strong>Distributional shift:</strong> as the policy changes, the reward model (trained on older generations) becomes a worse judge. Periodic re-collection helps.</li>
+<li><strong>Training instability:</strong> PPO is finicky — learning rate, KL coefficient, and reward scaling all matter. Bad configs produce collapse.</li>
+<li><strong>Expense &amp; complexity:</strong> you run the policy, a value network, a reference model, and the reward model simultaneously. That&#39;s why simpler methods (DPO) are attractive.</li>
+</ul>
+<h2>Why it mattered</h2>
+<p>RLHF is what converted &quot;autocomplete&quot; into &quot;assistant.&quot; It&#39;s the reason models follow instructions, refuse some requests, and adopt a helpful tone. Essentially every deployed chatbot uses a variant.</p>
+<h2>My take</h2>
+<p>RLHF is powerful but heavy and fragile — it&#39;s the difference between a model that <em>can</em> do something and one that <em>wants</em> to do what you asked. The two parts to respect are the <strong>reward model</strong> (garbage in, garbage reward) and the <strong>KL penalty</strong> (the only thing standing between you and degenerate outputs). For most teams today, full PPO-RLHF is overkill and finicky; DPO (directly optimizing preferences without a separate RL loop) gets most of the benefit with a fraction of the complexity. But understanding RLHF mechanics tells you <em>why</em> alignment works and <em>why</em> models exhibit their particular failure modes — sycophancy and verbosity are RLHF fingerprints.</p>
+</div>
+      <div class="a-foot">
+        <a href="/blog/generative-agents/">← Generative Agents: Believable Simulacra of Human Behavior</a>
+        <a href="/blog/machine-learning-explainability/">Machine Learning Explainability →</a>
+      </div>
+    </div>
+  </article>
+</main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="copy">© 2026 Jiawei Cui · Built as hand-written static HTML/CSS/JS.</div>
+      <div class="social">
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <a href="/blog/">Blog</a>
+      </div>
+    </div>
+  </footer>
+<script src="/assets/js/main.js"></script>
+</body>
+</html>

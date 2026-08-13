@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LLaMA: The Open-Weight Catalyst — Jiawei Cui</title>
+<meta name="description" content="LLaMA (Meta, 2023) is the release that kicked off the openweight LLM ecosystem we now take for granted. Before it, if you wanted a capable model you used a closed API…">
+<link rel="icon" href="/public/img/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/style.css">
+<meta property="og:type" content="website">
+<meta property="og:title" content="LLaMA: The Open-Weight Catalyst — Jiawei Cui">
+<meta property="og:description" content="LLaMA (Meta, 2023) is the release that kicked off the openweight LLM ecosystem we now take for granted. Before it, if you wanted a capable model you used a closed API…">
+<meta property="og:url" content="https://cuijiawei.cn/blog/llama-open-weights-revolution/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="LLaMA: The Open-Weight Catalyst — Jiawei Cui">
+<meta name="twitter:description" content="LLaMA (Meta, 2023) is the release that kicked off the openweight LLM ecosystem we now take for granted. Before it, if you wanted a capable model you used a closed API…">
+<link rel="canonical" href="https://cuijiawei.cn/blog/llama-open-weights-revolution/">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Person","name":"Jiawei Cui","alternateName":["kiritocui","崔家维","cuijiawei"],"url":"https://cuijiawei.cn/","sameAs":["https://github.com/jiawei686"]}
+</script>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="/"><img src="/public/img/logo.svg" alt="logo"> Jiawei Cui</a>
+      <button class="nav-toggle" id="nav-toggle" aria-label="Menu">☰</button>
+      <div class="nav-links" id="nav-links">
+        <a href="/">Home</a>
+        <a href="/about.html">About</a>
+        <a href="/blog/" class="active">Blog</a>
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <button class="theme-btn" id="theme-btn" aria-label="Toggle theme">☾</button>
+      </div>
+    </div>
+  </nav>
+<main>
+
+  <article class="article">
+    <div class="read">
+      <div class="a-head">
+        <div class="a-meta"><a href="/blog/">Blog</a> · Sun Apr 19 2026 08:00:00 GMT+0800 (Singapore Standard Time) · <span class="tag">llm</span></div>
+        <h1>LLaMA: The Open-Weight Catalyst</h1>
+      </div>
+      <div class="content"><p>LLaMA (Meta, 2023) is the release that kicked off the open-weight LLM ecosystem we now take for granted. Before it, if you wanted a capable model you used a closed API (GPT, Claude) or you were stuck with much weaker open checkpoints. LLaMA changed the calculus: a model small enough to run on a single machine, yet competitive with models an order of magnitude larger. I&#39;m writing this because understanding <em>why</em> LLaMA worked explains almost every open-model release since — including the ones you can deploy locally today.</p>
+<h2>The core insight: data quality beats raw size</h2>
+<p>LLaMA&#39;s headline result: a 13B model trained on ~1.2 trillion tokens <em>outperformed</em> GPT-3 (175B) on many benchmarks. The lesson wasn&#39;t &quot;make it bigger&quot; — it was &quot;train a smaller model on <em>more and cleaner tokens</em> for <em>longer</em>.&quot; This directly contradicted the then-common intuition that parameter count was destiny.</p>
+<p>The training recipe mattered as much as the scale:</p>
+<ul>
+<li>A large, <strong>deduplicated, high-quality</strong> corpus (CommonCrawl cleaned aggressively, plus books, code, arXiv, Wikipedia).</li>
+<li>Standard Transformer architecture with modern tweaks: <strong>RoPE</strong> positional embeddings, <strong>SwiGLU</strong> activations, <strong>RMSNorm</strong> instead of LayerNorm.</li>
+<li>Trained for many more tokens per parameter than GPT-3 was.</li>
+</ul>
+<p>These architectural choices now appear in virtually every open model.</p>
+<h2>Why &quot;open weights&quot; mattered more than &quot;open source&quot;</h2>
+<p>Meta released the <em>weights</em> (under a non-commercial license initially), not the full training code or data. That distinction is important: you couldn&#39;t fully reproduce LLaMA from scratch, but you <em>could</em> download it, run it, fine-tune it, and build on it. Within days the community had leaked it, quantized it, and spawned derivatives (Alpaca, Vicuna, and eventually the entire LLaMA-2/3 and Mistral family tree).</p>
+<p>This is the lineage of almost every model you can self-host today. Mistral, Qwen, Gemma, Phi — they all follow the &quot;LLaMA architecture + their own data&quot; pattern. When you load a GGUF file into llama.cpp, you are running a direct descendant.</p>
+<h2>Practical consequences for builders</h2>
+<ul>
+<li><strong>Local deployment became real.</strong> A 7B–13B LLaMA-class model runs on a single 16–24GB GPU, or even CPU with quantization. I&#39;ve served 7B models on modest hardware for internal tooling.</li>
+<li><strong>Fine-tuning got cheap.</strong> Combined with LoRA/QLoRA (covered separately), you could specialize a base LLaMA on a workstation.</li>
+<li><strong>The &quot;base vs. chat&quot; split appeared.</strong> Base models (raw pretrained) are completion engines; instruction-tuned &quot;chat&quot; variants add usability. Knowing which you need matters.</li>
+</ul>
+<h2>Limitations and honest caveats</h2>
+<ul>
+<li>The original license restricted commercial use; later LLaMA-2/3 and truly open models (Mistral, etc.) loosened this. Check licenses before shipping commercially — I always do.</li>
+<li>A 7B model is <em>not</em> a 175B model. It will hallucinate more, reason worse, and know less. LLaMA proved small can be <em>surprisingly</em> good, not that small equals large.</li>
+<li>Pretraining data quality is the secret sauce; you can&#39;t just copy the architecture and expect the same results without comparable data.</li>
+</ul>
+<h2>My take</h2>
+<p>LLaMA is the paper/release that turned LLMs from a &quot;closed API service&quot; into a &quot;thing you can own and modify.&quot; Its real contribution wasn&#39;t a novel architecture — it was demonstrating that <em>data curation + modern architecture + longer training</em> lets a small model punch far above its weight, and then <em>giving the weights to the world</em>. If you do anything with self-hosted models, you&#39;re standing on LLaMA&#39;s shoulders. Understand its design choices (RoPE, SwiGLU, RMSNorm) and you understand 90% of the open-model landscape.</p>
+</div>
+      <div class="a-foot">
+        <a href="/blog/mixtral-mixture-of-experts/">← Mixtral of Experts: Sparse Mixture of Experts</a>
+        <a href="/blog/flashattention-efficient-attention/">FlashAttention: IO-Aware Exact Attention →</a>
+      </div>
+    </div>
+  </article>
+</main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="copy">© 2026 Jiawei Cui · Built as hand-written static HTML/CSS/JS.</div>
+      <div class="social">
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <a href="/blog/">Blog</a>
+      </div>
+    </div>
+  </footer>
+<script src="/assets/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Deep Learning — Jiawei Cui</title>
+<meta name="description" content="Deep learning is the subfield of machine learning built around neural networks with many layers — &quot;deep&quot; because of the stack of transformations between input and…">
+<link rel="icon" href="/public/img/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/style.css">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Deep Learning — Jiawei Cui">
+<meta property="og:description" content="Deep learning is the subfield of machine learning built around neural networks with many layers — &quot;deep&quot; because of the stack of transformations between input and…">
+<meta property="og:url" content="https://cuijiawei.cn/blog/intro-to-deep-learning/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Deep Learning — Jiawei Cui">
+<meta name="twitter:description" content="Deep learning is the subfield of machine learning built around neural networks with many layers — &quot;deep&quot; because of the stack of transformations between input and…">
+<link rel="canonical" href="https://cuijiawei.cn/blog/intro-to-deep-learning/">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Person","name":"Jiawei Cui","alternateName":["kiritocui","崔家维","cuijiawei"],"url":"https://cuijiawei.cn/","sameAs":["https://github.com/jiawei686"]}
+</script>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="/"><img src="/public/img/logo.svg" alt="logo"> Jiawei Cui</a>
+      <button class="nav-toggle" id="nav-toggle" aria-label="Menu">☰</button>
+      <div class="nav-links" id="nav-links">
+        <a href="/">Home</a>
+        <a href="/about.html">About</a>
+        <a href="/blog/" class="active">Blog</a>
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <button class="theme-btn" id="theme-btn" aria-label="Toggle theme">☾</button>
+      </div>
+    </div>
+  </nav>
+<main>
+
+  <article class="article">
+    <div class="read">
+      <div class="a-head">
+        <div class="a-meta"><a href="/blog/">Blog</a> · Wed Oct 22 2025 08:00:00 GMT+0800 (Singapore Standard Time) · <span class="tag">ai</span></div>
+        <h1>Deep Learning</h1>
+      </div>
+      <div class="content"><p>Deep learning is the subfield of machine learning built around <strong>neural networks with many layers</strong> — &quot;deep&quot; because of the stack of transformations between input and output. If you&#39;ve used speech recognition, a photo app that tags faces, or any modern chatbot, you&#39;ve used deep learning. I&#39;m writing this as a grounded intro: not the math for its own sake, but the intuition and the moving parts you actually need to understand the rest of this blog (most of which assumes you know what a neural net is).</p>
+<h2>The basic unit: the neuron</h2>
+<p>A single artificial neuron takes several numbers, weights them, sums them, adds a bias, and passes the result through a non-linear <strong>activation function</strong>:</p>
+<pre><code>output = activation( w1·x1 + w2·x2 + ... + b )
+</code></pre>
+<p>The &quot;weights&quot; <code>w</code> and bias <code>b</code> are the <em>learned</em> parameters. A neural network is just many of these arranged in layers: layer 1 reads the input, the last layer produces the output, and the layers in between (&quot;hidden layers&quot;) learn progressively richer representations.</p>
+<h2>Why the non-linearity matters</h2>
+<p>Without an activation function, stacking layers would collapse into a single linear transformation — you could never learn &quot;X-shaped&quot; or &quot;circular&quot; boundaries. The non-linearity (ReLU, tanh, sigmoid, GELU…) is what lets networks approximate complicated functions. This is the single most common thing beginners omit and then wonder why their network can&#39;t learn anything non-trivial.</p>
+<h2>Learning: backpropagation</h2>
+<p>Training means finding weights that make the network&#39;s outputs match the data. The loop:</p>
+<ol>
+<li><strong>Forward pass:</strong> run an input through the network to get a prediction.</li>
+<li><strong>Loss:</strong> measure the error (e.g. how far the prediction is from the true answer).</li>
+<li><strong>Backward pass (backprop):</strong> use the chain rule to compute how much each weight contributed to the error.</li>
+<li><strong>Update:</strong> nudge every weight slightly in the direction that reduces the error (gradient descent / its variants).</li>
+</ol>
+<p>Repeat over the dataset many times. Backprop is just &quot;compute gradients efficiently through the whole graph&quot; — the chain rule applied mechanically. Modern frameworks (PyTorch, JAX) do it automatically; you rarely write it by hand, but understanding <em>that</em> it&#39;s happening explains why a bad learning rate or a vanishing gradient breaks training.</p>
+<h2>The architectures you&#39;ll meet</h2>
+<ul>
+<li><strong>MLPs (multilayer perceptrons):</strong> the vanilla stack. Good for tabular/structured data; bad at spatial or sequential structure.</li>
+<li><strong>CNNs (convolutional nets):</strong> use local filters that slide over an image, exploiting translation invariance. The backbone of classic computer vision (covered in the CV post).</li>
+<li><strong>RNNs / LSTMs:</strong> process sequences step by step, carrying a hidden state. Formerly the default for text; now mostly supplanted by Transformers (covered in depth separately).</li>
+<li><strong>Transformers:</strong> attention-based, parallel-friendly, the architecture behind every LLM. The most important one to understand today.</li>
+</ul>
+<h2>Practical realities</h2>
+<ul>
+<li><strong>Data is the bottleneck</strong>, not algorithms. A simple model on lots of clean data usually beats a fancy model on little data.</li>
+<li><strong>Overfitting is the default failure.</strong> Your network will memorize training data if you let it; regularization, validation splits, and early stopping are how you fight back.</li>
+<li><strong>GPUs matter.</strong> Matrix multiplies at scale need them; this is why deep learning exploded after GPUs became accessible.</li>
+<li><strong>Start simple.</strong> For a new problem I reach for a baseline (logistic regression or a small MLP) before anything deep, to know what &quot;easy&quot; looks like.</li>
+</ul>
+<h2>My take</h2>
+<p>Deep learning isn&#39;t magic — it&#39;s differentiable functions + gradient descent + lots of data and compute. The conceptual spine (neuron → layer → forward/backward → update) is learnable in an afternoon; the <em>engineering</em> (data pipelines, regularization, debugging training) is where real skill lives. If you&#39;re here to understand LLMs, treat this post as the foundation: every Transformer and attention mechanism later in this blog is just a specific, very successful arrangement of these same building blocks. Get comfortable with backprop intuition and you&#39;ll never be lost.</p>
+</div>
+      <div class="a-foot">
+        <span></span>
+        <a href="/blog/chinchilla/">Chinchilla: Training Compute-Optimal Large Language Models →</a>
+      </div>
+    </div>
+  </article>
+</main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="copy">© 2026 Jiawei Cui · Built as hand-written static HTML/CSS/JS.</div>
+      <div class="social">
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <a href="/blog/">Blog</a>
+      </div>
+    </div>
+  </footer>
+<script src="/assets/js/main.js"></script>
+</body>
+</html>

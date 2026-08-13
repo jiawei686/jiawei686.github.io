@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Building a Linux Mail Server with Postfix and Dovecot — Jiawei Cui</title>
+<meta name="description" content="Part of the Tencent Cloud developerlab series.">
+<link rel="icon" href="/public/img/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/style.css">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Building a Linux Mail Server with Postfix and Dovecot — Jiawei Cui">
+<meta property="og:description" content="Part of the Tencent Cloud developerlab series.">
+<meta property="og:url" content="https://cuijiawei.cn/blog/linux-mail-server-postfix-dovecot/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Building a Linux Mail Server with Postfix and Dovecot — Jiawei Cui">
+<meta name="twitter:description" content="Part of the Tencent Cloud developerlab series.">
+<link rel="canonical" href="https://cuijiawei.cn/blog/linux-mail-server-postfix-dovecot/">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Person","name":"Jiawei Cui","alternateName":["kiritocui","崔家维","cuijiawei"],"url":"https://cuijiawei.cn/","sameAs":["https://github.com/jiawei686"]}
+</script>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="/"><img src="/public/img/logo.svg" alt="logo"> Jiawei Cui</a>
+      <button class="nav-toggle" id="nav-toggle" aria-label="Menu">☰</button>
+      <div class="nav-links" id="nav-links">
+        <a href="/">Home</a>
+        <a href="/about.html">About</a>
+        <a href="/blog/" class="active">Blog</a>
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <button class="theme-btn" id="theme-btn" aria-label="Toggle theme">☾</button>
+      </div>
+    </div>
+  </nav>
+<main>
+
+  <article class="article">
+    <div class="read">
+      <div class="a-head">
+        <div class="a-meta"><a href="/blog/">Blog</a> · Fri Dec 01 2017 08:00:00 GMT+0800 (Singapore Standard Time) · <span class="tag">engineering</span></div>
+        <h1>Building a Linux Mail Server with Postfix and Dovecot</h1>
+      </div>
+      <div class="content"><p><em>Part of the Tencent Cloud developer-lab series.</em></p>
+<p>A full-featured mail server is a serious undertaking; this lab just stands up a simple one. Postfix handles sending and receiving via SMTP; Dovecot handles retrieving mail via IMAP/POP3. Here&#39;s the end-to-end setup.</p>
+<h2>Domain resolution</h2>
+<p>After buying a domain, point it at your server (IP <code>123.207.70.98</code> in the lab). Add two records in the console:</p>
+<p><strong>A record</strong></p>
+<ul>
+<li>Type: <code>A</code></li>
+<li>Host: <code>@</code></li>
+<li>Value: <code>123.207.70.98</code></li>
+</ul>
+<p><strong>MX record</strong></p>
+<ul>
+<li>Type: <code>MX</code></li>
+<li>Host: <code>@</code></li>
+<li>Value: <code>yourdomain.com</code> (replace with your own)</li>
+</ul>
+<h3>Verify it took effect</h3>
+<p>DNS changes need time to propagate.</p>
+<ul>
+<li>Check the A record with <code>ping</code>:</li>
+</ul>
+<pre><code class="language-shell">ping yourdomain.com
+</code></pre>
+<p>If the reply shows the IP you set, resolution works.</p>
+<ul>
+<li>Check the MX record:</li>
+</ul>
+<pre><code class="language-shell">nslookup -q=mx yourdomain.com
+</code></pre>
+<p>If the output shows your domain, the MX record is correct.</p>
+<h2>Before you start</h2>
+<p>Configuring a complete mail server is not a trivial task; this lab only builds a minimal one, and more advanced features are left for you to explore.</p>
+<h3>Postfix and Dovecot overview</h3>
+<ul>
+<li><strong>Postfix</strong> is a standard MTA (Mail Transfer Agent). It manages mail sent to the local machine and mail the machine sends outward, using the SMTP protocol.</li>
+<li><strong>Dovecot</strong> is an excellent IMAP/POP3 server for retrieving mail addressed to the local machine.</li>
+</ul>
+<h3>Install</h3>
+<p>On CentOS 7:</p>
+<pre><code class="language-shell">yum -y install postfix dovecot
+</code></pre>
+<h2>Postfix</h2>
+<h3>Configure</h3>
+<p>Replace <code>yourdomain.com</code> with your own domain. Set the parameters with <code>postconf -e</code>:</p>
+<pre><code class="language-shell">postconf -e &#39;myhostname = server.cuijiawei.tk&#39;
+postconf -e &#39;mydestination = localhost, localhost.localdomain&#39;
+postconf -e &#39;myorigin = $mydomain&#39;
+postconf -e &#39;mynetworks = 127.0.0.0/8&#39;
+postconf -e &#39;inet_interfaces = all&#39;
+postconf -e &#39;inet_protocols = all&#39;
+postconf -e &#39;mydestination = $myhostname, localhost.$mydomain, localhost, $mydomain&#39;
+postconf -e &#39;home_mailbox = Maildir/&#39;
+postconf -e &#39;smtpd_sasl_type = dovecot&#39;
+postconf -e &#39;smtpd_sasl_path = private/auth&#39;
+postconf -e &#39;smtpd_sasl_auth_enable = yes&#39;
+postconf -e &#39;broken_sasl_auth_clients = yes&#39;
+postconf -e &#39;smtpd_sasl_authenticated_header = yes&#39;
+postconf -e &#39;smtpd_recipient_restrictions = permit_mynetworks, permit_sasl_authenticated, reject_unauth_destination&#39;
+postconf -e &#39;smtpd_use_tls = yes&#39;
+postconf -e &#39;smtpd_tls_cert_file = /etc/pki/dovecot/certs/dovecot.pem&#39;
+postconf -e &#39;smtpd_tls_key_file = /etc/pki/dovecot/private/dovecot.pem&#39;
+</code></pre>
+<p>Postfix uses <strong>SASL</strong> for authentication and <strong>TLS</strong> to encrypt the connection. The lab reuses Dovecot&#39;s default SSL certificate and key; swap the last two paths if you have your own.</p>
+<h3>Enable SMTPS (port 465)</h3>
+<p>Some mail clients require encrypted connections on port 465. Edit <code>/etc/postfix/master.cf</code> and uncomment these two lines (keep the space before <code>-o</code>):</p>
+<pre><code>smtps inet n - n - - smtpd
+  -o smtpd_tls_wrappermode=yes
+</code></pre>
+<h3>Start</h3>
+<pre><code class="language-shell">systemctl enable postfix.service
+systemctl start  postfix.service
+</code></pre>
+<h3>Logs</h3>
+<p>Postfix logs to <code>/var/log/maillog</code>, which records the server&#39;s runtime status.</p>
+<h2>Dovecot</h2>
+<h3>Configure</h3>
+<p>Edit <code>/etc/dovecot/dovecot.conf</code> and append at the bottom (replace the cert paths if you used your own):</p>
+<pre><code class="language-shell">ssl_cert = &lt;/etc/pki/dovecot/certs/dovecot.pem
+ssl_key = &lt;/etc/pki/dovecot/private/dovecot.pem
+
+protocols = imap pop3 lmtp
+listen = *
+mail_location = Maildir:~/Maildir
+disable_plaintext_auth = no
+</code></pre>
+<p>Then edit <code>/etc/dovecot/conf.d/10-master.conf</code>, find the <code>service auth</code> section, and uncomment:</p>
+<pre><code class="language-shell">unix_listener /var/spool/postfix/private/auth {
+       mode = 0666
+}
+</code></pre>
+<h3>Start</h3>
+<pre><code class="language-shell">systemctl enable dovecot.service
+systemctl start  dovecot.service
+</code></pre>
+<p>Check <code>/var/log/maillog</code>. A successful startup looks like:</p>
+<pre><code class="language-shell">Jun 26 12:00:28 localhost postfix/postfix-script[28338]: starting the Postfix mail system
+Jun 26 12:00:29 localhost postfix/master[28340]: daemon started -- version 2.10.1, configuration /etc/postfix
+Jun 26 12:28:40 localhost dovecot: master: Dovecot v2.2.10 starting up for imap, pop3, lmtp (core dumps disabled)
+</code></pre>
+<h2>Create an account</h2>
+<p>In this setup, mailbox accounts map to system users. Create one with <code>useradd</code>, then set its password:</p>
+<pre><code class="language-shell">useradd test
+passwd test
+</code></pre>
+<h2>Test</h2>
+<p>If something fails, check the error messages in <code>maillog</code>.</p>
+<h3>Send from the server</h3>
+<p>Switch user and send a test message (<code>xxxx@xxx.com</code> → your real inbox):</p>
+<pre><code class="language-shell">su test
+echo &quot;Mail Content&quot; | mail -s &quot;Mail Subject&quot; 892001108@qq.com
+</code></pre>
+<h3>Mail client</h3>
+<p>You can add the account to a desktop client (Foxmail is recommended in the lab). Example settings:</p>
+<pre><code>Server type:     POP3
+Mail account:    test@yourdomain.com
+
+Incoming (POP3):  yourdomain.com
+Port:             995
+SSL:              Yes
+User:             test
+Password:         test user&#39;s password
+
+Outgoing (SMTP):  yourdomain.com
+Port:             465
+SSL:              Yes
+User:             test
+Password:         test user&#39;s password
+</code></pre>
+<p>(With a self-signed/generic certificate, some clients may warn or misbehave — that&#39;s expected.)</p>
+<h2>My take</h2>
+<p>The mental model that makes this whole setup click: <strong>Postfix = outgoing/incoming transport (SMTP), Dovecot = retrieval (IMAP/POP3)</strong>, and they handshake over a private SASL socket (<code>private/auth</code>). The part that trips most people up is that mail has <em>two</em> protocols — one for transport, one for reading — and you must configure both or you can send but never receive (or vice versa). For a real deployment you&#39;d separate the services, use a proper CA-signed cert instead of Dovecot&#39;s default, and add SPF/DKIM/DMARC so you&#39;re not flagged as spam. This lab is the minimum viable slice.</p>
+</div>
+      <div class="a-foot">
+        <a href="/blog/geospatial-analysis/">← Geospatial Analysis</a>
+        <a href="/blog/complete-raspberry-pi-openclaw-deployment-guide/">Deploy OpenClaw AI on Raspberry Pi: Our Open Source Guide →</a>
+      </div>
+    </div>
+  </article>
+</main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="copy">© 2026 Jiawei Cui · Built as hand-written static HTML/CSS/JS.</div>
+      <div class="social">
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <a href="/blog/">Blog</a>
+      </div>
+    </div>
+  </footer>
+<script src="/assets/js/main.js"></script>
+</body>
+</html>

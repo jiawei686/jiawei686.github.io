@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GPT-3 and Few-Shot Learning at Scale — Jiawei Cui</title>
+<meta name="description" content="GPT3 (Brown et al., 2020) is the moment the world stopped thinking of language models as &quot;text completers&quot; and started thinking of them as programmable via prompts. The…">
+<link rel="icon" href="/public/img/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/style.css">
+<meta property="og:type" content="website">
+<meta property="og:title" content="GPT-3 and Few-Shot Learning at Scale — Jiawei Cui">
+<meta property="og:description" content="GPT3 (Brown et al., 2020) is the moment the world stopped thinking of language models as &quot;text completers&quot; and started thinking of them as programmable via prompts. The…">
+<meta property="og:url" content="https://cuijiawei.cn/blog/gpt-3-few-shot-learners/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="GPT-3 and Few-Shot Learning at Scale — Jiawei Cui">
+<meta name="twitter:description" content="GPT3 (Brown et al., 2020) is the moment the world stopped thinking of language models as &quot;text completers&quot; and started thinking of them as programmable via prompts. The…">
+<link rel="canonical" href="https://cuijiawei.cn/blog/gpt-3-few-shot-learners/">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Person","name":"Jiawei Cui","alternateName":["kiritocui","崔家维","cuijiawei"],"url":"https://cuijiawei.cn/","sameAs":["https://github.com/jiawei686"]}
+</script>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="/"><img src="/public/img/logo.svg" alt="logo"> Jiawei Cui</a>
+      <button class="nav-toggle" id="nav-toggle" aria-label="Menu">☰</button>
+      <div class="nav-links" id="nav-links">
+        <a href="/">Home</a>
+        <a href="/about.html">About</a>
+        <a href="/blog/" class="active">Blog</a>
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <button class="theme-btn" id="theme-btn" aria-label="Toggle theme">☾</button>
+      </div>
+    </div>
+  </nav>
+<main>
+
+  <article class="article">
+    <div class="read">
+      <div class="a-head">
+        <div class="a-meta"><a href="/blog/">Blog</a> · Sun Mar 15 2026 08:00:00 GMT+0800 (Singapore Standard Time) · <span class="tag">llm</span></div>
+        <h1>GPT-3 and Few-Shot Learning at Scale</h1>
+      </div>
+      <div class="content"><p>GPT-3 (Brown et al., 2020) is the moment the world stopped thinking of language models as &quot;text completers&quot; and started thinking of them as <em>programmable via prompts</em>. The paper&#39;s headline — a 175-billion-parameter model that learns new tasks from a few examples in the prompt, with no fine-tuning — is the direct ancestor of everything we now call &quot;prompt engineering&quot; and, eventually, &quot;in-context learning.&quot; I&#39;m writing this because the mechanism it revealed (in-context learning) is still not fully understood and is central to how we use LLMs today.</p>
+<h2>The shift: from fine-tuning to prompting</h2>
+<p>Before GPT-3, adapting a model to a task meant updating its weights (fine-tuning). GPT-3 flipped that: you put a few examples of the task directly in the input, and the model infers the pattern. For instance, to build a translator you don&#39;t train anything — you write:</p>
+<pre><code>English: sea otter
+French: loutre de mer
+
+English: cheese
+French: fromage
+
+English: snow
+French:
+</code></pre>
+<p>…and the model completes &quot;neige.&quot; No gradients, no dataset, no training run. That was genuinely surprising in 2020.</p>
+<h2>What &quot;few-shot&quot; actually means here</h2>
+<p>The paper tested three setups:</p>
+<ul>
+<li><strong>Zero-shot:</strong> just a description of the task, no examples.</li>
+<li><strong>One-shot:</strong> a single example.</li>
+<li><strong>Few-shot:</strong> a handful (typically 10–100) of examples in the context.</li>
+</ul>
+<p>The striking result: performance <em>improved steadily with model size and with the number of in-context examples</em>, and at 175B parameters GPT-3 could often match or approach fine-tuned smaller models on benchmarks — without any task-specific training. This is the empirical origin of the now-obvious fact that bigger models are better <em>promptable</em>.</p>
+<h2>Why this matters (and why it was controversial)</h2>
+<p>In-context learning meant you could adapt a model you couldn&#39;t even fine-tune (because you didn&#39;t have the weights or the compute), just by writing text. That democratized access but also raised uncomfortable questions: is the model &quot;learning&quot; in the prompt, or just pattern-matching against training data that already contained similar examples? Researchers still debate the mechanism. My operating assumption: in-context learning is partly genuine generalization and partly clever retrieval of similar structures seen during pretraining. Both are useful; the honest framing matters when you&#39;re relying on it for production.</p>
+<h2>The limitations nobody should ignore</h2>
+<ul>
+<li><strong>Context window is the new bottleneck.</strong> Few-shot examples eat tokens. Early GPT-3 had a 2k–4k window; you couldn&#39;t fit many examples or long documents.</li>
+<li><strong>It&#39;s sensitive to wording.</strong> The exact phrasing, ordering, and formatting of the prompt change results. This fragility is real and frustrating.</li>
+<li><strong>It can silently fail on rare tasks</strong> where the pretraining distribution had little coverage.</li>
+<li><strong>Cost and latency</strong> scale with how much context you shove in.</li>
+</ul>
+<p>These are still the core constraints of prompt-based systems. When I build LLM features, I treat few-shot examples as a <em>calibration tool</em>, not a guarantee — and I always keep a few-shot variant around for when zero-shot underperforms.</p>
+<h2>Practical lineage</h2>
+<p>GPT-3 is the hinge between &quot;language model as autocomplete&quot; and &quot;language model as general interface.&quot; Every later capability — instruction tuning (InstructGPT), chain-of-thought, tool use, agents — sits on top of the in-context learning substrate GPT-3 demonstrated. If you&#39;ve ever written a prompt with examples, you&#39;re using a GPT-3 idea.</p>
+<h2>My take</h2>
+<p>The enduring lesson of GPT-3 is that <em>scale changes the qualitative behavior of a model</em>, not just its accuracy. A 1B model can&#39;t do in-context learning; a 175B one can. That&#39;s not a smooth curve — it&#39;s an emergent capability that appears past a threshold. When people argue &quot;my small local model is just as good,&quot; the counterexamples almost always involve exactly these emergence effects. Understand GPT-3 and you understand why we keep building bigger models despite the cost.</p>
+</div>
+      <div class="a-foot">
+        <a href="/blog/instructgpt-rlhf-alignment/">← InstructGPT: Aligning LLMs with Human Preference (RLHF)</a>
+        <a href="/blog/bert-bidirectional-pretraining/">BERT: Bidirectional Pretraining from Transformers →</a>
+      </div>
+    </div>
+  </article>
+</main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="copy">© 2026 Jiawei Cui · Built as hand-written static HTML/CSS/JS.</div>
+      <div class="social">
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <a href="/blog/">Blog</a>
+      </div>
+    </div>
+  </footer>
+<script src="/assets/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FlashAttention: IO-Aware Exact Attention — Jiawei Cui</title>
+<meta name="description" content="FlashAttention (Dao et al., 2022, arXiv:2205.14135) is one of those papers that looks like a systems optimization but quietly reshaped what models are even possible. The…">
+<link rel="icon" href="/public/img/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/style.css">
+<meta property="og:type" content="website">
+<meta property="og:title" content="FlashAttention: IO-Aware Exact Attention — Jiawei Cui">
+<meta property="og:description" content="FlashAttention (Dao et al., 2022, arXiv:2205.14135) is one of those papers that looks like a systems optimization but quietly reshaped what models are even possible. The…">
+<meta property="og:url" content="https://cuijiawei.cn/blog/flashattention-efficient-attention/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="FlashAttention: IO-Aware Exact Attention — Jiawei Cui">
+<meta name="twitter:description" content="FlashAttention (Dao et al., 2022, arXiv:2205.14135) is one of those papers that looks like a systems optimization but quietly reshaped what models are even possible. The…">
+<link rel="canonical" href="https://cuijiawei.cn/blog/flashattention-efficient-attention/">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Person","name":"Jiawei Cui","alternateName":["kiritocui","崔家维","cuijiawei"],"url":"https://cuijiawei.cn/","sameAs":["https://github.com/jiawei686"]}
+</script>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="/"><img src="/public/img/logo.svg" alt="logo"> Jiawei Cui</a>
+      <button class="nav-toggle" id="nav-toggle" aria-label="Menu">☰</button>
+      <div class="nav-links" id="nav-links">
+        <a href="/">Home</a>
+        <a href="/about.html">About</a>
+        <a href="/blog/" class="active">Blog</a>
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <button class="theme-btn" id="theme-btn" aria-label="Toggle theme">☾</button>
+      </div>
+    </div>
+  </nav>
+<main>
+
+  <article class="article">
+    <div class="read">
+      <div class="a-head">
+        <div class="a-meta"><a href="/blog/">Blog</a> · Sun Apr 12 2026 08:00:00 GMT+0800 (Singapore Standard Time) · <span class="tag">llm</span></div>
+        <h1>FlashAttention: IO-Aware Exact Attention</h1>
+      </div>
+      <div class="content"><p>FlashAttention (Dao et al., 2022, arXiv:2205.14135) is one of those papers that looks like a systems optimization but quietly reshaped what models are even <em>possible</em>. The headline claim — &quot;2x training speedup, 3x longer sequences&quot; — undersells it. Without FlashAttention, models like Longformer-style long-context LLMs and the long-context GPT/Claude variants would be economically impractical to train. I&#39;m writing this because the core idea is genuinely elegant and most explanations bury it in GPU jargon.</p>
+<h2>The real bottleneck isn&#39;t compute, it&#39;s memory</h2>
+<p>Standard attention computes the full <code>N×N</code> attention matrix <code>S = QK^T</code>, applies softmax, then multiplies by <code>V</code>. On paper that&#39;s <code>O(N^2)</code> <em>compute</em>. But on a modern GPU, the compute isn&#39;t the problem — <strong>memory bandwidth is</strong>.</p>
+<p>Here&#39;s the part people miss. A GPU has fast on-chip SRAM (a few MB, extremely fast) and slow high-bandwidth memory / HBM (tens of GB, much slower). The naive algorithm writes the entire <code>N×N</code> matrix from SRAM out to HBM, then reads it back to apply softmax, then writes it again, then reads it to multiply by <code>V</code>. That round-trip to HBM dominates the runtime. The math is cheap; the <em>moving of numbers</em> is what&#39;s expensive.</p>
+<p>FlashAttention&#39;s insight: <strong>never materialize the full N×N matrix in HBM at all.</strong> Do the computation in blocks that fit in SRAM, and only write the final <code>N×d</code> output back.</p>
+<h2>Tiling: compute attention in blocks</h2>
+<p>Instead of one giant matrix multiply, split <code>Q</code>, <code>K</code>, <code>V</code> into chunks that fit in SRAM. For each block of queries we stream through blocks of keys/values, accumulating the partial result. The trick is that softmax over the <em>whole</em> row can be computed incrementally — you don&#39;t need to see all the keys at once if you track running statistics.</p>
+<h2>Online softmax: the math that makes tiling correct</h2>
+<p>Naive softmax needs the row sum over <em>all</em> keys. To do it block-by-block we use <strong>online softmax</strong> (a classic numerical algorithm, reused here cleverly). For each query, maintain:</p>
+<ul>
+<li><code>m</code> = running maximum of the scores seen so far</li>
+<li><code>l</code> = running sum of exponentials (the normalizer)</li>
+</ul>
+<p>When a new block of keys arrives with scores <code>s</code>, update:</p>
+<pre><code>m_new = max(m, max(s))
+l_new = exp(m - m_new) * l + exp(s - m_new) * sum(exp(s))
+</code></pre>
+<p>Then rescale the running output <code>O</code> by <code>exp(m - m_new)</code> to correct for the changed max, and add the new block&#39;s contribution. This keeps the result <em>bit-identical</em> to standard softmax while never holding the full matrix. That &quot;exact, not approximate&quot; property is why it&#39;s safe to drop into existing training code without changing model behavior.</p>
+<h2>What you get</h2>
+<ul>
+<li><strong>Speed:</strong> fewer HBM round-trips → roughly 2x faster training on typical lengths, more on long ones.</li>
+<li><strong>Memory:</strong> <code>O(N^2)</code> HBM usage becomes <code>O(N)</code> — you can attend over tens of thousands of tokens where before you&#39;d run out of memory.</li>
+<li><strong>Exactness:</strong> same math, same loss curve; you&#39;re not trading accuracy for speed.</li>
+</ul>
+<p>I&#39;ve personally watched a training run go from &quot;can&#39;t fit 8k context&quot; to &quot;comfortably does 32k&quot; just by enabling FlashAttention, with no other changes. The gradient behavior was indistinguishable.</p>
+<h2>Minimal sketch</h2>
+<pre><code class="language-python"># Conceptual, not a real kernel. Shows the online-softmax idea.
+def flash_block(Q_block, K_blocks, V_blocks, O, m, l):
+    for Kb, Vb in zip(K_blocks, V_blocks):
+        s = Q_block @ Kb.T / d_k**0.5      # scores for this key block
+        m_new = max(m, s.max(axis=-1))
+        l_new = exp(m - m_new) * l + exp(s - m_new).sum(axis=-1)
+        O = exp(m - m_new)[:, None] * O + \
+            (exp(s - m_new)[:, :, None] * Vb).sum(axis=1)
+        m, l = m_new, l_new
+    return O / l[:, None]
+</code></pre>
+<p>The real implementation is CUDA with careful SRAM management — don&#39;t try to hand-write that — but the logic above is the whole idea.</p>
+<h2>My take</h2>
+<p>FlashAttention is the clearest example I know of &quot;io-aware algorithm design&quot; paying off massively. The lesson generalizes: on modern hardware, <strong>algorithmic complexity in FLOPs is a poor proxy for real speed</strong>; you have to account for where data lives. If you&#39;re training or serving transformers on long sequences and not using a FlashAttention-style kernel, you are leaving large speed and memory wins on the table. For inference especially, this is now table stakes.</p>
+</div>
+      <div class="a-foot">
+        <a href="/blog/llama-open-weights-revolution/">← LLaMA: The Open-Weight Catalyst</a>
+        <a href="/blog/lora-low-rank-adaptation/">LoRA: Low-Rank Adaptation of Large Models →</a>
+      </div>
+    </div>
+  </article>
+</main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="copy">© 2026 Jiawei Cui · Built as hand-written static HTML/CSS/JS.</div>
+      <div class="social">
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <a href="/blog/">Blog</a>
+      </div>
+    </div>
+  </footer>
+<script src="/assets/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Constitutional AI: Harmlessness from AI Feedback — Jiawei Cui</title>
+<meta name="description" content="Constitutional AI (Bai et al., 2022, arXiv:2212.08073) asked a pragmatic question: can we make a model harmless without relying on armies of human raters labeling toxic…">
+<link rel="icon" href="/public/img/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/style.css">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Constitutional AI: Harmlessness from AI Feedback — Jiawei Cui">
+<meta property="og:description" content="Constitutional AI (Bai et al., 2022, arXiv:2212.08073) asked a pragmatic question: can we make a model harmless without relying on armies of human raters labeling toxic…">
+<meta property="og:url" content="https://cuijiawei.cn/blog/constitutional-ai/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Constitutional AI: Harmlessness from AI Feedback — Jiawei Cui">
+<meta name="twitter:description" content="Constitutional AI (Bai et al., 2022, arXiv:2212.08073) asked a pragmatic question: can we make a model harmless without relying on armies of human raters labeling toxic…">
+<link rel="canonical" href="https://cuijiawei.cn/blog/constitutional-ai/">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Person","name":"Jiawei Cui","alternateName":["kiritocui","崔家维","cuijiawei"],"url":"https://cuijiawei.cn/","sameAs":["https://github.com/jiawei686"]}
+</script>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="/"><img src="/public/img/logo.svg" alt="logo"> Jiawei Cui</a>
+      <button class="nav-toggle" id="nav-toggle" aria-label="Menu">☰</button>
+      <div class="nav-links" id="nav-links">
+        <a href="/">Home</a>
+        <a href="/about.html">About</a>
+        <a href="/blog/" class="active">Blog</a>
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <button class="theme-btn" id="theme-btn" aria-label="Toggle theme">☾</button>
+      </div>
+    </div>
+  </nav>
+<main>
+
+  <article class="article">
+    <div class="read">
+      <div class="a-head">
+        <div class="a-meta"><a href="/blog/">Blog</a> · Thu Jul 09 2026 08:00:00 GMT+0800 (Singapore Standard Time) · <span class="tag">llm</span></div>
+        <h1>Constitutional AI: Harmlessness from AI Feedback</h1>
+      </div>
+      <div class="content"><p>Constitutional AI (Bai et al., 2022, arXiv:2212.08073) asked a pragmatic question: <em>can we make a model harmless without relying on armies of human raters labeling toxic content?</em> Their answer — train the model to follow a set of written <strong>principles</strong> (a &quot;constitution&quot;) and use AI feedback instead of human feedback (RLAIF) — is both a cost-saving insight and a transparency win. I&#39;m writing this because it reframed alignment from &quot;humans judge everything&quot; to &quot;principles + AI critique,&quot; and it&#39;s directly relevant to how safer models are built now.</p>
+<h2>The motivation: the human cost of RLHF</h2>
+<p>Standard RLHF needs humans to read and rank model outputs — including toxic, harmful, or disturbing content. That&#39;s expensive, slow, and psychologically rough on raters. Constitutional AI&#39;s bet: replace most of that human labeling with <strong>AI-generated feedback guided by explicit principles.</strong></p>
+<h2>The recipe</h2>
+<p><strong>Stage 1 — Supervised (Constitutional) AI feedback:</strong></p>
+<ol>
+<li>Start with a base model.</li>
+<li>Given a harmful prompt, have the model <strong>self-critique</strong> its draft response against a set of principles (the &quot;constitution&quot; — e.g. &quot;choose the response that is most helpful, honest, and harmless&quot;).</li>
+<li>The model <strong>revises</strong> its response based on that critique, producing a harmless version.</li>
+<li>Collect these (prompt, revised-response) pairs and do a supervised fine-tune.</li>
+</ol>
+<p>So instead of humans writing the harmless answers, the model <em>critiques and rewrites itself</em> according to principles.</p>
+<p><strong>Stage 2 — RL from AI Feedback (RLAIF):</strong></p>
+<ol>
+<li>Use the model itself (acting as a judge) to compare pairs of responses and pick the more constitutional one — generating preference data <em>without humans</em>.</li>
+<li>Train a reward model on those AI preferences, then optimize with RL (like RLHF but the preferences came from AI, not people).</li>
+</ol>
+<h2>Why a &quot;constitution&quot; helps</h2>
+<p>The constitution is a short list of principles the model is told to follow (helpfulness, honesty, harmlessness, specific dos/don&#39;ts). Advantages:</p>
+<ul>
+<li><strong>Transparency:</strong> you can <em>read</em> what the model is optimized to value, unlike an opaque reward model trained on hidden human judgments.</li>
+<li><strong>Controllability:</strong> change the constitution, change the behavior — no re-labeling campaign.</li>
+<li><strong>Scalability &amp; safety for raters:</strong> far less human exposure to harmful content.</li>
+</ul>
+<h2>A minimal sketch of self-critique</h2>
+<pre><code class="language-python">principles = [&quot;Respond helpfully and harmlessly.&quot;,
+              &quot;If a request is harmful, explain why you won&#39;t comply and offer a safe alternative.&quot;]
+
+draft = model.generate(prompt)
+critique = model.critique(draft, principles)   # &quot;This draft is unsafe because...&quot;
+revised = model.revise(draft, critique)        # safer version
+train_data.append((prompt, revised))
+</code></pre>
+<p>The model plays both the writer and the principled critic — no human in the loop for these steps.</p>
+<h2>Honest caveats</h2>
+<ul>
+<li><strong>AI feedback inherits AI biases.</strong> If the critiquing model has blind spots, the &quot;constitution&quot; won&#39;t fully fix them. Garbage principles → garbage alignment.</li>
+<li><strong>Self-critique can be superficial.</strong> A model might produce a plausible-sounding harmless rewrite that doesn&#39;t truly address the issue.</li>
+<li><strong>It complements, not replaces, human oversight</strong> for high-stakes safety. Anthropic still uses human input; the point is <em>reducing</em> reliance, not eliminating it.</li>
+<li>The constitution&#39;s wording matters enormously — vague principles give vague behavior.</li>
+</ul>
+<h2>My take</h2>
+<p>Constitutional AI is the &quot;RLAIF&quot; idea that made alignment cheaper and more transparent. The durable insight: you can encode values as <strong>explicit principles</strong> and have the model self-critique toward them, drastically cutting the need for humans to label toxic content. For builders, the practical takeaway is a pattern — <em>generate critiques and revisions against a written rubric</em> — which you can reuse for any &quot;make outputs follow these rules&quot; task (tone, safety, format), not just harmlessness. Just remember: the constitution is only as good as you write it, and AI feedback needs spot-checking by humans for anything that actually matters.</p>
+</div>
+      <div class="a-foot">
+        <a href="/blog/advanced-javascript-exercises/">← Advanced JavaScript - Exercises and Gotchas</a>
+        <a href="/blog/computer-vision/">Computer Vision →</a>
+      </div>
+    </div>
+  </article>
+</main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="copy">© 2026 Jiawei Cui · Built as hand-written static HTML/CSS/JS.</div>
+      <div class="social">
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <a href="/blog/">Blog</a>
+      </div>
+    </div>
+  </footer>
+<script src="/assets/js/main.js"></script>
+</body>
+</html>

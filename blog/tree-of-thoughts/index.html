@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tree of Thoughts: Deliberate Problem Solving — Jiawei Cui</title>
+<meta name="description" content="Tree of Thoughts (ToT, Yao et al., 2023, arXiv:2305.10601) takes ChainofThought and makes it deliberate. Instead of generating one linear reasoning path and hoping it's…">
+<link rel="icon" href="/public/img/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/style.css">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Tree of Thoughts: Deliberate Problem Solving — Jiawei Cui">
+<meta property="og:description" content="Tree of Thoughts (ToT, Yao et al., 2023, arXiv:2305.10601) takes ChainofThought and makes it deliberate. Instead of generating one linear reasoning path and hoping it's…">
+<meta property="og:url" content="https://cuijiawei.cn/blog/tree-of-thoughts/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Tree of Thoughts: Deliberate Problem Solving — Jiawei Cui">
+<meta name="twitter:description" content="Tree of Thoughts (ToT, Yao et al., 2023, arXiv:2305.10601) takes ChainofThought and makes it deliberate. Instead of generating one linear reasoning path and hoping it's…">
+<link rel="canonical" href="https://cuijiawei.cn/blog/tree-of-thoughts/">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Person","name":"Jiawei Cui","alternateName":["kiritocui","崔家维","cuijiawei"],"url":"https://cuijiawei.cn/","sameAs":["https://github.com/jiawei686"]}
+</script>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="/"><img src="/public/img/logo.svg" alt="logo"> Jiawei Cui</a>
+      <button class="nav-toggle" id="nav-toggle" aria-label="Menu">☰</button>
+      <div class="nav-links" id="nav-links">
+        <a href="/">Home</a>
+        <a href="/about.html">About</a>
+        <a href="/blog/" class="active">Blog</a>
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <button class="theme-btn" id="theme-btn" aria-label="Toggle theme">☾</button>
+      </div>
+    </div>
+  </nav>
+<main>
+
+  <article class="article">
+    <div class="read">
+      <div class="a-head">
+        <div class="a-meta"><a href="/blog/">Blog</a> · Sun Jun 21 2026 08:00:00 GMT+0800 (Singapore Standard Time) · <span class="tag">llm</span></div>
+        <h1>Tree of Thoughts: Deliberate Problem Solving</h1>
+      </div>
+      <div class="content"><p>Tree of Thoughts (ToT, Yao et al., 2023, arXiv:2305.10601) takes Chain-of-Thought and makes it <em>deliberate</em>. Instead of generating one linear reasoning path and hoping it&#39;s right, ToT has the model explore <strong>many</strong> paths, evaluate them, and <strong>backtrack</strong> when one looks wrong. It&#39;s the difference between free-associating an answer and actually doing a search. I&#39;m writing this because ToT crystallizes a core idea in LLM reasoning — <em>search over thoughts</em> — that underlies a lot of agentic and &quot;slow thinking&quot; systems.</p>
+<h2>The limitation of a single chain</h2>
+<p>Chain-of-Thought gives one path. If that path makes a bad early decision, the model is committed — it can&#39;t undo it. For problems where the first step is consequential (planning, puzzles, games), a single greedy chain fails often. Humans don&#39;t do this; we consider options, judge them, and backtrack.</p>
+<h2>The ToT idea: thoughts as a search tree</h2>
+<p>ToT frames reasoning as a tree search:</p>
+<ol>
+<li><strong>Decompose</strong> the problem into steps (thought states).</li>
+<li>At each step, <strong>generate multiple candidate thoughts</strong> (branches) — not just one.</li>
+<li><strong>Evaluate</strong> each candidate with the LLM (a heuristic score, or a &quot;is this promising?&quot; judgment).</li>
+<li><strong>Search</strong> the tree (BFS/DFS) using those scores, <strong>pruning</strong> bad branches and <strong>backtracking</strong> when needed.</li>
+<li>Reach a leaf that solves the problem, or the best-scoring path.</li>
+</ol>
+<p>So the model isn&#39;t just &quot;thinking step by step&quot; — it&#39;s thinking step by step, <em>considering alternatives at each step, and choosing among them</em>.</p>
+<h2>A concrete example: the 24-game</h2>
+<p>The paper&#39;s classic demo is the &quot;24 game&quot; (given 4 numbers, combine with +−×÷ to make 24). A single CoT path often commits to a bad intermediate expression and fails. ToT generates several candidate next-steps, asks the model &quot;does this look promising?&quot; for each, and only expands promising ones — then backtracks if a branch dead-ends. Success rate jumps dramatically (the paper reported something like 4% → 74% on that task).</p>
+<h2>Why this matters beyond puzzles</h2>
+<p>ToT is a blueprint for <strong>deliberate reasoning</strong>:</p>
+<ul>
+<li><strong>Planning:</strong> explore plan branches before committing.</li>
+<li><strong>Agentic search:</strong> an agent tries an action, evaluates, retries — ToT formalizes that loop.</li>
+<li><strong>Reliability:</strong> evaluation + backtracking catch catastrophic early errors a single chain would hide.</li>
+</ul>
+<p>It also connects to how modern &quot;reasoning models&quot; behave: they effectively do more internal search/verification before answering. ToT was an early, explicit version of that.</p>
+<h2>The cost, honestly stated</h2>
+<p>Search is <strong>expensive</strong>. You&#39;re now generating many thoughts, scoring each, and possibly re-expanding — easily 5–20x the tokens of a single chain. For most queries that&#39;s overkill. I use ToT-style search only for:</p>
+<ul>
+<li>Hard, high-stakes, verifiable problems (math proofs, planning, code that must compile).</li>
+<li>Tasks where you have a cheap <em>verifier</em> (a test, a checker) to score branches — that&#39;s the realistic version of &quot;evaluate&quot; in production.</li>
+</ul>
+<h2>Practical implementation notes</h2>
+<ul>
+<li>You need a <strong>scorer</strong>. The LLM-as-judge scorer is noisy; prefer a deterministic verifier when available (unit tests, solvers).</li>
+<li><strong>Breadth and depth</strong> are hyperparameters (how many thoughts per step, how deep to search). Start small.</li>
+<li>Combine with <strong>self-consistency</strong> (sample many full trees / paths, take majority) for even better results when verification is hard.</li>
+</ul>
+<h2>My take</h2>
+<p>ToT is less a &quot;use it everywhere&quot; technique and more a <em>conceptual key</em>: reasoning quality improves when you let the model search and self-correct instead of committing to the first path. Most production systems can&#39;t afford full tree search, but the principle shows up constantly — retry loops, branch-and-test agents, verifier-guided generation. If a problem is hard and <em>checkable</em>, borrow ToT&#39;s shape: generate options, evaluate, backtrack. Don&#39;t just ask once and trust it.</p>
+</div>
+      <div class="a-foot">
+        <a href="/blog/scaling-laws/">← Scaling Laws for Neural Language Models</a>
+        <a href="/blog/autogen-multi-agent/">AutoGen: Multi-Agent Conversation as Computation →</a>
+      </div>
+    </div>
+  </article>
+</main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="copy">© 2026 Jiawei Cui · Built as hand-written static HTML/CSS/JS.</div>
+      <div class="social">
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <a href="/blog/">Blog</a>
+      </div>
+    </div>
+  </footer>
+<script src="/assets/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>InstructGPT: Aligning LLMs with Human Preference (RLHF) — Jiawei Cui</title>
+<meta name="description" content="InstructGPT (Ouyang et al., 2022) is the paper that made LLMs useful as assistants. Before it, GPT3 was a brilliant nexttoken predictor that rarely did what you asked.…">
+<link rel="icon" href="/public/img/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/style.css">
+<meta property="og:type" content="website">
+<meta property="og:title" content="InstructGPT: Aligning LLMs with Human Preference (RLHF) — Jiawei Cui">
+<meta property="og:description" content="InstructGPT (Ouyang et al., 2022) is the paper that made LLMs useful as assistants. Before it, GPT3 was a brilliant nexttoken predictor that rarely did what you asked.…">
+<meta property="og:url" content="https://cuijiawei.cn/blog/instructgpt-rlhf-alignment/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="InstructGPT: Aligning LLMs with Human Preference (RLHF) — Jiawei Cui">
+<meta name="twitter:description" content="InstructGPT (Ouyang et al., 2022) is the paper that made LLMs useful as assistants. Before it, GPT3 was a brilliant nexttoken predictor that rarely did what you asked.…">
+<link rel="canonical" href="https://cuijiawei.cn/blog/instructgpt-rlhf-alignment/">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Person","name":"Jiawei Cui","alternateName":["kiritocui","崔家维","cuijiawei"],"url":"https://cuijiawei.cn/","sameAs":["https://github.com/jiawei686"]}
+</script>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="/"><img src="/public/img/logo.svg" alt="logo"> Jiawei Cui</a>
+      <button class="nav-toggle" id="nav-toggle" aria-label="Menu">☰</button>
+      <div class="nav-links" id="nav-links">
+        <a href="/">Home</a>
+        <a href="/about.html">About</a>
+        <a href="/blog/" class="active">Blog</a>
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <button class="theme-btn" id="theme-btn" aria-label="Toggle theme">☾</button>
+      </div>
+    </div>
+  </nav>
+<main>
+
+  <article class="article">
+    <div class="read">
+      <div class="a-head">
+        <div class="a-meta"><a href="/blog/">Blog</a> · Sun Mar 22 2026 08:00:00 GMT+0800 (Singapore Standard Time) · <span class="tag">llm</span></div>
+        <h1>InstructGPT: Aligning LLMs with Human Preference (RLHF)</h1>
+      </div>
+      <div class="content"><p>InstructGPT (Ouyang et al., 2022) is the paper that made LLMs <em>useful</em> as assistants. Before it, GPT-3 was a brilliant next-token predictor that rarely did what you asked. InstructGPT showed that a three-step recipe — supervised fine-tuning, a reward model, and RLHF — turns a raw model into one that follows instructions, is less toxic, and is genuinely helpful. I&#39;m writing this because it&#39;s the direct ancestor of ChatGPT, and understanding the recipe explains why modern models &quot;listen&quot; to you.</p>
+<h2>The problem: capability ≠ helpfulness</h2>
+<p>A base model trained to predict text has no concept of &quot;what the user wants.&quot; Ask it to write a poem and it might complete &quot;write a poem about...&quot; as if echoing a prompt. It&#39;s powerful but not <em>alignable</em>. InstructGPT&#39;s goal: make the model <strong>follow instructions</strong> and <strong>prefer responses humans rate highly</strong>.</p>
+<h2>The three-step recipe</h2>
+<ol>
+<li><strong>Supervised Fine-Tuning (SFT).</strong> Collect a dataset of (prompt, ideal response) pairs written by human labelers, and fine-tune the base model on it. This teaches basic instruction-following format.</li>
+<li><strong>Reward Model (RM).</strong> Collect comparisons: for a prompt, have labelers rank several model outputs best→worst. Train a model to predict these preferences — it outputs a single score for &quot;how good is this response?&quot;</li>
+<li><strong>RLHF (PPO).</strong> Use reinforcement learning (PPO) to optimize the LM to <em>maximize the reward model&#39;s score</em>, while a KL penalty keeps it from drifting too far from the SFT model (which would degrade language quality).</li>
+</ol>
+<p>The result: a model that, on human evaluations, was <strong>preferred over the 175B GPT-3 despite being ~100x smaller</strong> (1.3B InstructGPT beat 175B GPT-3). That&#39;s the power of alignment over raw scale.</p>
+<h2>Why this was a turning point</h2>
+<ul>
+<li>It established <strong>RLHF as the standard alignment method</strong> — every major chat model since (ChatGPT, Claude, Llama-2-chat, etc.) uses a variant.</li>
+<li>It proved <strong>alignment can outweigh scale</strong>: a well-aligned small model beats a bigger unaligned one on usefulness.</li>
+<li>It made models <strong>follow instructions</strong> instead of just completing text — the birth of the &quot;assistant&quot; UX.</li>
+</ul>
+<h2>The honest caveats</h2>
+<ul>
+<li><strong>Reward models are imperfect and gameable.</strong> The LM can find ways to score high that don&#39;t correspond to genuine quality (&quot;reward hacking&quot;). The KL penalty and careful data mitigate but don&#39;t eliminate this.</li>
+<li><strong>Human preference data is expensive and biased.</strong> Labelers&#39; preferences shape the model; who labels matters. RLHF bakes in the values of the raters.</li>
+<li><strong>Mode collapse / verbosity.</strong> Optimizing for &quot;helpful-looking&quot; can make models overly long-winded or sycophantic (telling users what they want to hear). This is a known RLHF side effect.</li>
+<li><strong>It&#39;s complex to train.</strong> Three models (SFT, RM, RL policy) and tricky RL stability. That&#39;s why later methods (DPO, covered separately) sought simpler alternatives.</li>
+</ul>
+<h2>Practical notes</h2>
+<ul>
+<li>If you&#39;re aligning a model, SFT first to teach format, then preference-tuning; skipping SFT and going straight to RLHF usually struggles.</li>
+<li>The RM is the linchpin — invest in clean, consistent preference comparisons.</li>
+<li>Watch for reward hacking during RL; monitor KL divergence and sample quality, don&#39;t just trust the reward curve.</li>
+<li>For most applied teams, <strong>DPO or supervised preference methods</strong> are easier than full PPO-RLHF and often sufficient.</li>
+</ul>
+<h2>My take</h2>
+<p>InstructGPT is the paper that made LLMs into tools instead of toys. The durable lesson: <strong>alignment is a separate problem from capability</strong>, and solving it (via human preference signals) matters more for real usability than raw parameters. Every assistant you use rides on this recipe. Understand it and you understand both why models are helpful <em>and</em> why they&#39;re sometimes sycophantic or verbose — those are side effects of optimizing a reward model trained on human ratings. Newer methods (DPO, RLAIF) simplify the training, but the core idea — <em>train the model to match human preference</em> — is unchanged.</p>
+</div>
+      <div class="a-foot">
+        <a href="/blog/chain-of-thought-prompting/">← Chain-of-Thought Prompting: Let the Model Think Step by Step</a>
+        <a href="/blog/gpt-3-few-shot-learners/">GPT-3 and Few-Shot Learning at Scale →</a>
+      </div>
+    </div>
+  </article>
+</main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="copy">© 2026 Jiawei Cui · Built as hand-written static HTML/CSS/JS.</div>
+      <div class="social">
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <a href="/blog/">Blog</a>
+      </div>
+    </div>
+  </footer>
+<script src="/assets/js/main.js"></script>
+</body>
+</html>

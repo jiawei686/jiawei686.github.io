@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mixtral of Experts: Sparse Mixture of Experts — Jiawei Cui</title>
+<meta name="description" content="Mixtral (Mistral AI, 2023) is the model that made mixtureofexperts (MoE) practical and popular in the open ecosystem. The idea behind MoE is old, but Mixtral shipped it…">
+<link rel="icon" href="/public/img/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/style.css">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Mixtral of Experts: Sparse Mixture of Experts — Jiawei Cui">
+<meta property="og:description" content="Mixtral (Mistral AI, 2023) is the model that made mixtureofexperts (MoE) practical and popular in the open ecosystem. The idea behind MoE is old, but Mixtral shipped it…">
+<meta property="og:url" content="https://cuijiawei.cn/blog/mixtral-mixture-of-experts/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Mixtral of Experts: Sparse Mixture of Experts — Jiawei Cui">
+<meta name="twitter:description" content="Mixtral (Mistral AI, 2023) is the model that made mixtureofexperts (MoE) practical and popular in the open ecosystem. The idea behind MoE is old, but Mixtral shipped it…">
+<link rel="canonical" href="https://cuijiawei.cn/blog/mixtral-mixture-of-experts/">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Person","name":"Jiawei Cui","alternateName":["kiritocui","崔家维","cuijiawei"],"url":"https://cuijiawei.cn/","sameAs":["https://github.com/jiawei686"]}
+</script>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="/"><img src="/public/img/logo.svg" alt="logo"> Jiawei Cui</a>
+      <button class="nav-toggle" id="nav-toggle" aria-label="Menu">☰</button>
+      <div class="nav-links" id="nav-links">
+        <a href="/">Home</a>
+        <a href="/about.html">About</a>
+        <a href="/blog/" class="active">Blog</a>
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <button class="theme-btn" id="theme-btn" aria-label="Toggle theme">☾</button>
+      </div>
+    </div>
+  </nav>
+<main>
+
+  <article class="article">
+    <div class="read">
+      <div class="a-head">
+        <div class="a-meta"><a href="/blog/">Blog</a> · Sun Apr 26 2026 08:00:00 GMT+0800 (Singapore Standard Time) · <span class="tag">llm</span></div>
+        <h1>Mixtral of Experts: Sparse Mixture of Experts</h1>
+      </div>
+      <div class="content"><p>Mixtral (Mistral AI, 2023) is the model that made <strong>mixture-of-experts (MoE)</strong> practical and popular in the open ecosystem. The idea behind MoE is old, but Mixtral shipped it in a way that actually beat dense models of similar <em>active</em> compute — at 7x the total parameter count — and ran efficiently. I&#39;m writing this because MoE is now how most frontier models (and a lot of efficient ones) get their capacity, and the trade-offs are subtle.</p>
+<h2>The problem: more params help, but they&#39;re expensive</h2>
+<p>A bigger dense model is smarter, but every token pays the full cost of every parameter. If you double the model, every prediction gets twice as slow and twice as memory-hungry. That&#39;s wasteful: for any given token, only some of the model&#39;s knowledge is relevant.</p>
+<p>MoE&#39;s fix: replace some feed-forward layers with <strong>many parallel &quot;expert&quot; networks</strong> and a small <strong>router</strong> that sends each token to only a few of them.</p>
+<h2>How Mixtral works</h2>
+<p>Mixtral is a standard Transformer where each token, at certain layers, passes through a <strong>sparse MoE feed-forward block</strong> made of 8 expert MLPs. A router (a small linear layer) computes a score for each expert and selects the <strong>top 2</strong>. So:</p>
+<ul>
+<li>Total parameters: ~46B (all 8 experts × layers).</li>
+<li><strong>Active</strong> parameters per token: ~12.9B (only 2 of 8 experts run).</li>
+</ul>
+<p>The result: you get the knowledge capacity of a 46B model, but the per-token compute of a ~13B model. That&#39;s the entire appeal — <em>capacity without proportional cost</em>.</p>
+<h2>Why this is genuinely better than a dense model</h2>
+<p>A dense 13B model spends its 13B params on everything. Mixtral spends 46B params total, but for any token activates only the experts the router deems relevant. Different experts specialize: one might handle code, another math, another dialogue. The model effectively carries more total knowledge while keeping inference cheap.</p>
+<p>Empirically, Mixtral-8x7B outperformed LLaMA-2-70B on many benchmarks while using far less compute per token. That&#39;s a rare &quot;win on both quality and efficiency&quot; result, which is why MoE spread fast (you&#39;ll see it in Mixtral, later Mistral variants, and frontier models like Gemini/Claude internally).</p>
+<h2>The catch: MoE has sharp edges</h2>
+<ul>
+<li><strong>Memory, not compute, is the bottleneck.</strong> You must load <em>all</em> 46B params into RAM/VRAM even though you only use 13B per token. So MoE saves compute and latency, not memory. This surprises people who expect &quot;12.9B active = fits in 13B worth of VRAM.&quot; It doesn&#39;t — you still need room for the full weights.</li>
+<li><strong>Routing can be unbalanced.</strong> If the router sends most tokens to the same 2 experts, you lose the benefit and some experts starve. Training includes a load-balancing auxiliary loss to spread tokens around. Bad routing = wasted capacity.</li>
+<li><strong>Batching is trickier.</strong> Different tokens use different experts, so you can&#39;t naively batch the FFN; efficient MoE kernels group tokens by expert.</li>
+<li><strong>Fine-tuning nuances.</strong> LoRA on MoE needs care about <em>which</em> experts/layers you adapt; naive LoRA may underperform.</li>
+</ul>
+<h2>Practical notes</h2>
+<ul>
+<li>For <em>serving</em> (latency/throughput), MoE is great if you have the memory. For <em>fitting on small hardware</em>, a dense model of the active size is easier.</li>
+<li>Quantization still applies: you can 4-bit quantize Mixtral, but you&#39;re quantizing all 46B, so memory stays high.</li>
+<li>When evaluating an MoE, look at <strong>active</strong> params for speed and <strong>total</strong> params for capacity — conflating them is the most common mistake I see in model comparisons.</li>
+</ul>
+<h2>My take</h2>
+<p>Mixtral made MoE stop being a research curiosity and start being a deployment strategy. The key mental model: MoE trades <em>memory</em> for <em>compute efficiency</em>, giving you a bigger brain that only wakes the relevant parts per token. If you&#39;re serving at scale and memory isn&#39;t the constraint, MoE is one of the best efficiency levers available. If you&#39;re memory-constrained on the edge, prefer a dense model sized to your active budget. Know which constraint you&#39;re actually hitting.</p>
+</div>
+      <div class="a-foot">
+        <a href="/blog/machine-learning-explainability/">← Machine Learning Explainability</a>
+        <a href="/blog/llama-open-weights-revolution/">LLaMA: The Open-Weight Catalyst →</a>
+      </div>
+    </div>
+  </article>
+</main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="copy">© 2026 Jiawei Cui · Built as hand-written static HTML/CSS/JS.</div>
+      <div class="social">
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <a href="/blog/">Blog</a>
+      </div>
+    </div>
+  </footer>
+<script src="/assets/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Computer Vision — Jiawei Cui</title>
+<meta name="description" content="Computer vision (CV) is the field of getting computers to understand images — classify them, find objects, segment regions, describe scenes. For a long time it was…">
+<link rel="icon" href="/public/img/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/style.css">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Computer Vision — Jiawei Cui">
+<meta property="og:description" content="Computer vision (CV) is the field of getting computers to understand images — classify them, find objects, segment regions, describe scenes. For a long time it was…">
+<meta property="og:url" content="https://cuijiawei.cn/blog/computer-vision/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Computer Vision — Jiawei Cui">
+<meta name="twitter:description" content="Computer vision (CV) is the field of getting computers to understand images — classify them, find objects, segment regions, describe scenes. For a long time it was…">
+<link rel="canonical" href="https://cuijiawei.cn/blog/computer-vision/">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Person","name":"Jiawei Cui","alternateName":["kiritocui","崔家维","cuijiawei"],"url":"https://cuijiawei.cn/","sameAs":["https://github.com/jiawei686"]}
+</script>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="/"><img src="/public/img/logo.svg" alt="logo"> Jiawei Cui</a>
+      <button class="nav-toggle" id="nav-toggle" aria-label="Menu">☰</button>
+      <div class="nav-links" id="nav-links">
+        <a href="/">Home</a>
+        <a href="/about.html">About</a>
+        <a href="/blog/" class="active">Blog</a>
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <button class="theme-btn" id="theme-btn" aria-label="Toggle theme">☾</button>
+      </div>
+    </div>
+  </nav>
+<main>
+
+  <article class="article">
+    <div class="read">
+      <div class="a-head">
+        <div class="a-meta"><a href="/blog/">Blog</a> · Thu Jan 15 2026 08:00:00 GMT+0800 (Singapore Standard Time) · <span class="tag">ai</span></div>
+        <h1>Computer Vision</h1>
+      </div>
+      <div class="content"><p>Computer vision (CV) is the field of getting computers to <em>understand images</em> — classify them, find objects, segment regions, describe scenes. For a long time it was hand-engineered features and fragile heuristics; then deep learning rewrote the field almost overnight. I&#39;m writing this as a foundation because CV also underpins multimodal models (CLIP, covered separately) and a lot of applied AI, and the arc from CNNs to Vision Transformers is a clean story worth knowing.</p>
+<h2>Before deep learning: features by hand</h2>
+<p>Early CV extracted engineered features (SIFT, HOG) and fed them to classifiers. It worked for narrow cases but broke on real-world variety — lighting, pose, background. The breakthrough was letting the model <em>learn</em> the features from data.</p>
+<h2>Convolutional Neural Networks (CNNs)</h2>
+<p>CNNs are the architecture that made image understanding work at scale. Instead of feeding raw pixels to a flat network, they use <strong>convolutions</strong> — small filters that slide over the image, detecting local patterns (edges → textures → shapes → objects). Key ideas:</p>
+<ul>
+<li><strong>Local connectivity &amp; weight sharing:</strong> a filter is reused across the image, so the model needs far fewer parameters and naturally handles translation (a cat in the corner vs. center).</li>
+<li><strong>Hierarchy:</strong> early layers detect edges; deeper layers compose them into eyes, faces, objects. This emergent feature hierarchy is why CNNs generalize.</li>
+<li><strong>Pooling:</strong> downsamples spatially, giving some translation invariance and reducing compute.</li>
+</ul>
+<p>The 2012 AlexNet win on ImageNet — crushing previous methods — is the moment CV went deep. After that, better architectures (VGG, ResNet with skip connections, EfficientNet) kept pushing accuracy.</p>
+<h2>ImageNet and transfer learning</h2>
+<p>ImageNet (millions of labeled images, 1000 classes) became the training ground that made pretrained models possible. The practical revolution was <strong>transfer learning</strong>: take a CNN pretrained on ImageNet, chop off its final classification layer, and fine-tune the rest on <em>your</em> small dataset. Suddenly you could build a competent custom image classifier with a few hundred labeled images instead of a million. This pattern — pretrain on a huge generic dataset, adapt to your task — is the same idea that later powered LLMs.</p>
+<h2>The Transformer arrives: ViT</h2>
+<p>Vision Transformer (ViT) showed you can split an image into patches, treat each patch like a &quot;token,&quot; and feed them to a standard Transformer (the kind used in LLMs). With enough data, ViT matched or beat CNNs. This was a big conceptual unification: <strong>vision and language became the same architecture</strong>. It also set up CLIP and the whole multimodal era, where a shared Transformer handles both.</p>
+<h2>Common CV tasks</h2>
+<ul>
+<li><strong>Classification:</strong> what&#39;s in the image (ImageNet-style).</li>
+<li><strong>Object detection:</strong> find and box multiple objects (YOLO, Faster R-CNN).</li>
+<li><strong>Semantic / instance segmentation:</strong> label every pixel (what vs. which instance).</li>
+<li><strong>Pose / depth / generation:</strong> keypoints, 3D, and now diffusion-based image creation.</li>
+</ul>
+<h2>Practical realities</h2>
+<ul>
+<li><strong>Data and augmentation</strong> matter as much as architecture. Random crops, flips, color jitter stretch a small dataset.</li>
+<li><strong>Pretrained models are the default</strong> — almost nobody trains from scratch anymore; use a backbone (ResNet, ViT) and adapt.</li>
+<li><strong>CNNs are still great</strong> for many production tasks: simpler, faster to train, less data-hungry than ViT. Don&#39;t assume Transformer = automatically better for your case.</li>
+<li><strong>Be aware of bias:</strong> models trained on web images inherit the quirks and biases of that data.</li>
+</ul>
+<h2>My take</h2>
+<p>Computer vision&#39;s arc — hand features → CNNs → pretrain/transfer → Transformers → multimodal — is a template the whole field has followed, and it directly feeds the LLM story (pretrain on lots of data, adapt to your task; unify architectures). For practitioners, the takeaway is pragmatic: stand on pretrained backbones, use transfer learning, and pick CNN vs. ViT based on your data size and latency budget rather than fashion. And if you go further into multimodal AI, CLIP and friends are built on exactly these foundations — understanding convolutions and ImageNet transfer is the on-ramp.</p>
+</div>
+      <div class="a-foot">
+        <a href="/blog/constitutional-ai/">← Constitutional AI: Harmlessness from AI Feedback</a>
+        <a href="/blog/ie-button-a-tag-click-fix/">IE Quirk: Clicks on &amp;lt;a&amp;gt; Inside &amp;lt;button&amp;gt; Don't Fire →</a>
+      </div>
+    </div>
+  </article>
+</main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="copy">© 2026 Jiawei Cui · Built as hand-written static HTML/CSS/JS.</div>
+      <div class="social">
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <a href="/blog/">Blog</a>
+      </div>
+    </div>
+  </footer>
+<script src="/assets/js/main.js"></script>
+</body>
+</html>

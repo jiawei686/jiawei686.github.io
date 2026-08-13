@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IE Quirk: Clicks on &amp;lt;a&amp;gt; Inside &amp;lt;button&amp;gt; Don't Fire — Jiawei Cui</title>
+<meta name="description" content="A friend in the US asked me to help with a parentchild education website. During our conversation I learned there are still a fair number of IE users over there, so he…">
+<link rel="icon" href="/public/img/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/style.css">
+<meta property="og:type" content="website">
+<meta property="og:title" content="IE Quirk: Clicks on &amp;lt;a&amp;gt; Inside &amp;lt;button&amp;gt; Don't Fire — Jiawei Cui">
+<meta property="og:description" content="A friend in the US asked me to help with a parentchild education website. During our conversation I learned there are still a fair number of IE users over there, so he…">
+<meta property="og:url" content="https://cuijiawei.cn/blog/ie-button-a-tag-click-fix/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="IE Quirk: Clicks on &amp;lt;a&amp;gt; Inside &amp;lt;button&amp;gt; Don't Fire — Jiawei Cui">
+<meta name="twitter:description" content="A friend in the US asked me to help with a parentchild education website. During our conversation I learned there are still a fair number of IE users over there, so he…">
+<link rel="canonical" href="https://cuijiawei.cn/blog/ie-button-a-tag-click-fix/">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Person","name":"Jiawei Cui","alternateName":["kiritocui","崔家维","cuijiawei"],"url":"https://cuijiawei.cn/","sameAs":["https://github.com/jiawei686"]}
+</script>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="/"><img src="/public/img/logo.svg" alt="logo"> Jiawei Cui</a>
+      <button class="nav-toggle" id="nav-toggle" aria-label="Menu">☰</button>
+      <div class="nav-links" id="nav-links">
+        <a href="/">Home</a>
+        <a href="/about.html">About</a>
+        <a href="/blog/" class="active">Blog</a>
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <button class="theme-btn" id="theme-btn" aria-label="Toggle theme">☾</button>
+      </div>
+    </div>
+  </nav>
+<main>
+
+  <article class="article">
+    <div class="read">
+      <div class="a-head">
+        <div class="a-meta"><a href="/blog/">Blog</a> · Thu Apr 26 2018 08:00:00 GMT+0800 (Singapore Standard Time) · <span class="tag">engineering</span></div>
+        <h1>IE Quirk: Clicks on &amp;lt;a&amp;gt; Inside &amp;lt;button&amp;gt; Don't Fire</h1>
+      </div>
+      <div class="content"><p>A friend in the US asked me to help with a parent-child education website. During our conversation I learned there are still a fair number of IE users over there, so he wanted the site to work in IE. The pay wasn&#39;t much, but he&#39;s a friend — and every detail of a site you ship should be handled carefully.</p>
+<p>While debugging in IE, I found that an <code>&lt;a&gt;</code> tag nested inside a <code>&lt;button&gt;</code> simply stopped working. The markup looked roughly like this:</p>
+<pre><code class="language-html">&lt;button class =&quot;link&quot;&gt;Health and Safety &lt;a href =&quot;Health&amp;Safety.html&quot;&gt;&lt;/a&gt;&lt;/button&gt;
+</code></pre>
+<p>Clicking the link did nothing. My first guess was that IE was rendering the <code>&lt;button&gt;</code> <em>on top of</em> the <code>&lt;a&gt;</code>, so I added <code>z-index: 1</code> to the link&#39;s stylesheet. No effect whatsoever.</p>
+<p>A quick search confirmed IE really does have this bug — and it goes both ways: an <code>&lt;a&gt;</code> wrapping a <code>&lt;button&gt;</code> also fails to navigate.</p>
+<p>I tried a snippet from a blog that solved the &quot;<code>&lt;a&gt;</code> outside <code>&lt;button&gt;</code> won&#39;t navigate&quot; case, hoping it would cover ours too:</p>
+<pre><code class="language-html">&lt;a href =&quot;1.html&quot; onclick =&quot;Javascript:window.location.href=&#39;2.html&#39;&quot;&gt;&lt;button&gt;click me&lt;/button&gt;&lt;/a&gt;
+</code></pre>
+<p>Still didn&#39;t fix our problem.</p>
+<p>So I had to solve it myself. I didn&#39;t want to manually move every <code>&lt;a&gt;</code>&#39;s <code>href</code> onto its parent <code>&lt;button&gt;</code> and bind a click handler one by one. Instead I wrote a small script: for each button, grab the <code>href</code> of the <code>&lt;a&gt;</code> inside it, then bind a click handler that navigates. To make the URL correct on every click I used a <strong>closure</strong> to capture the loop index — otherwise every click would jump to whatever the last <code>&lt;a&gt;</code> pointed at.</p>
+<pre><code class="language-javascript">function isIE() { // ie?
+     if (!!window.ActiveXObject || &quot;ActiveXObject&quot; in window) return true;
+     else return false;
+}
+if (isIE()) {
+    var index = 0;
+    $(&quot;.small-link&quot;).each(function () {
+        $(this).click(function () {
+            var index_inner = index;
+            return function () {
+                window.location.href = $(&quot;.small-link a&quot;).eq(index_inner).attr(&#39;href&#39;);
+            }
+        }(index));
+        index++;
+    });
+}
+</code></pre>
+<p>Debugging inside a virtual machine was painful, but in the end it worked.</p>
+<h2>My take</h2>
+<p>The root cause is an old IE rendering quirk: it doesn&#39;t treat a nested <code>&lt;a&gt;</code> inside a <code>&lt;button&gt;</code> as a clickable navigation target, so the click is swallowed by the button. The cleanest fix by today&#39;s standards is to <strong>not nest them at all</strong> — wrap the button styling around a real <code>&lt;a&gt;</code>, or make the whole control an <code>&lt;a&gt;</code> styled to look like a button. The closure trick above was the pragmatic fix for a legacy codebase where the markup was already everywhere; the captured <code>index_inner</code> is the classic &quot;loop variable in an event handler&quot; gotcha that still bites people in every language with closures. If you&#39;re writing new code, just restructure the markup and skip the workaround entirely.</p>
+</div>
+      <div class="a-foot">
+        <a href="/blog/computer-vision/">← Computer Vision</a>
+        <a href="/blog/reflexion-verbal-rl/">Reflexion: Verbal Reinforcement Learning for Language Agents →</a>
+      </div>
+    </div>
+  </article>
+</main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="copy">© 2026 Jiawei Cui · Built as hand-written static HTML/CSS/JS.</div>
+      <div class="social">
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <a href="/blog/">Blog</a>
+      </div>
+    </div>
+  </footer>
+<script src="/assets/js/main.js"></script>
+</body>
+</html>

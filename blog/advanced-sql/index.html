@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Advanced SQL — Jiawei Cui</title>
+<meta name="description" content="SQL is easy to start and surprisingly deep to master. The &quot;advanced&quot; parts — window functions, CTEs, query planning, indexing — are what separate &quot;I can fetch rows&quot; from…">
+<link rel="icon" href="/public/img/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/style.css">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Advanced SQL — Jiawei Cui">
+<meta property="og:description" content="SQL is easy to start and surprisingly deep to master. The &quot;advanced&quot; parts — window functions, CTEs, query planning, indexing — are what separate &quot;I can fetch rows&quot; from…">
+<meta property="og:url" content="https://cuijiawei.cn/blog/advanced-sql/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Advanced SQL — Jiawei Cui">
+<meta name="twitter:description" content="SQL is easy to start and surprisingly deep to master. The &quot;advanced&quot; parts — window functions, CTEs, query planning, indexing — are what separate &quot;I can fetch rows&quot; from…">
+<link rel="canonical" href="https://cuijiawei.cn/blog/advanced-sql/">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Person","name":"Jiawei Cui","alternateName":["kiritocui","崔家维","cuijiawei"],"url":"https://cuijiawei.cn/","sameAs":["https://github.com/jiawei686"]}
+</script>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="/"><img src="/public/img/logo.svg" alt="logo"> Jiawei Cui</a>
+      <button class="nav-toggle" id="nav-toggle" aria-label="Menu">☰</button>
+      <div class="nav-links" id="nav-links">
+        <a href="/">Home</a>
+        <a href="/about.html">About</a>
+        <a href="/blog/" class="active">Blog</a>
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <button class="theme-btn" id="theme-btn" aria-label="Toggle theme">☾</button>
+      </div>
+    </div>
+  </nav>
+<main>
+
+  <article class="article">
+    <div class="read">
+      <div class="a-head">
+        <div class="a-meta"><a href="/blog/">Blog</a> · Sat Jan 10 2026 08:00:00 GMT+0800 (Singapore Standard Time) · <span class="tag">data</span></div>
+        <h1>Advanced SQL</h1>
+      </div>
+      <div class="content"><p>SQL is easy to start and surprisingly deep to master. The &quot;advanced&quot; parts — window functions, CTEs, query planning, indexing — are what separate &quot;I can fetch rows&quot; from &quot;I can answer real analytical questions efficiently.&quot; I&#39;m writing this as a practical guide because these features are high-leverage: they turn multi-query, application-side hacks into a single clear statement, and they&#39;re where most real-world data work happens.</p>
+<h2>Window functions: the biggest unlock</h2>
+<p>A window function computes a value across a set of rows <em>related</em> to the current row, without collapsing them like <code>GROUP BY</code> does. This is the feature people most underuse.</p>
+<pre><code class="language-sql">-- running total per user, ordered by date, WITHOUT losing rows
+SELECT user_id, order_date, amount,
+       SUM(amount) OVER (
+         PARTITION BY user_id
+         ORDER BY order_date
+       ) AS running_total
+FROM orders;
+</code></pre>
+<p>Key clauses:</p>
+<ul>
+<li><code>PARTITION BY</code> — the &quot;group&quot; (resets per user).</li>
+<li><code>ORDER BY</code> — the order within the window (enables running totals, ranks).</li>
+<li><strong>Window vs. aggregate:</strong> <code>GROUP BY</code> reduces rows; <code>OVER(...)</code> keeps every row and adds a computed column. That distinction is the whole point.</li>
+</ul>
+<p>Common patterns: <code>ROW_NUMBER()</code> (dedupe, pick latest), <code>RANK()/DENSE_RANK()</code> (leaderboards), <code>LAG()/LEAD()</code> (period-over-period change), <code>NTILE()</code> (bucket into quantiles).</p>
+<h2>CTEs: readable, composable queries</h2>
+<p>Common Table Expressions (<code>WITH</code>) let you name intermediate result sets:</p>
+<pre><code class="language-sql">WITH active AS (
+  SELECT * FROM users WHERE last_seen &gt; now() - interval &#39;30 days&#39;
+), spend AS (
+  SELECT user_id, SUM(amount) AS total
+  FROM orders JOIN active USING (user_id)
+  GROUP BY user_id
+)
+SELECT * FROM spend ORDER BY total DESC;
+</code></pre>
+<p>CTEs are mostly readability aids (the optimizer usually inlines them) — but <code>RECURSIVE</code> CTEs can do real work, like walking a tree/hierarchy (org charts, category trees) in pure SQL.</p>
+<h2>Query optimization: think like the planner</h2>
+<ul>
+<li><strong>Indexes</strong> are the primary speed lever. They&#39;re great for <code>WHERE</code>, <code>JOIN</code>, and <code>ORDER BY</code> on indexed columns; useless for functions wrapped around a column (<code>WHERE LOWER(name) = ...</code> won&#39;t use a plain index on <code>name</code>).</li>
+<li><strong>EXPLAIN / EXPLAIN ANALYZE</strong> is your friend — see the actual plan and where the cost is. I never tune a slow query without it.</li>
+<li><strong>Avoid SELECT *</strong> in analytical queries; fetch only needed columns (helps columnar stores especially).</li>
+<li><strong>Join order and filters:</strong> push filters down early; a bad plan often comes from missing statistics or a missing index on a join key.</li>
+<li><strong>Beware correlated subqueries</strong> — they can re-run per row; a window function or CTE join is usually better.</li>
+</ul>
+<h2>Indexing strategy</h2>
+<ul>
+<li>Index columns you filter/join/sort on.</li>
+<li>Composite indexes follow the <strong>leftmost-prefix</strong> rule — <code>(a, b, c)</code> helps queries filtering on <code>a</code>, or <code>a,b</code>, but not on <code>b</code> alone.</li>
+<li>Too many indexes slow writes; it&#39;s a trade-off, not free.</li>
+<li>Partial and expression indexes solve specific hot queries elegantly (<code>CREATE INDEX ... WHERE status = &#39;open&#39;</code>).</li>
+</ul>
+<h2>Practical habits</h2>
+<ul>
+<li>Write CTEs top-to-bottom to mirror your thinking; future-you will thank you.</li>
+<li>Reach for window functions before pulling data into Python to &quot;post-process&quot; — the database does it faster.</li>
+<li>Profile with EXPLAIN before assuming; intuition about what&#39;s slow is often wrong.</li>
+<li>Know your dialect (Postgres, BigQuery, MySQL, Snowflake differ in window/CTE support and types).</li>
+</ul>
+<h2>My take</h2>
+<p>Advanced SQL is the difference between a query that answers the question and one that almost does, slowly. The two features I&#39;d learn first are <strong>window functions</strong> (they eliminate a whole category of app-side loops) and <strong>EXPLAIN</strong> (it ends guesswork about performance). Everything else — CTEs for readability, recursive CTEs for hierarchies, sensible indexing — compounds from there. If you do any analytics, investing a few days in these pays back on nearly every query you&#39;ll write afterward. The database is almost always faster at this than your application code; let it do the work.</p>
+</div>
+      <div class="a-foot">
+        <a href="/blog/wechat-dev-mcp/">← wechat-dev-mcp: Bridging AI and WeChat Mini-Program Development</a>
+        <a href="/blog/intro-to-game-ai-and-reinforcement-learning/">Game AI and Reinforcement Learning →</a>
+      </div>
+    </div>
+  </article>
+</main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="copy">© 2026 Jiawei Cui · Built as hand-written static HTML/CSS/JS.</div>
+      <div class="social">
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <a href="/blog/">Blog</a>
+      </div>
+    </div>
+  </footer>
+<script src="/assets/js/main.js"></script>
+</body>
+</html>

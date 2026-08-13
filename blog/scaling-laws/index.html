@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scaling Laws for Neural Language Models — Jiawei Cui</title>
+<meta name="description" content="Scaling Laws (Kaplan et al., 2020) is the paper that turned &quot;make the model bigger&quot; from folklore into engineering guidance. Before it, nobody could say how much bigger,…">
+<link rel="icon" href="/public/img/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/style.css">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Scaling Laws for Neural Language Models — Jiawei Cui">
+<meta property="og:description" content="Scaling Laws (Kaplan et al., 2020) is the paper that turned &quot;make the model bigger&quot; from folklore into engineering guidance. Before it, nobody could say how much bigger,…">
+<meta property="og:url" content="https://cuijiawei.cn/blog/scaling-laws/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Scaling Laws for Neural Language Models — Jiawei Cui">
+<meta name="twitter:description" content="Scaling Laws (Kaplan et al., 2020) is the paper that turned &quot;make the model bigger&quot; from folklore into engineering guidance. Before it, nobody could say how much bigger,…">
+<link rel="canonical" href="https://cuijiawei.cn/blog/scaling-laws/">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Person","name":"Jiawei Cui","alternateName":["kiritocui","崔家维","cuijiawei"],"url":"https://cuijiawei.cn/","sameAs":["https://github.com/jiawei686"]}
+</script>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="/"><img src="/public/img/logo.svg" alt="logo"> Jiawei Cui</a>
+      <button class="nav-toggle" id="nav-toggle" aria-label="Menu">☰</button>
+      <div class="nav-links" id="nav-links">
+        <a href="/">Home</a>
+        <a href="/about.html">About</a>
+        <a href="/blog/" class="active">Blog</a>
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <button class="theme-btn" id="theme-btn" aria-label="Toggle theme">☾</button>
+      </div>
+    </div>
+  </nav>
+<main>
+
+  <article class="article">
+    <div class="read">
+      <div class="a-head">
+        <div class="a-meta"><a href="/blog/">Blog</a> · Sun Jun 28 2026 08:00:00 GMT+0800 (Singapore Standard Time) · <span class="tag">llm</span></div>
+        <h1>Scaling Laws for Neural Language Models</h1>
+      </div>
+      <div class="content"><p>Scaling Laws (Kaplan et al., 2020) is the paper that turned &quot;make the model bigger&quot; from folklore into <em>engineering guidance</em>. Before it, nobody could say how much bigger, or whether data or parameters mattered more. The authors showed that test loss improves as a <strong>smooth, predictable power law</strong> in compute, dataset size, and parameter count. I&#39;m writing this because scaling laws are the implicit reason every lab keeps building larger models — and the later Chinchilla paper (covered separately) corrected a crucial mistake in the original.</p>
+<h2>The central empirical claim</h2>
+<p>For a fixed compute budget, model loss <code>L</code> follows roughly:</p>
+<pre><code>L ∝ C^(-α)        # α ≈ 0.076 for compute
+</code></pre>
+<p>where <code>C</code> is training compute (FLOPs). Equivalent relationships hold for parameters <code>N</code> and data size <code>D</code>. The striking part: these are <strong>smooth power laws with no obvious kink</strong> — meaning nowhere in the range they tested did &quot;bigger stops helping.&quot; That&#39;s the empirical green light for scaling.</p>
+<h2>What this meant in practice</h2>
+<p>The original paper&#39;s guidance, roughly:</p>
+<ul>
+<li>For a given compute budget, spend most of it on <strong>parameters</strong>, and train on a <em>relatively small</em> amount of data (they found diminishing returns from more data at fixed params).</li>
+<li>Predictable loss → you can estimate the cost of hitting a target performance before spending the money.</li>
+</ul>
+<p>This is exactly why GPT-3 was trained the way it was (huge model, &quot;only&quot; a few hundred billion tokens by today&#39;s standards). The law said: maximize parameters.</p>
+<h2>The subtle but critical caveat (and Chinchilla&#39;s correction)</h2>
+<p>The Kaplan scaling laws were fit in a regime where models were <em>not</em> trained to convergence on their data — they were undertrained. That biased the conclusion toward &quot;parameters matter most.&quot; The later Chinchilla work showed that if you train properly, <strong>data and parameters should scale together</strong> (roughly 20 tokens per parameter), and earlier models were <em>starved of data</em>. So the &quot;spend on parameters&quot; advice turned out to be partly an artifact of undertraining.</p>
+<p>I cover Chinchilla separately, but the lesson is here: scaling laws are empirical fits over a <em>range you tested</em>. Extrapolate past it and you may be wrong — as the field discovered when data became the constraint.</p>
+<h2>Why scaling laws still matter to you</h2>
+<p>Even with the correction, the core insight is durable:</p>
+<ol>
+<li><strong>Budget allocation is a real decision.</strong> Given a fixed compute budget, how do you split it between model size and training tokens? This is the single most important training-design choice, and scaling laws (Chinchilla-corrected) answer it.</li>
+<li><strong>Predictability enables planning.</strong> You can estimate &quot;how big a model do I need for task X&quot; before burning a cluster.</li>
+<li><strong>Emergent abilities</strong> (the surprising capabilities that appear past a scale threshold, like GPT-3&#39;s in-context learning) sit on top of these smooth laws and are <em>not</em> predicted by them — a reminder that averages hide phase transitions.</li>
+</ol>
+<h2>Practical takeaways for builders</h2>
+<ul>
+<li>Don&#39;t blindly copy old &quot;make it huge&quot; recipes. The modern rule of thumb is ~20 tokens per parameter (Chinchilla ratio); undertraining a giant model wastes compute.</li>
+<li>If you&#39;re training a model and your loss curve is well above the predicted scaling-law curve for your compute, something is wrong (data quality, bugs, hyperparameters) — the law is a sanity check.</li>
+<li>For fine-tuning/specialization, you&#39;re usually <em>not</em> in the compute-limited scaling regime; LoRA-style methods are more relevant there.</li>
+</ul>
+<h2>My take</h2>
+<p>Scaling laws are the most consequential &quot;boring&quot; paper in the field — a set of empirical curves that quietly justified billions in compute spending. The real story isn&#39;t the smooth line; it&#39;s that the line was <em>almost</em> right and the correction (Chinchilla) changed how every model since is trained. If you train models, internalize both: the power law tells you loss will keep dropping as you scale, and Chinchilla tells you to feed it enough data or you&#39;re wasting the parameters.</p>
+</div>
+      <div class="a-foot">
+        <a href="/blog/the-transformer-attention-is-all-you-need/">← The Transformer: Attention Is All You Need</a>
+        <a href="/blog/tree-of-thoughts/">Tree of Thoughts: Deliberate Problem Solving →</a>
+      </div>
+    </div>
+  </article>
+</main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="copy">© 2026 Jiawei Cui · Built as hand-written static HTML/CSS/JS.</div>
+      <div class="social">
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <a href="/blog/">Blog</a>
+      </div>
+    </div>
+  </footer>
+<script src="/assets/js/main.js"></script>
+</body>
+</html>

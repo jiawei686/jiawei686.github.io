@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Machine Learning Explainability — Jiawei Cui</title>
+<meta name="description" content="Machine learning explainability is the set of methods for answering &quot;why did the model predict that?&quot; As models moved from simple linear regressions to opaque neural…">
+<link rel="icon" href="/public/img/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/style.css">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Machine Learning Explainability — Jiawei Cui">
+<meta property="og:description" content="Machine learning explainability is the set of methods for answering &quot;why did the model predict that?&quot; As models moved from simple linear regressions to opaque neural…">
+<meta property="og:url" content="https://cuijiawei.cn/blog/machine-learning-explainability/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Machine Learning Explainability — Jiawei Cui">
+<meta name="twitter:description" content="Machine learning explainability is the set of methods for answering &quot;why did the model predict that?&quot; As models moved from simple linear regressions to opaque neural…">
+<link rel="canonical" href="https://cuijiawei.cn/blog/machine-learning-explainability/">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Person","name":"Jiawei Cui","alternateName":["kiritocui","崔家维","cuijiawei"],"url":"https://cuijiawei.cn/","sameAs":["https://github.com/jiawei686"]}
+</script>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="/"><img src="/public/img/logo.svg" alt="logo"> Jiawei Cui</a>
+      <button class="nav-toggle" id="nav-toggle" aria-label="Menu">☰</button>
+      <div class="nav-links" id="nav-links">
+        <a href="/">Home</a>
+        <a href="/about.html">About</a>
+        <a href="/blog/" class="active">Blog</a>
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <button class="theme-btn" id="theme-btn" aria-label="Toggle theme">☾</button>
+      </div>
+    </div>
+  </nav>
+<main>
+
+  <article class="article">
+    <div class="read">
+      <div class="a-head">
+        <div class="a-meta"><a href="/blog/">Blog</a> · Sun Dec 28 2025 08:00:00 GMT+0800 (Singapore Standard Time) · <span class="tag">ai</span></div>
+        <h1>Machine Learning Explainability</h1>
+      </div>
+      <div class="content"><p>Machine learning explainability is the set of methods for answering &quot;why did the model predict <em>that</em>?&quot; As models moved from simple linear regressions to opaque neural nets and gradient-boosted trees, their predictions got better and their reasoning got invisible. Explainability pushes back against that opacity — for debugging, for trust, and often because regulation demands it. I&#39;m writing this as a practical intro: which tools exist, what they actually tell you, and where they mislead.</p>
+<h2>Why explainability matters</h2>
+<ul>
+<li><strong>Debugging:</strong> if a model performs oddly, you need to know <em>what</em> it&#39;s keying on. (I&#39;ve caught models that &quot;cheated&quot; by reading a timestamp column that leaked the label.)</li>
+<li><strong>Trust &amp; adoption:</strong> a doctor or loan officer won&#39;t use a model they can&#39;t sanity-check.</li>
+<li><strong>Fairness &amp; compliance:</strong> many domains legally require a rationale for decisions affecting people.</li>
+<li><strong>Edge-case discovery:</strong> explanations reveal brittle behavior you&#39;d miss from aggregate accuracy alone.</li>
+</ul>
+<h2>The spectrum: intrinsic vs. post-hoc</h2>
+<ul>
+<li><strong>Intrinsic interpretability:</strong> use a simple, inherently explainable model (linear regression, small decision tree). You trade some accuracy for transparency you get for free.</li>
+<li><strong>Post-hoc explainability:</strong> train any model, then explain its behavior <em>after</em> with separate methods. This is where LIME and SHAP live.</li>
+</ul>
+<p>The accuracy/interpretability trade-off is real but overstated — often a well-tuned simple model is &quot;explainable enough&quot; and nearly as good.</p>
+<h2>Key techniques</h2>
+<p><strong>Feature importance (global):</strong> ranking which inputs most affect predictions overall. For tree models this is built-in; for others, permutation importance (shuffle a column, measure accuracy drop) is a model-agnostic baseline.</p>
+<p><strong>LIME (Local Interpretable Model-agnostic Explanations):</strong> explain a <em>single prediction</em> by perturbing the input, seeing how the prediction changes, and fitting a simple local model around that point. Answer: &quot;for <em>this</em> instance, these features pushed the prediction up/down.&quot; Cheap and intuitive, but local and sometimes unstable.</p>
+<p><strong>SHAP (SHapley Additive exPlanations):</strong> grounded in cooperative game theory — it assigns each feature a &quot;fair share&quot; of the prediction by averaging its marginal contribution across all feature subsets. More principled and consistent than LIME, but more computationally expensive. SHAP values have nice properties (they sum to the prediction), which makes them the go-to for serious work.</p>
+<p><strong>Partial dependence / ICE plots:</strong> show how the prediction changes as one feature varies, holding others fixed — great for spotting non-linear effects.</p>
+<h2>Where explainability misleads</h2>
+<ul>
+<li><strong>Correlation ≠ causation.</strong> &quot;Feature X is important&quot; doesn&#39;t mean X <em>causes</em> the outcome; it means the model uses it.</li>
+<li><strong>LIME instability:</strong> tiny input changes can flip the explanation; don&#39;t over-trust a single local explanation.</li>
+<li><strong>SHAP under feature dependence:</strong> default SHAP assumes features are independent; with correlated features the &quot;subset&quot; counterfactuals can be unrealistic. Use the right estimator.</li>
+<li><strong>Explanations can be gamed or superficial</strong>, especially on adversarially-tuned models.</li>
+</ul>
+<h2>Practical guidance</h2>
+<ul>
+<li>Start with <strong>global feature importance</strong> to sanity-check the whole model.</li>
+<li>Use <strong>SHAP</strong> for reliable per-prediction explanations; <strong>LIME</strong> for quick local intuition.</li>
+<li>Always cross-check an explanation against domain knowledge — if it says something absurd, suspect data leakage or a bug.</li>
+<li>Pick interpretable models when the stakes are high and accuracy headroom is small; reserve black boxes for when they clearly earn their opacity.</li>
+</ul>
+<h2>My take</h2>
+<p>Explainability is less about &quot;opening the black box&quot; (you rarely can, fully) and more about <em>building justified trust and catching errors</em>. The single most valuable habit: before trusting any model, look at which features drive it — nine times out of ten you&#39;ll find something revealing, good or bad. SHAP is my default for serious explanations; LIME for fast checks. But never confuse an explanation with causality, and never skip the domain sanity-check. A model that&#39;s explainable-but-wrong is still wrong; explainability is a debugging and trust tool, not a correctness guarantee.</p>
+</div>
+      <div class="a-foot">
+        <a href="/blog/rlhf-from-human-preferences/">← RLHF: Deep Reinforcement Learning from Human Preferences</a>
+        <a href="/blog/mixtral-mixture-of-experts/">Mixtral of Experts: Sparse Mixture of Experts →</a>
+      </div>
+    </div>
+  </article>
+</main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="copy">© 2026 Jiawei Cui · Built as hand-written static HTML/CSS/JS.</div>
+      <div class="social">
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <a href="/blog/">Blog</a>
+      </div>
+    </div>
+  </footer>
+<script src="/assets/js/main.js"></script>
+</body>
+</html>

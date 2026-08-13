@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Connection-Oriented Transport - TCP — Jiawei Cui</title>
+<meta name="description" content="These are my notes on the TCP chapters from Computer Networking: A TopDown Approach (Kurose &amp; Ross). TCP is the protocol that makes the unreliable IP layer feel…">
+<link rel="icon" href="/public/img/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/style.css">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Connection-Oriented Transport - TCP — Jiawei Cui">
+<meta property="og:description" content="These are my notes on the TCP chapters from Computer Networking: A TopDown Approach (Kurose &amp; Ross). TCP is the protocol that makes the unreliable IP layer feel…">
+<meta property="og:url" content="https://cuijiawei.cn/blog/connection-oriented-transport-tcp/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Connection-Oriented Transport - TCP — Jiawei Cui">
+<meta name="twitter:description" content="These are my notes on the TCP chapters from Computer Networking: A TopDown Approach (Kurose &amp; Ross). TCP is the protocol that makes the unreliable IP layer feel…">
+<link rel="canonical" href="https://cuijiawei.cn/blog/connection-oriented-transport-tcp/">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Person","name":"Jiawei Cui","alternateName":["kiritocui","崔家维","cuijiawei"],"url":"https://cuijiawei.cn/","sameAs":["https://github.com/jiawei686"]}
+</script>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="/"><img src="/public/img/logo.svg" alt="logo"> Jiawei Cui</a>
+      <button class="nav-toggle" id="nav-toggle" aria-label="Menu">☰</button>
+      <div class="nav-links" id="nav-links">
+        <a href="/">Home</a>
+        <a href="/about.html">About</a>
+        <a href="/blog/" class="active">Blog</a>
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <button class="theme-btn" id="theme-btn" aria-label="Toggle theme">☾</button>
+      </div>
+    </div>
+  </nav>
+<main>
+
+  <article class="article">
+    <div class="read">
+      <div class="a-head">
+        <div class="a-meta"><a href="/blog/">Blog</a> · Thu May 18 2017 08:00:00 GMT+0800 (Singapore Standard Time) · <span class="tag">engineering</span></div>
+        <h1>Connection-Oriented Transport - TCP</h1>
+      </div>
+      <div class="content"><p>These are my notes on the TCP chapters from <em>Computer Networking: A Top-Down Approach</em> (Kurose &amp; Ross). TCP is the protocol that makes the unreliable IP layer feel reliable, and the mechanisms it uses — connection setup, sequence numbers, adaptive timeouts, flow and congestion control — are worth understanding concretely rather than as vague buzzwords.</p>
+<h2>3.5 TCP Connection</h2>
+<p>A TCP connection is <strong>connection-oriented</strong>: before application process A can send data to process B, the two must first &quot;handshake&quot; — exchange a few preliminary segments to establish the parameters that guarantee reliable delivery.</p>
+<ul>
+<li><strong>Full-duplex service</strong>: once a TCP connection exists between A and B, application data can flow from A to B <em>and</em> from B to A at the same time.</li>
+<li><strong>Point-to-point</strong>: a single sender has exactly one receiver.</li>
+<li><strong>MSS (Maximum Segment Size)</strong>: the largest chunk of application data TCP will put in one segment.</li>
+</ul>
+<h3>3.5.1 Connection setup</h3>
+<p>The three-way handshake (<code>SYN</code>, <code>SYN-ACK</code>, <code>ACK</code>) establishes the connection and synchronizes both sides&#39; initial sequence numbers. Only after that can data flow.</p>
+<h3>3.5.2 Segment structure</h3>
+<p>Each segment carries a <strong>sequence number</strong> and an <strong>acknowledgment number</strong>. The sequence number of a segment is the byte-stream number of the first data byte it carries; the acknowledgment number is the next byte the sender expects to receive. This is the foundation of reliable, in-order delivery.</p>
+<h3>3.5.3 RTT estimation and timeout</h3>
+<p>TCP continuously estimates the round-trip time so it knows how long to wait before assuming a segment was lost.</p>
+<ul>
+<li><strong>EstimatedRTT</strong>: every time a new <code>SampleRTT</code> arrives, TCP updates its estimate exponentially:</li>
+</ul>
+<p>$$ EstimatedRTT = (1-\alpha) \cdot EstimatedRTT + \alpha \cdot SampleRTT $$</p>
+<ul>
+<li><strong>DevRTT</strong> measures how much <code>SampleRTT</code> typically deviates from <code>EstimatedRTT</code>:</li>
+</ul>
+<p>$$ DevRTT = (1-\beta) \cdot DevRTT + \beta \cdot | SampleRTT - EstimatedRTT | $$</p>
+<ul>
+<li><strong>TimeoutInterval</strong> must be at least <code>EstimatedRTT</code> (otherwise you&#39;d retransmit unnecessarily) but not so large that you stall on loss:</li>
+</ul>
+<p>$$ TimeoutInterval = EstimatedRTT + 4 \cdot DevRTT $$</p>
+<h3>3.5.4 Reliable data transfer</h3>
+<p>When a timeout expires, TCP <strong>doubles</strong> the timeout interval after each retransmission. This is a deliberate back-off: if the network is congested, slamming it with immediate retransmits only makes things worse.</p>
+<h3>3.5.5 Flow control and congestion control</h3>
+<ul>
+<li><strong>Flow control</strong> keeps the sender from overwhelming the receiver&#39;s buffer. It&#39;s a speed-matching service: the sender&#39;s rate is matched to how fast the receiver&#39;s application reads.</li>
+<li><strong>Congestion control</strong> throttles the sender because the IP network itself is congested.</li>
+</ul>
+<p>Two windows bound how much can be in flight:</p>
+<ul>
+<li><strong>rwnd (receive window)</strong>: how much buffer space the receiver has left, advertised to the sender.</li>
+<li><strong>cwnd (congestion window)</strong>: the sender&#39;s own estimate of how much the network can take.</li>
+</ul>
+<p>The sender may have at most <code>min(cwnd, rwnd)</code> unacknowledged bytes outstanding.</p>
+<h2>3.6 Principles of congestion control</h2>
+<h3>3.6.1 Causes and cost of congestion</h3>
+<p>When too many sources send too fast, routers drop packets, senders retransmit, and the useful throughput collapses. The cost isn&#39;t just dropped packets — it&#39;s wasted bandwidth from redundant retransmissions.</p>
+<h3>3.6.2 Approaches to congestion control</h3>
+<ul>
+<li><strong>End-to-end congestion control</strong>: the network layer gives no explicit feedback; the end systems infer congestion from loss and delay (this is what TCP does).</li>
+<li><strong>Network-assisted congestion control</strong>: routers signal congestion to end hosts. Hard to do in the IP layer, which provides no such explicit feedback.</li>
+<li><strong>Slow start</strong>: <code>cwnd</code> starts small (often one MSS) and grows exponentially until it hits a threshold, then switches to additive-increase / multiplicative-decrease.</li>
+</ul>
+<h2>My take</h2>
+<p>The thing that finally made TCP &quot;click&quot; for me was realizing it solves <em>two different</em> problems with two different windows. Flow control protects the <strong>receiver</strong>; congestion control protects the <strong>network</strong>. Beginners conflate them because both end up limiting how fast you send, but they&#39;re measured against completely different resources. If you only remember one equation, remember <code>TimeoutInterval = EstimatedRTT + 4·DevRTT</code> — it captures the whole philosophy: be patient enough to avoid spurious retransmits, but not so patient that a lost packet stalls the connection for seconds.</p>
+</div>
+      <div class="a-foot">
+        <a href="/blog/dpo/">← DPO: Direct Preference Optimization</a>
+        <a href="/blog/advanced-javascript-exercises/">Advanced JavaScript - Exercises and Gotchas →</a>
+      </div>
+    </div>
+  </article>
+</main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="copy">© 2026 Jiawei Cui · Built as hand-written static HTML/CSS/JS.</div>
+      <div class="social">
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <a href="/blog/">Blog</a>
+      </div>
+    </div>
+  </footer>
+<script src="/assets/js/main.js"></script>
+</body>
+</html>

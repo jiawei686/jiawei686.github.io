@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reflexion: Verbal Reinforcement Learning for Language Agents — Jiawei Cui</title>
+<meta name="description" content="Reflexion (Shinn et al., 2023, arXiv:2303.11366) solves a frustrating problem with LLM agents: they make the same mistake twice. A standard ReAct agent that fails a task…">
+<link rel="icon" href="/public/img/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/style.css">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Reflexion: Verbal Reinforcement Learning for Language Agents — Jiawei Cui">
+<meta property="og:description" content="Reflexion (Shinn et al., 2023, arXiv:2303.11366) solves a frustrating problem with LLM agents: they make the same mistake twice. A standard ReAct agent that fails a task…">
+<meta property="og:url" content="https://cuijiawei.cn/blog/reflexion-verbal-rl/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Reflexion: Verbal Reinforcement Learning for Language Agents — Jiawei Cui">
+<meta name="twitter:description" content="Reflexion (Shinn et al., 2023, arXiv:2303.11366) solves a frustrating problem with LLM agents: they make the same mistake twice. A standard ReAct agent that fails a task…">
+<link rel="canonical" href="https://cuijiawei.cn/blog/reflexion-verbal-rl/">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Person","name":"Jiawei Cui","alternateName":["kiritocui","崔家维","cuijiawei"],"url":"https://cuijiawei.cn/","sameAs":["https://github.com/jiawei686"]}
+</script>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="/"><img src="/public/img/logo.svg" alt="logo"> Jiawei Cui</a>
+      <button class="nav-toggle" id="nav-toggle" aria-label="Menu">☰</button>
+      <div class="nav-links" id="nav-links">
+        <a href="/">Home</a>
+        <a href="/about.html">About</a>
+        <a href="/blog/" class="active">Blog</a>
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <button class="theme-btn" id="theme-btn" aria-label="Toggle theme">☾</button>
+      </div>
+    </div>
+  </nav>
+<main>
+
+  <article class="article">
+    <div class="read">
+      <div class="a-head">
+        <div class="a-meta"><a href="/blog/">Blog</a> · Sun May 31 2026 08:00:00 GMT+0800 (Singapore Standard Time) · <span class="tag">llm</span></div>
+        <h1>Reflexion: Verbal Reinforcement Learning for Language Agents</h1>
+      </div>
+      <div class="content"><p>Reflexion (Shinn et al., 2023, arXiv:2303.11366) solves a frustrating problem with LLM agents: they make the <em>same mistake twice</em>. A standard ReAct agent that fails a task will, on a retry, often repeat the exact bad action. Reflexion adds a <strong>self-reflection step</strong> that turns failures into memory the agent consults next time. I&#39;m writing this because it&#39;s a cheap, weight-free way to make agents actually learn from experience, and the pattern is something I use constantly in agent builds.</p>
+<h2>The problem: agents don&#39;t remember their mistakes</h2>
+<p>A vanilla agent runs: think, act, observe. If it fails, you can re-run it, but it has no <em>memory</em> of why it failed — so it fails the same way. Real learning (gradient descent) is expensive and unavailable at inference. Reflexion&#39;s insight: you don&#39;t need to change weights to learn; you can <strong>learn in language</strong>.</p>
+<h2>The Reflexion loop</h2>
+<p>After a failed (or suboptimal) trajectory, the agent writes a <strong>verbal reflection</strong>: a short natural-language summary of what went wrong and what to do differently. That reflection is stored in an episodic memory and prepended to the next attempt.</p>
+<pre><code>Attempt 1: think → act → observe → FAIL
+Reflection: &quot;I called the search tool with too broad a query and got noise;
+            next time, include the year and specific entity name.&quot;
+Attempt 2: [reflection] → think → act → observe → SUCCESS
+</code></pre>
+<p>No gradients, no fine-tuning — just text memory of past mistakes.</p>
+<h2>Why this works better than you&#39;d expect</h2>
+<ul>
+<li><strong>It&#39;s targeted.</strong> The reflection addresses the <em>specific</em> failure, so the next attempt avoids it directly.</li>
+<li><strong>It&#39;s cheap.</strong> Writing one paragraph of reflection costs a single generation; no training run.</li>
+<li><strong>It compounds.</strong> Over multiple attempts the agent accumulates a growing &quot;lessons learned&quot; buffer that improves robustness on hard, multi-step tasks.</li>
+<li><strong>It&#39;s model-agnostic.</strong> Works on any LLM, since it&#39;s pure prompting + memory.</li>
+</ul>
+<p>The paper showed meaningful gains on reasoning, coding (where the agent reflects on failed test runs), and sequential decision tasks, often outperforming agents without reflection.</p>
+<h2>A minimal sketch</h2>
+<pre><code class="language-python">memory = []
+for attempt in range(max_tries):
+    prompt = build_prompt(task, memory)
+    traj, outcome = run_agent(prompt)
+    if outcome.ok: break
+    reflection = model.reflect(traj, outcome)   # &quot;why did this fail?&quot;
+    memory.append(reflection)
+</code></pre>
+<p>The <code>model.reflect</code> call is just a prompted generation: &quot;Here&#39;s what happened and the result. What went wrong, and what should you change?&quot; The output is plain text appended to memory.</p>
+<h2>Practical notes for builders</h2>
+<ul>
+<li><strong>Make reflections specific and actionable.</strong> Vague reflections (&quot;I should try harder&quot;) don&#39;t help. Good ones name the bad action and the fix.</li>
+<li><strong>Bound the memory.</strong> Don&#39;t dump every reflection forever; keep the most recent / most relevant few to avoid context bloat.</li>
+<li><strong>Use a verifier when possible.</strong> Reflection is strongest when the agent <em>knows</em> it failed (a test failed, an answer was wrong) rather than guessing.</li>
+<li><strong>Pair with ReAct</strong> (covered separately): ReAct gives the action loop, Reflexion gives the learning loop on top.</li>
+<li>Watch for <strong>reflection loops</strong> — the agent might reflect endlessly without trying; cap attempts.</li>
+</ul>
+<h2>My take</h2>
+<p>Reflexion is the cheapest &quot;learning&quot; upgrade you can add to an agent, and I treat it as near-default for any multi-step agent that can fail. The principle — <em>turn experience into language and feed it back</em> — is profound: it&#39;s a form of reinforcement learning where the &quot;gradient&quot; is a sentence. If your agent keeps repeating mistakes, stop re-running it blindly; add a reflection step and let it remember. Just keep the reflections tight and the memory bounded, or you&#39;ll trade one failure mode (repeat mistakes) for another (context overflow).</p>
+</div>
+      <div class="a-foot">
+        <a href="/blog/ie-button-a-tag-click-fix/">← IE Quirk: Clicks on &amp;lt;a&amp;gt; Inside &amp;lt;button&amp;gt; Don't Fire</a>
+        <a href="/blog/toolformer-tools/">Toolformer: Language Models That Teach Themselves to Use Tools →</a>
+      </div>
+    </div>
+  </article>
+</main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="copy">© 2026 Jiawei Cui · Built as hand-written static HTML/CSS/JS.</div>
+      <div class="social">
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <a href="/blog/">Blog</a>
+      </div>
+    </div>
+  </footer>
+<script src="/assets/js/main.js"></script>
+</body>
+</html>

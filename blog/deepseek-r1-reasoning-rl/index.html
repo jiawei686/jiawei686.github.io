@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DeepSeek-R1: Reasoning via Reinforcement Learning — Jiawei Cui</title>
+<meta name="description" content="DeepSeekR1 (DeepSeek, 2025, arXiv:2501.12948) is the release that showed the world you can get o1level reasoning from an openweight model — and, more importantly, that…">
+<link rel="icon" href="/public/img/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/style.css">
+<meta property="og:type" content="website">
+<meta property="og:title" content="DeepSeek-R1: Reasoning via Reinforcement Learning — Jiawei Cui">
+<meta property="og:description" content="DeepSeekR1 (DeepSeek, 2025, arXiv:2501.12948) is the release that showed the world you can get o1level reasoning from an openweight model — and, more importantly, that…">
+<meta property="og:url" content="https://cuijiawei.cn/blog/deepseek-r1-reasoning-rl/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="DeepSeek-R1: Reasoning via Reinforcement Learning — Jiawei Cui">
+<meta name="twitter:description" content="DeepSeekR1 (DeepSeek, 2025, arXiv:2501.12948) is the release that showed the world you can get o1level reasoning from an openweight model — and, more importantly, that…">
+<link rel="canonical" href="https://cuijiawei.cn/blog/deepseek-r1-reasoning-rl/">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Person","name":"Jiawei Cui","alternateName":["kiritocui","崔家维","cuijiawei"],"url":"https://cuijiawei.cn/","sameAs":["https://github.com/jiawei686"]}
+</script>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="/"><img src="/public/img/logo.svg" alt="logo"> Jiawei Cui</a>
+      <button class="nav-toggle" id="nav-toggle" aria-label="Menu">☰</button>
+      <div class="nav-links" id="nav-links">
+        <a href="/">Home</a>
+        <a href="/about.html">About</a>
+        <a href="/blog/" class="active">Blog</a>
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <button class="theme-btn" id="theme-btn" aria-label="Toggle theme">☾</button>
+      </div>
+    </div>
+  </nav>
+<main>
+
+  <article class="article">
+    <div class="read">
+      <div class="a-head">
+        <div class="a-meta"><a href="/blog/">Blog</a> · Sun May 03 2026 08:00:00 GMT+0800 (Singapore Standard Time) · <span class="tag">llm</span></div>
+        <h1>DeepSeek-R1: Reasoning via Reinforcement Learning</h1>
+      </div>
+      <div class="content"><p>DeepSeek-R1 (DeepSeek, 2025, arXiv:2501.12948) is the release that showed the world you can get <strong>o1-level reasoning from an open-weight model</strong> — and, more importantly, that you can train reasoning with <strong>reinforcement learning alone</strong>, without hand-labeled reasoning traces. For anyone building with self-hosted models, this was a landmark. I&#39;m writing this because R1&#39;s recipe (pure-RL emergence of long reasoning, then distillation) is now a template people reuse, and the &quot;aha moment&quot; it reported is genuinely instructive.</p>
+<h2>The goal: o1-style &quot;think long, then answer&quot;</h2>
+<p>OpenAI&#39;s o1 had shown that training models to spend more tokens <em>reasoning</em> (internally) before answering dramatically improved hard problems. But o1 was closed. DeepSeek-R1 asked: can we reproduce this with open weights and a transparent method? The answer was yes, and the method was cleaner than expected.</p>
+<h2>The headline result: reasoning emerges from RL alone</h2>
+<p>The most surprising finding came from <strong>R1-Zero</strong>, an experimental model trained <em>only</em> with RL on a base model — <strong>no supervised fine-tuning on reasoning data at all</strong>. Given just a reward signal (correct answers to math/code problems), the model <em>spontaneously</em> learned to produce long chains of thought, self-verify, and allocate more reasoning to harder problems. The paper called the point where the model discovers &quot;let me think longer&quot; on its own the <strong>&quot;aha moment.&quot;</strong></p>
+<p>This matters because it suggests reasoning behavior isn&#39;t something you must distill from a teacher — it can <em>emerge</em> from rewarding correct outcomes. That&#39;s a fundamentally cheaper training story.</p>
+<h2>The actual R1 recipe</h2>
+<p>R1-Zero had a flaw: its reasoning was often unreadable (mixing languages, messy). So the full R1 used a refined pipeline:</p>
+<ol>
+<li><strong>Cold-start SFT:</strong> a small amount of high-quality, readable reasoning data to give the model a clean format to build on.</li>
+<li><strong>Reasoning RL:</strong> RL on reasoning-heavy tasks (math, code, logic) with correctness rewards.</li>
+<li><strong>Rejection sampling + SFT:</strong> generate many reasoning traces, keep the good ones, fine-tune.</li>
+<li><strong>RL for helpfulness &amp; safety:</strong> a final RL stage aligning with general usefulness and safety, not just reasoning.</li>
+</ol>
+<p>The result matched or approached o1 on math (AIME) and code (Codeforces) benchmarks — from an open-weight model.</p>
+<h2>Distillation: small models that reason</h2>
+<p>A pragmatic part of the release: DeepSeek <strong>distilled</strong> R1&#39;s reasoning into smaller models (e.g. 7B, 14B, 32B) by training them on R1&#39;s generated reasoning traces. These distilled small models punched far above their weight — a 7B &quot;R1-distill&quot; could reason better than a much larger non-reasoning model. For local deployment this is huge: you can get real reasoning on a single GPU.</p>
+<h2>Why this resonated with builders</h2>
+<ul>
+<li><strong>Open weights</strong> meant you could self-host o1-class reasoning without a closed API.</li>
+<li><strong>Pure-RL emergence</strong> suggested cheaper training paths for specialist reasoners (math tutor, code agent) — reward correctness, let reasoning surface.</li>
+<li><strong>Distillation</strong> made it runnable on commodity hardware.</li>
+</ul>
+<p>I&#39;ve used R1-distill models locally for math/code assistance and the step-by-step verification quality is noticeably above non-reasoning 7B–14B models.</p>
+<h2>Honest limitations</h2>
+<ul>
+<li>Reasoning models are <strong>slow and token-hungry</strong> — they generate long internal chains, so latency and cost are higher. Not for every query.</li>
+<li>The RL reward must be <strong>verifiable</strong> (math/code have graders; open-ended tasks don&#39;t, which is why R1 focuses there).</li>
+<li>Long chains can still <strong>overthink</strong> simple problems or occasionally ramble.</li>
+<li>&quot;Thinking&quot; is internal; you often want to expose or cap it for UX.</li>
+</ul>
+<h2>My take</h2>
+<p>DeepSeek-R1 is the paper that democratized &quot;slow thinking.&quot; The two takeaways I&#39;d internalize: (1) reasoning can <em>emerge</em> from RL on verifiable rewards — you don&#39;t always need a teacher&#39;s traces — and (2) you can <em>distill</em> that reasoning into small models and run it locally. If you build anything involving math, code, or logic with self-hosted models, R1-distill variants should be on your shortlist. Just budget for the extra latency; reasoning costs tokens, and that&#39;s the price of the accuracy.</p>
+</div>
+      <div class="a-foot">
+        <a href="/blog/rag-retrieval-augmented-generation/">← RAG: Retrieval-Augmented Generation</a>
+        <a href="/blog/chain-of-thought-prompting/">Chain-of-Thought Prompting: Let the Model Think Step by Step →</a>
+      </div>
+    </div>
+  </article>
+</main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="copy">© 2026 Jiawei Cui · Built as hand-written static HTML/CSS/JS.</div>
+      <div class="social">
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <a href="/blog/">Blog</a>
+      </div>
+    </div>
+  </footer>
+<script src="/assets/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Getting Started with iptables — Jiawei Cui</title>
+<meta name="description" content="is the userspace tool for configuring the Linux kernel firewall (netfilter). It looks arcane at first, but it's really just a set of tables, each containing chains of…">
+<link rel="icon" href="/public/img/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/style.css">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Getting Started with iptables — Jiawei Cui">
+<meta property="og:description" content="is the userspace tool for configuring the Linux kernel firewall (netfilter). It looks arcane at first, but it's really just a set of tables, each containing chains of…">
+<meta property="og:url" content="https://cuijiawei.cn/blog/getting-started-with-iptables/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Getting Started with iptables — Jiawei Cui">
+<meta name="twitter:description" content="is the userspace tool for configuring the Linux kernel firewall (netfilter). It looks arcane at first, but it's really just a set of tables, each containing chains of…">
+<link rel="canonical" href="https://cuijiawei.cn/blog/getting-started-with-iptables/">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Person","name":"Jiawei Cui","alternateName":["kiritocui","崔家维","cuijiawei"],"url":"https://cuijiawei.cn/","sameAs":["https://github.com/jiawei686"]}
+</script>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="/"><img src="/public/img/logo.svg" alt="logo"> Jiawei Cui</a>
+      <button class="nav-toggle" id="nav-toggle" aria-label="Menu">☰</button>
+      <div class="nav-links" id="nav-links">
+        <a href="/">Home</a>
+        <a href="/about.html">About</a>
+        <a href="/blog/" class="active">Blog</a>
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <button class="theme-btn" id="theme-btn" aria-label="Toggle theme">☾</button>
+      </div>
+    </div>
+  </nav>
+<main>
+
+  <article class="article">
+    <div class="read">
+      <div class="a-head">
+        <div class="a-meta"><a href="/blog/">Blog</a> · Sat Nov 25 2017 08:00:00 GMT+0800 (Singapore Standard Time) · <span class="tag">engineering</span></div>
+        <h1>Getting Started with iptables</h1>
+      </div>
+      <div class="content"><p><code>iptables</code> is the user-space tool for configuring the Linux kernel firewall (netfilter). It looks arcane at first, but it&#39;s really just a set of <strong>tables</strong>, each containing <strong>chains</strong> of rules that packets traverse in order. Here are the commands I actually reached for when learning it, with the &quot;why&quot; behind each flag.</p>
+<h2>Basic commands</h2>
+<h3>Syntax and listing rules</h3>
+<p>Save the help to a file so you can study it offline:</p>
+<pre><code class="language-shell">sudo iptables -h &gt; ~/iptables_help
+</code></pre>
+<p><code>iptables</code> is organized into <strong>tables</strong>, and each table has <strong>chains</strong>. In most cases you only need the <code>filter</code> and <code>nat</code> tables. List the rules in the <code>filter</code> table with:</p>
+<pre><code class="language-shell">sudo iptables -L -n
+</code></pre>
+<p>Flag breakdown:</p>
+<ul>
+<li><code>-L</code> — list rules.</li>
+<li><code>-n</code> — don&#39;t resolve hostnames (faster, and avoids DNS hangs).</li>
+</ul>
+<p>By default this shows the <code>filter</code> table, which has three built-in chains: <code>INPUT</code>, <code>FORWARD</code>, <code>OUTPUT</code>. With no rules yet, packets pass through untouched.</p>
+<h3>Scenario: block access to a destination</h3>
+<p>With no firewall, <code>ping www.baidu.com</code> succeeds. Suppose as an admin you don&#39;t want this machine to ping a particular server:</p>
+<pre><code class="language-shell">sudo iptables -I OUTPUT -p icmp -d www.baidu.com -j DROP
+</code></pre>
+<p>Flags:</p>
+<ul>
+<li><code>-I</code> — insert the rule at the <strong>top</strong> of the chain.</li>
+<li><code>-p icmp</code> — match the ICMP protocol (what <code>ping</code> uses).</li>
+<li><code>-d</code> — match the destination address.</li>
+<li><code>-j DROP</code> — the target action: silently drop the packet.</li>
+</ul>
+<p><strong>Important:</strong> rules in a chain run top to bottom. A <code>-j REJECT</code> that blocks <em>everything</em> must sit at the <strong>bottom</strong> of the chain, with the &quot;allow&quot; rules above it — otherwise every packet matches the reject first and all connections die. After the rule, <code>iptables -L -n</code> shows the new <code>OUTPUT</code> entries with the DNS-resolved Baidu IPs, and <code>ping</code> now fails:</p>
+<pre><code class="language-shell">ping -c 4 www.baidu.com
+PING www.a.shifen.com (220.181.111.188) 56(84) bytes of data.
+ping: sendmsg: Operation not permitted
+</code></pre>
+<h2>Export, edit, import rules</h2>
+<h3>Export</h3>
+<pre><code class="language-shell">sudo iptables-save &gt; /home/ubuntu/iptables_rules
+</code></pre>
+<h3>Edit</h3>
+<p>Open <code>iptables_rules</code>, and under the <code>:OUTPUT ACCEPT</code> line in the <code>filter</code> table, add:</p>
+<pre><code>-A OUTPUT -p icmp -d 114.114.114.114 -j DROP
+</code></pre>
+<p>Save with <code>Ctrl-S</code>.</p>
+<h3>Import</h3>
+<pre><code class="language-shell">sudo iptables-restore /home/ubuntu/iptables_rules
+</code></pre>
+<p>Verify with <code>iptables -L -n</code> and a <code>ping 114.114.114.114</code>.</p>
+<h2>Advanced scenario: blacklist / whitelist with a custom chain</h2>
+<p>Suppose this machine is a gateway and you want to block two destinations (114.114.114.114 and 220.181.111.188) for the local PC.</p>
+<p>Find the local interface IP:</p>
+<pre><code class="language-shell">sudo ip a show eth0
+</code></pre>
+<p>The address after <code>inet</code> (e.g. <code>10.135.166.86</code>) is your interface IP.</p>
+<p>Build a dedicated <code>BLACKLIST</code> chain:</p>
+<pre><code class="language-shell">sudo iptables -F                       # flush existing rules
+sudo iptables -X                       # delete custom chains
+sudo iptables -N BLACKLIST             # create a new chain
+sudo iptables -A OUTPUT -s 10.135.166.86 -j BLACKLIST   # jump to it for local source
+sudo iptables -A BLACKLIST -d 114.114.114.114 -j DROP
+sudo iptables -A BLACKLIST -d 220.181.111.188 -j DROP
+</code></pre>
+<p>Now local pings to either address fail. To block a new destination later, just append a rule to <code>BLACKLIST</code>. To restrict a <em>different</em> PC going through this gateway, add a source-IP match in <code>OUTPUT</code> that jumps to <code>BLACKLIST</code>.</p>
+<h2>Advanced scenario: port forwarding</h2>
+<p>Normally you&#39;d configure the app to listen on multiple ports or put a load balancer in front, but for a quick test you can forward port 8080 to 80 with <code>iptables</code>.</p>
+<p>First confirm both are closed:</p>
+<pre><code class="language-shell">telnet 0 80
+telnet 0 8080
+</code></pre>
+<p>Listen on 80 with <code>netcat</code>:</p>
+<pre><code class="language-shell">sudo nc -k -l 80 &amp;
+</code></pre>
+<p>Now <code>telnet 0 80</code> works. (To exit <code>telnet</code>: press <code>Ctrl + ]</code>, then <code>q</code> + Enter.)</p>
+<p>Forward 8080 → 80 on localhost:</p>
+<pre><code class="language-shell">sudo iptables -t nat -A OUTPUT -p tcp -d 127.0.0.1 --dport 8080 -j DNAT --to 127.0.0.1:80
+</code></pre>
+<p>Here <code>-t nat</code> selects the NAT table, and <code>-j DNAT</code> rewrites the destination to port 80. Now <code>telnet 0 8080</code> also works.</p>
+<p>For external traffic (not localhost), use <code>PREROUTING</code> instead:</p>
+<pre><code class="language-shell">sudo iptables -t nat -A PREROUTING -p tcp --dport 8080 -j REDIRECT --to-ports 80
+</code></pre>
+<h2>My take</h2>
+<p>The single most important thing to internalize is <strong>order matters</strong>. A chain is just a for-loop over rules, and the first match wins — so &quot;allow&quot; rules must precede any catch-all &quot;reject.&quot; The second lesson is that <code>iptables</code> is really two tools: the <code>filter</code> table (allow/deny) and the <code>nat</code> table (rewrite addresses/ports). Once you stop seeing it as one big firewall and start seeing it as &quot;tables of ordered chains with targets,&quot; it stops being scary. For anything persistent, always <code>iptables-save</code> to a file and load it on boot — rules typed at the prompt vanish on reboot.</p>
+</div>
+      <div class="a-foot">
+        <a href="/blog/lora-low-rank-adaptation/">← LoRA: Low-Rank Adaptation of Large Models</a>
+        <a href="/blog/softmax/">Softmax: Turning Logits into Probabilities →</a>
+      </div>
+    </div>
+  </article>
+</main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="copy">© 2026 Jiawei Cui · Built as hand-written static HTML/CSS/JS.</div>
+      <div class="social">
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <a href="/blog/">Blog</a>
+      </div>
+    </div>
+  </footer>
+<script src="/assets/js/main.js"></script>
+</body>
+</html>

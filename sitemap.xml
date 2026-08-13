@@ -1,29 +1,48 @@
----
-layout: null
-sitemap: false
----
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>{{ site.seo_url }}/</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  {% for post in site.posts %}
-  <url>
-    <loc>{{ site.seo_url }}{{ post.url }}</loc>
-    <lastmod>{{ post.date | date_to_xmlschema }}</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  {% endfor %}
-  {% for p in site.pages %}
-    {% if p.layout == 'page' and p.title and p.url != '/sitemap.xml' %}
-  <url>
-    <loc>{{ site.seo_url }}{{ p.url }}</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-    {% endif %}
-  {% endfor %}
+  <url><loc>https://cuijiawei.cn/</loc></url>
+  <url><loc>https://cuijiawei.cn/about.html</loc></url>
+  <url><loc>https://cuijiawei.cn/blog/</loc></url>
+  <url><loc>https://cuijiawei.cn/blog/intro-to-deep-learning/</loc></url>
+  <url><loc>https://cuijiawei.cn/blog/chinchilla/</loc></url>
+  <url><loc>https://cuijiawei.cn/blog/dpo/</loc></url>
+  <url><loc>https://cuijiawei.cn/blog/connection-oriented-transport-tcp/</loc></url>
+  <url><loc>https://cuijiawei.cn/blog/advanced-javascript-exercises/</loc></url>
+  <url><loc>https://cuijiawei.cn/blog/constitutional-ai/</loc></url>
+  <url><loc>https://cuijiawei.cn/blog/computer-vision/</loc></url>
+  <url><loc>https://cuijiawei.cn/blog/ie-button-a-tag-click-fix/</loc></url>
+  <url><loc>https://cuijiawei.cn/blog/reflexion-verbal-rl/</loc></url>
+  <url><loc>https://cuijiawei.cn/blog/toolformer-tools/</loc></url>
+  <url><loc>https://cuijiawei.cn/blog/react-reasoning-acting/</loc></url>
+  <url><loc>https://cuijiawei.cn/blog/rag-retrieval-augmented-generation/</loc></url>
+  <url><loc>https://cuijiawei.cn/blog/deepseek-r1-reasoning-rl/</loc></url>
+  <url><loc>https://cuijiawei.cn/blog/chain-of-thought-prompting/</loc></url>
+  <url><loc>https://cuijiawei.cn/blog/instructgpt-rlhf-alignment/</loc></url>
+  <url><loc>https://cuijiawei.cn/blog/gpt-3-few-shot-learners/</loc></url>
+  <url><loc>https://cuijiawei.cn/blog/bert-bidirectional-pretraining/</loc></url>
+  <url><loc>https://cuijiawei.cn/blog/the-transformer-attention-is-all-you-need/</loc></url>
+  <url><loc>https://cuijiawei.cn/blog/scaling-laws/</loc></url>
+  <url><loc>https://cuijiawei.cn/blog/tree-of-thoughts/</loc></url>
+  <url><loc>https://cuijiawei.cn/blog/autogen-multi-agent/</loc></url>
+  <url><loc>https://cuijiawei.cn/blog/generative-agents/</loc></url>
+  <url><loc>https://cuijiawei.cn/blog/rlhf-from-human-preferences/</loc></url>
+  <url><loc>https://cuijiawei.cn/blog/machine-learning-explainability/</loc></url>
+  <url><loc>https://cuijiawei.cn/blog/mixtral-mixture-of-experts/</loc></url>
+  <url><loc>https://cuijiawei.cn/blog/llama-open-weights-revolution/</loc></url>
+  <url><loc>https://cuijiawei.cn/blog/flashattention-efficient-attention/</loc></url>
+  <url><loc>https://cuijiawei.cn/blog/lora-low-rank-adaptation/</loc></url>
+  <url><loc>https://cuijiawei.cn/blog/getting-started-with-iptables/</loc></url>
+  <url><loc>https://cuijiawei.cn/blog/softmax/</loc></url>
+  <url><loc>https://cuijiawei.cn/blog/clip/</loc></url>
+  <url><loc>https://cuijiawei.cn/blog/wechat-dev-mcp/</loc></url>
+  <url><loc>https://cuijiawei.cn/blog/advanced-sql/</loc></url>
+  <url><loc>https://cuijiawei.cn/blog/intro-to-game-ai-and-reinforcement-learning/</loc></url>
+  <url><loc>https://cuijiawei.cn/blog/principles-of-economics/</loc></url>
+  <url><loc>https://cuijiawei.cn/blog/self-consistency/</loc></url>
+  <url><loc>https://cuijiawei.cn/blog/rope/</loc></url>
+  <url><loc>https://cuijiawei.cn/blog/geospatial-analysis/</loc></url>
+  <url><loc>https://cuijiawei.cn/blog/linux-mail-server-postfix-dovecot/</loc></url>
+  <url><loc>https://cuijiawei.cn/blog/complete-raspberry-pi-openclaw-deployment-guide/</loc></url>
+  <url><loc>https://cuijiawei.cn/blog/introducing-homeware-sense-skill-unified-smart-home-integration-for-openclaw-ai/</loc></url>
+  <url><loc>https://cuijiawei.cn/blog/kaggle-data-science-practical-notes/</loc></url>
 </urlset>

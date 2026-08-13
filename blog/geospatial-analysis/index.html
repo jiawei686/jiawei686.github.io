@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Geospatial Analysis — Jiawei Cui</title>
+<meta name="description" content="Geospatial analysis is working with data that has a location — coordinates, regions, routes. It shows up everywhere once you notice it: delivery zones, disease spread,…">
+<link rel="icon" href="/public/img/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/style.css">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Geospatial Analysis — Jiawei Cui">
+<meta property="og:description" content="Geospatial analysis is working with data that has a location — coordinates, regions, routes. It shows up everywhere once you notice it: delivery zones, disease spread,…">
+<meta property="og:url" content="https://cuijiawei.cn/blog/geospatial-analysis/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Geospatial Analysis — Jiawei Cui">
+<meta name="twitter:description" content="Geospatial analysis is working with data that has a location — coordinates, regions, routes. It shows up everywhere once you notice it: delivery zones, disease spread,…">
+<link rel="canonical" href="https://cuijiawei.cn/blog/geospatial-analysis/">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Person","name":"Jiawei Cui","alternateName":["kiritocui","崔家维","cuijiawei"],"url":"https://cuijiawei.cn/","sameAs":["https://github.com/jiawei686"]}
+</script>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="/"><img src="/public/img/logo.svg" alt="logo"> Jiawei Cui</a>
+      <button class="nav-toggle" id="nav-toggle" aria-label="Menu">☰</button>
+      <div class="nav-links" id="nav-links">
+        <a href="/">Home</a>
+        <a href="/about.html">About</a>
+        <a href="/blog/" class="active">Blog</a>
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <button class="theme-btn" id="theme-btn" aria-label="Toggle theme">☾</button>
+      </div>
+    </div>
+  </nav>
+<main>
+
+  <article class="article">
+    <div class="read">
+      <div class="a-head">
+        <div class="a-meta"><a href="/blog/">Blog</a> · Fri Jan 02 2026 08:00:00 GMT+0800 (Singapore Standard Time) · <span class="tag">data</span></div>
+        <h1>Geospatial Analysis</h1>
+      </div>
+      <div class="content"><p>Geospatial analysis is working with data that has a <em>location</em> — coordinates, regions, routes. It shows up everywhere once you notice it: delivery zones, disease spread, urban planning, ride-sharing, environmental monitoring, even &quot;which store is nearest.&quot; I&#39;m writing this as a practical intro because location data has gotchas (coordinate systems!) that bite newcomers, and a standard Python toolkit that makes the hard parts routine.</p>
+<h2>The first gotcha: coordinate reference systems (CRS)</h2>
+<p>The single most common geospatial bug is mixing coordinate systems. A &quot;point&quot; is meaningless without knowing <em>what framework</em> its numbers refer to.</p>
+<ul>
+<li><strong>Latitude/longitude (EPSG:4326):</strong> degrees on the globe. What you see on Google Maps. Good for storage, bad for measuring distances (a degree of longitude is a different distance near the poles vs. the equator).</li>
+<li><strong>Projected systems (e.g. Web Mercator EPSG:3857, or local UTM zones):</strong> flat x/y in meters. Needed for accurate distances, areas, and overlaps.</li>
+</ul>
+<p>Rule I follow: <strong>store in lat/long, project to a metric CRS for any calculation.</strong> Forgetting this gives distances that are off by orders of magnitude.</p>
+<h2>Core operations</h2>
+<ul>
+<li><strong>Spatial join:</strong> attach attributes from one layer to another by location (&quot;which neighborhood is each crime report in?&quot;). This is the geospatial analog of a SQL join, but on geometry instead of a key.</li>
+<li><strong>Buffering:</strong> &quot;everything within 500m of a river&quot; = buffer the river line by 500m, then intersect.</li>
+<li><strong>Overlay/intersection:</strong> combine polygons (zip code × flood zone) to find areas in both.</li>
+<li><strong>Distance &amp; nearest neighbor:</strong> route planning, facility location, &quot;nearest clinic.&quot;</li>
+</ul>
+<h2>The Python stack</h2>
+<ul>
+<li><strong>GeoPandas:</strong> pandas with geometry columns. Does spatial joins, buffers, overlays, CRS handling. The daily-driver.</li>
+<li><strong>Shapely:</strong> the geometry engine underneath — points, lines, polygons, and their predicates (intersects, contains, distance).</li>
+<li><strong>Folium / Plotly / Kepler.gl:</strong> interactive map visualization. Folium (Leaflet-based) is my quick default.</li>
+<li><strong>OSMnx:</strong> pull real street networks from OpenStreetMap and analyze them (great for network/graph problems).</li>
+<li><strong>PyProj / rasterio:</strong> CRS transforms and raster (image-like grid) data respectively.</li>
+</ul>
+<p>A typical workflow: load shapefiles/GeoJSON with GeoPandas → set/check CRS → do spatial joins/buffers → visualize with Folium. Most &quot;hard&quot; problems reduce to picking the right operation and a correct CRS.</p>
+<h2>Practical pitfalls</h2>
+<ul>
+<li><strong>CRS mismatch</strong> between layers → silently wrong results. Always check <code>.crs</code> on every layer before joining.</li>
+<li><strong>Performance:</strong> spatial operations are <code>O(n²)</code> if naive; GeoPandas uses spatial indexes (RTree) — make sure they&#39;re built (<code>sindex</code>).</li>
+<li><strong>Precision vs. reality:</strong> a &quot;nearest hospital&quot; calculation ignores road networks unless you use network distance (OSMnx), so straight-line distance can mislead.</li>
+<li><strong>Data size:</strong> large geometries are memory-heavy; simplify polygons (<code>.simplify()</code>) when visuals don&#39;t need full detail.</li>
+</ul>
+<h2>A minimal example</h2>
+<pre><code class="language-python">import geopandas as gpd
+
+points = gpd.read_file(&quot;incidents.geojson&quot;).to_crs(3857)   # metric
+zones  = gpd.read_file(&quot;districts.geojson&quot;).to_crs(3857)
+joined = gpd.sjoin(points, zones, how=&quot;left&quot;, predicate=&quot;within&quot;)
+counts = joined.groupby(&quot;district&quot;).size()
+</code></pre>
+<p>That <code>to_crs(3857)</code> on both layers is the step people skip and then wonder why the join returns nothing.</p>
+<h2>My take</h2>
+<p>Geospatial work is 20% clever algorithms and 80% <em>getting coordinate systems and joins right</em>. The toolkit (GeoPandas/Shapely) is mature and pleasant; the craft is knowing which spatial operation matches your question and respecting the CRS. If you&#39;re starting out, internalize &quot;store lat/long, compute in a metric projection, always verify CRS before a spatial join&quot; and you&#39;ll avoid the mistakes that cost most of the debugging time. Location data is everywhere — once these basics click, a huge class of &quot;where&quot; questions becomes straightforward.</p>
+</div>
+      <div class="a-foot">
+        <a href="/blog/rope/">← RoPE: Rotary Position Embedding</a>
+        <a href="/blog/linux-mail-server-postfix-dovecot/">Building a Linux Mail Server with Postfix and Dovecot →</a>
+      </div>
+    </div>
+  </article>
+</main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="copy">© 2026 Jiawei Cui · Built as hand-written static HTML/CSS/JS.</div>
+      <div class="social">
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <a href="/blog/">Blog</a>
+      </div>
+    </div>
+  </footer>
+<script src="/assets/js/main.js"></script>
+</body>
+</html>

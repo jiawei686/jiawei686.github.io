@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BERT: Bidirectional Pretraining from Transformers — Jiawei Cui</title>
+<meta name="description" content="BERT (Devlin et al., 2018) is the model that made &quot;pretrain on a huge corpus, then finetune on your task&quot; the default playbook for NLP — and for a few years, almost…">
+<link rel="icon" href="/public/img/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/style.css">
+<meta property="og:type" content="website">
+<meta property="og:title" content="BERT: Bidirectional Pretraining from Transformers — Jiawei Cui">
+<meta property="og:description" content="BERT (Devlin et al., 2018) is the model that made &quot;pretrain on a huge corpus, then finetune on your task&quot; the default playbook for NLP — and for a few years, almost…">
+<meta property="og:url" content="https://cuijiawei.cn/blog/bert-bidirectional-pretraining/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="BERT: Bidirectional Pretraining from Transformers — Jiawei Cui">
+<meta name="twitter:description" content="BERT (Devlin et al., 2018) is the model that made &quot;pretrain on a huge corpus, then finetune on your task&quot; the default playbook for NLP — and for a few years, almost…">
+<link rel="canonical" href="https://cuijiawei.cn/blog/bert-bidirectional-pretraining/">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Person","name":"Jiawei Cui","alternateName":["kiritocui","崔家维","cuijiawei"],"url":"https://cuijiawei.cn/","sameAs":["https://github.com/jiawei686"]}
+</script>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="/"><img src="/public/img/logo.svg" alt="logo"> Jiawei Cui</a>
+      <button class="nav-toggle" id="nav-toggle" aria-label="Menu">☰</button>
+      <div class="nav-links" id="nav-links">
+        <a href="/">Home</a>
+        <a href="/about.html">About</a>
+        <a href="/blog/" class="active">Blog</a>
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <button class="theme-btn" id="theme-btn" aria-label="Toggle theme">☾</button>
+      </div>
+    </div>
+  </nav>
+<main>
+
+  <article class="article">
+    <div class="read">
+      <div class="a-head">
+        <div class="a-meta"><a href="/blog/">Blog</a> · Sun Mar 08 2026 08:00:00 GMT+0800 (Singapore Standard Time) · <span class="tag">llm</span></div>
+        <h1>BERT: Bidirectional Pretraining from Transformers</h1>
+      </div>
+      <div class="content"><p>BERT (Devlin et al., 2018) is the model that made &quot;pretrain on a huge corpus, then fine-tune on your task&quot; the default playbook for NLP — and for a few years, almost every production NLP system ran on a BERT variant. Even though decoder-only models (GPT-class) now dominate chat, BERT is still the right tool for classification, retrieval, and any task where you need to <em>read and label</em> text rather than <em>generate</em> it. I&#39;m writing this because understanding BERT&#39;s training objective explains a design fork the whole field took.</p>
+<h2>The problem with left-to-right language modeling</h2>
+<p>GPT-style models predict the next token from the left context only. That&#39;s a problem for understanding tasks. If I ask a model &quot;The man went to the [MASK] to buy milk,&quot; and it has only seen the left side, it can guess &quot;store.&quot; But if the sentence were &quot;The man went to the store to buy [MASK],&quot; left-to-right modeling still can&#39;t use the right context (&quot;milk&quot;) to know the answer is probably a dairy product. Humans use both sides.</p>
+<p>BERT&#39;s breakthrough: <strong>train on both directions at once</strong> via masked language modeling.</p>
+<h2>Masked Language Modeling (MLM)</h2>
+<p>During pretraining, BERT randomly masks ~15% of tokens and asks the model to reconstruct them:</p>
+<pre><code>Input:  the man went to the [MASK] to buy [MASK]
+Target:                 store                milk
+</code></pre>
+<p>But a naive 15%-mask-all-with-[MASK] has a train/inference mismatch: at test time (fine-tuning) there are no <code>[MASK]</code> tokens. BERT handles this with a small trick on the 15% chosen positions:</p>
+<ul>
+<li>80% replaced with <code>[MASK]</code></li>
+<li>10% replaced with a random token (noise, forces the model to use context)</li>
+<li>10% left unchanged (so the model still learns to represent real tokens)</li>
+</ul>
+<p>This keeps the model from over-relying on the mask signal. I&#39;ve found this 80/10/10 split is one of those details people skip when reimplementing and then wonder why fine-tuning is unstable.</p>
+<h2>Next Sentence Prediction (NSP)</h2>
+<p>The second objective: given two segments <code>A</code> and <code>B</code>, predict whether <code>B</code> actually follows <code>A</code>. This was meant to help tasks like question answering and natural language inference. Later work (RoBERTa) showed NSP wasn&#39;t pulling its weight and often hurt; most modern encoders dropped it. Worth knowing because you&#39;ll see &quot;with NSP&quot; vs &quot;without NSP&quot; variants in the wild.</p>
+<h2>Why bidirectional changes everything</h2>
+<p>Because BERT sees both sides of every token, its contextual embeddings are dramatically richer for <em>understanding</em>. A single BERT pass gives you a vector for each word that already &quot;knows&quot; its disambiguated meaning. That&#39;s why, for years, the recipe for any NLP product was: take <code>bert-base</code>, append a small task head (a classifier layer, a span extractor), fine-tune on a few hundred labeled examples, ship it. No more training LSTMs from scratch.</p>
+<h2>BERT vs. GPT: the fork</h2>
+<ul>
+<li><strong>BERT (encoder-only):</strong> reads all input at once, outputs a representation. Great for labeling/classification/retrieval. Cannot naturally generate free-form text.</li>
+<li><strong>GPT (decoder-only):</strong> generates left-to-right. Great for generation, dialogue, and now reasoning.</li>
+<li><strong>T5/BART (encoder-decoder):</strong> both, good for translation and summarization.</li>
+</ul>
+<p>The field ultimately bet on decoder-only for foundational models (scale + generation won), but BERT-style encoders are far from dead — they power search ranking, spam filters, and embedding models.</p>
+<h2>Practical notes from deployment</h2>
+<ul>
+<li><strong>Use the <code>[CLS]</code> token&#39;s output</strong> for sentence-level classification; use token outputs for tagging/NER.</li>
+<li>Base vs. large: <code>bert-base</code> (~110M params) is usually enough; <code>large</code> helps on competitive benchmarks but costs more at inference.</li>
+<li>Fine-tuning is cheap. On a single GPU you can adapt BERT to a new classification task in minutes. I&#39;ve shipped internal classifiers this way when a quick labeled set existed.</li>
+<li>For retrieval/embeddings, prefer a <em>purpose-trained</em> embedding model (e.g. a sentence-transformer) over raw BERT pooled output — BERT wasn&#39;t optimized for that and the pooling choice matters a lot.</li>
+</ul>
+<h2>My take</h2>
+<p>BERT is the paper that proved &quot;transfer learning works for language&quot; at scale, and it deserves credit for the pretrain/fine-tune paradigm that GPT later rode to dominance. If your task is <em>understanding</em> text (classify it, find entities, rank it, embed it), don&#39;t sleep on encoder models — a well-tuned BERT-class encoder is often faster, cheaper, and more accurate than prompting a giant decoder model. Use the right tool; &quot;bigger and generative&quot; is not always better.</p>
+</div>
+      <div class="a-foot">
+        <a href="/blog/gpt-3-few-shot-learners/">← GPT-3 and Few-Shot Learning at Scale</a>
+        <a href="/blog/the-transformer-attention-is-all-you-need/">The Transformer: Attention Is All You Need →</a>
+      </div>
+    </div>
+  </article>
+</main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="copy">© 2026 Jiawei Cui · Built as hand-written static HTML/CSS/JS.</div>
+      <div class="social">
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <a href="/blog/">Blog</a>
+      </div>
+    </div>
+  </footer>
+<script src="/assets/js/main.js"></script>
+</body>
+</html>

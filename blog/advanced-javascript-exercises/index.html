@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Advanced JavaScript - Exercises and Gotchas — Jiawei Cui</title>
+<meta name="description" content="A while back I worked through a set of JavaScript exercises designed to expose the parts of the language people gloss over: function binding, named vs. anonymous…">
+<link rel="icon" href="/public/img/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/style.css">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Advanced JavaScript - Exercises and Gotchas — Jiawei Cui">
+<meta property="og:description" content="A while back I worked through a set of JavaScript exercises designed to expose the parts of the language people gloss over: function binding, named vs. anonymous…">
+<meta property="og:url" content="https://cuijiawei.cn/blog/advanced-javascript-exercises/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Advanced JavaScript - Exercises and Gotchas — Jiawei Cui">
+<meta name="twitter:description" content="A while back I worked through a set of JavaScript exercises designed to expose the parts of the language people gloss over: function binding, named vs. anonymous…">
+<link rel="canonical" href="https://cuijiawei.cn/blog/advanced-javascript-exercises/">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Person","name":"Jiawei Cui","alternateName":["kiritocui","崔家维","cuijiawei"],"url":"https://cuijiawei.cn/","sameAs":["https://github.com/jiawei686"]}
+</script>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="/"><img src="/public/img/logo.svg" alt="logo"> Jiawei Cui</a>
+      <button class="nav-toggle" id="nav-toggle" aria-label="Menu">☰</button>
+      <div class="nav-links" id="nav-links">
+        <a href="/">Home</a>
+        <a href="/about.html">About</a>
+        <a href="/blog/" class="active">Blog</a>
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <button class="theme-btn" id="theme-btn" aria-label="Toggle theme">☾</button>
+      </div>
+    </div>
+  </nav>
+<main>
+
+  <article class="article">
+    <div class="read">
+      <div class="a-head">
+        <div class="a-meta"><a href="/blog/">Blog</a> · Thu Mar 16 2017 08:00:00 GMT+0800 (Singapore Standard Time) · <span class="tag">engineering</span></div>
+        <h1>Advanced JavaScript - Exercises and Gotchas</h1>
+      </div>
+      <div class="content"><p>A while back I worked through a set of JavaScript exercises designed to expose the parts of the language people gloss over: function binding, named vs. anonymous functions, method references, memoization, and the classic chained-assignment puzzle. They look trivial, but each one hides a real behavior you&#39;ll hit in production. Here are my notes, with the &quot;why&quot; spelled out.</p>
+<h2>1. Reimplementing <code>Function.prototype.bind</code></h2>
+<p>The goal was to understand this snippet (the <code>bind</code> polyfill from early Prototype.js):</p>
+<pre><code class="language-javascript">Function.prototype.bind = function(){
+  var fn = this, args = Array.prototype.slice.call(arguments), object = args.shift();
+  return function(){
+    return fn.apply(object,
+      args.concat(Array.prototype.slice.call(arguments)));
+  };
+};
+</code></pre>
+<p>To read it you need three basics:</p>
+<ul>
+<li><code>slice(start, end)</code> returns a subarray. With no arguments it clones the whole array.</li>
+<li><code>shift()</code> removes and returns the <strong>first</strong> element.</li>
+<li><code>concat()</code> joins two arrays.</li>
+</ul>
+<p>The subtle part is <code>call</code> vs. <code>apply</code>. They do the same thing — bind a function to a <code>this</code> object — the only difference is how you pass arguments: <code>call</code> takes them individually, <code>apply</code> takes an array.</p>
+<pre><code class="language-javascript">func.call(this, arg1, arg2);
+func.apply(this, [arg1, arg2]);
+</code></pre>
+<p>In the polyfill, <code>arguments</code> is <strong>not</strong> a real array, so it has no <code>slice</code> method. The trick <code>Array.prototype.slice.call(arguments)</code> borrows <code>slice</code> from <code>Array.prototype</code> and runs it against <code>arguments</code>. The later <code>concat</code> folds in any arguments that were bound up front. Once you see that, the whole function reads cleanly.</p>
+<h2>2. Named vs. anonymous functions</h2>
+<p><strong>#11 — a function with a name:</strong></p>
+<pre><code class="language-javascript">var ninja = function myNinja(){
+  assert( ninja == myNinja, &quot;This function is named two things - at once!&quot; );
+};
+ninja();
+assert( typeof myNinja == &quot;undefined&quot;, &quot;But myNinja isn&#39;t defined outside of the function.&quot; );
+log( ninja );
+</code></pre>
+<p>Output:</p>
+<pre><code>PASS This function is named two things - at once!
+PASS But myNinja isn&#39;t defined outside of the function.
+LOG function myNinja(){ ... }
+</code></pre>
+<p>The takeaway: a named function expression keeps its name <strong>inside</strong> itself but is invisible outside. An anonymous function is <code>undefined</code> when referenced by name from the outside.</p>
+<p><strong>#12 — a method on an object:</strong></p>
+<pre><code class="language-javascript">var ninja = {
+  yell: function(n){
+    return n &gt; 0 ? ninja.yell(n-1) + &quot;a&quot; : &quot;hiy&quot;;
+  }
+};
+assert( ninja.yell(4) == &quot;hiyaaaa&quot;, &quot;A single object isn&#39;t too bad, either.&quot; );
+</code></pre>
+<p>Even though <code>yell</code> is defined inside <code>ninja</code>, you can still call it from outside via <code>ninja.yell(...)</code>.</p>
+<h2>3. The danger of referencing <code>this</code> by name</h2>
+<p><strong>#13 — what happens when you delete the original object?</strong></p>
+<pre><code class="language-javascript">var ninja = {
+  yell: function(n){
+    return n &gt; 0 ? ninja.yell(n-1) + &quot;a&quot; : &quot;hiy&quot;;
+  }
+};
+assert( ninja.yell(4) == &quot;hiyaaaa&quot;, &quot;A single object isn&#39;t too bad, either.&quot; );
+
+var samurai = { yell: ninja.yell };
+var ninja = null;
+
+try {
+  samurai.yell(4);
+} catch(e){
+  assert( false, &quot;Uh, this isn&#39;t good! Where&#39;d ninja.yell go?&quot; );
+}
+</code></pre>
+<p>Output:</p>
+<pre><code>PASS A single object isn&#39;t too bad, either.
+FAIL Uh, this isn&#39;t good! Where&#39;d ninja.yell go?
+</code></pre>
+<p>Object assignment copies a <strong>reference</strong>, not the function. When <code>ninja</code> becomes <code>null</code>, the <code>ninja.yell</code> inside the method points at nothing.</p>
+<p><strong>#14 — give the inner function a name and it fixes itself:</strong></p>
+<pre><code class="language-javascript">var ninja = {
+  yell: function yell(n){
+    return n &gt; 0 ? yell(n-1) + &quot;a&quot; : &quot;hiy&quot;;
+  }
+};
+assert( ninja.yell(4) == &quot;hiyaaaa&quot;, &quot;Works as we would expect it to!&quot; );
+
+var samurai = { yell: ninja.yell };
+var ninja = {};
+assert( samurai.yell(4) == &quot;hiyaaaa&quot;, &quot;The method correctly calls itself.&quot; );
+</code></pre>
+<p>Naming the function lets it recurse via its own name instead of <code>ninja.yell(n-1)</code>. If you&#39;d rather stay anonymous, <code>arguments.callee(n-1)</code> achieves the same (though <code>arguments.callee</code> is deprecated in strict mode).</p>
+<h2>4. Memoization (caching function results)</h2>
+<p><strong>#19 — caching via a static property:</strong></p>
+<pre><code class="language-javascript">function getElements( name ) {
+  var results;
+  if ( getElements.cache[name] ) {
+    results = getElements.cache[name];
+  } else {
+    results = document.getElementsByTagName(name);
+    getElements.cache[name] = results;
+  }
+  return results;
+}
+getElements.cache = {};
+</code></pre>
+<p>Simple and effective: attach a <code>cache</code> object to the function itself.</p>
+<p><strong>#20 — the interview puzzle:</strong> cache the result of <code>isPrime</code>. The catch is the chained assignment <code>a.x = a = {n:2}</code> in the setup. The short version: JavaScript resolves <strong>all</strong> the assignment targets&#39; references first, then points them all at the rightmost value. So <code>a</code> ends up as <code>{n:2}</code> with no <code>x</code> property, while <code>b</code> (which still referenced the old object) ends up with <code>x</code> pointing at <code>{n:2}</code>. The answers (<code>a.x === undefined</code>, <code>b.x === {n:2}</code>) fall out of that.</p>
+<p>The real lesson of the exercise, though, is memoization:</p>
+<pre><code class="language-javascript">function isPrime( num ) {
+  if(isPrime.cache[num]) return isPrime.cache[num];
+  else {
+      var prime = num != 1; // Everything but 1 can be prime
+      for ( var i = 2; i &lt; num; i++ ) {
+        if ( num % i == 0 ) {
+          prime = false;
+          break;
+        }
+      }
+      isPrime.cache[num] = prime;
+      return prime;
+  }
+}
+isPrime.cache = {};
+</code></pre>
+<h2>5. Looping with a callback</h2>
+<p><strong>#27 — implement the body so the callback receives the value and the array as <code>this</code>:</strong></p>
+<pre><code class="language-javascript">function loop(array, fn){
+  for ( var i = 0; i &lt; array.length; i++ )
+    fn.call( array, array[i], i );
+}
+var num = 0;
+loop([0, 1, 2], function(value, i){
+  assert(value == num++, &quot;Make sure the contents are as we expect it.&quot;);
+  assert(this instanceof Array, &quot;The context should be the full array.&quot;);
+});
+</code></pre>
+<p>The trick is <code>fn.call(array, ...)</code> so that <code>this</code> inside the callback is the whole array, exactly as the assertion expects.</p>
+<h2>My take</h2>
+<p>None of these are &quot;hard&quot; in isolation, but they&#39;re the kind of thing that separates someone who has <em>read</em> about closures and <code>this</code> from someone who has <em>been bitten</em> by them. The two I see most in real code reviews: (1) recursively referencing an object by variable name instead of using a named function / <code>arguments.callee</code>, and (2) forgetting that <code>this</code> inside a callback is whatever you bound it to — which is exactly why <code>fn.call(array, ...)</code> matters. If you internalize these six exercises, you&#39;ll debug a surprising number of &quot;why is this undefined?&quot; bugs in seconds.</p>
+<p><em>This page is original content; please cite the source if you repost.</em></p>
+</div>
+      <div class="a-foot">
+        <a href="/blog/connection-oriented-transport-tcp/">← Connection-Oriented Transport - TCP</a>
+        <a href="/blog/constitutional-ai/">Constitutional AI: Harmlessness from AI Feedback →</a>
+      </div>
+    </div>
+  </article>
+</main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="copy">© 2026 Jiawei Cui · Built as hand-written static HTML/CSS/JS.</div>
+      <div class="social">
+        <a href="https://github.com/jiawei686" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:892001108@qq.com">Email</a>
+        <a href="/blog/">Blog</a>
+      </div>
+    </div>
+  </footer>
+<script src="/assets/js/main.js"></script>
+</body>
+</html>
