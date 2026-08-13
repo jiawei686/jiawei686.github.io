@@ -3,8 +3,6 @@ title: About
 description: Jiawei Cui — software engineer turned AI researcher, NTU MSDS, ex-Tencent, building toward a PhD in AI.
 ---
 
-I'm **Jiawei Cui**, a software engineer in Shenzhen. Five years at Tencent building front-end systems (incl. the open-source Cherry Markdown editor); now focused on AI/ML — training models and studying LLM papers. This site is where I think in public.
-
 ## Education
 
 <div class="cv">
@@ -83,6 +81,10 @@ I'm **Jiawei Cui**, a software engineer in Shenzhen. Five years at Tencent build
 
 - GRE 329 (Quant 170) · TOEFL 108
 
+<div class="now-box">
+
 ## What I'm doing now
 
-Studying LLM architecture, training, and alignment in depth, and preparing for a PhD in AI / CS in the US. If you're working on similar things, I'd love to [get in touch](/about.html#contact).
+Studying LLM architecture, training, and alignment in depth, and preparing for a PhD in AI / CS in the US. If you're working on similar things, I'd love to [get in touch](/#contact).
+
+</div>

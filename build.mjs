@@ -101,8 +101,7 @@ function nav(active) {
       <a class="brand" href="/"><img src="/public/img/logo.svg" alt="logo"> Jiawei Cui</a>
       <button class="nav-toggle" id="nav-toggle" aria-label="Menu">☰</button>
       <div class="nav-links" id="nav-links">
-        ${link("/", "Home", "home")}
-        ${link("/about.html", "About", "about")}
+        ${link("/", "About", "home")}
         ${link("/blog/", "Blog", "blog")}
         <a href="https://github.com/${SITE.github}" target="_blank" rel="noopener">GitHub</a>
         <a href="mailto:${SITE.email}">Email</a>
@@ -163,8 +162,16 @@ ${footer()}
 }
 
 // ---------- pages ----------
-function homePage(posts) {
-  const recent = posts.slice(0, 6);
+function aboutContent() {
+  const raw = fs.readFileSync(path.join(SRC, "about.md"), "utf8");
+  const { content } = matter(raw);
+  return marked.parse(content);
+}
+
+// The homepage IS the About page (self-intro hero + CV + recent notes + contact).
+function indexPage(posts) {
+  const about = aboutContent();
+  const recent = posts.slice(0, 5);
   const recentRows = recent
     .map(
       (p) =>
@@ -190,82 +197,16 @@ function homePage(posts) {
     </div>
   </section>
 
-  <section class="section">
-    <div class="container">
-      <div class="eyebrow">What I do</div>
-      <h2>Three lanes, one trajectory</h2>
-      <p class="sub">Engineering got me here; research is where I'm headed.</p>
-      <div class="cards">
-        <div class="card">
-          <h3>AI &amp; ML Research</h3>
-          <p>Reading the papers behind modern LLMs — transformers, RLHF, mixture-of-experts — and turning them into intuition I can actually use.</p>
-        </div>
-        <div class="card">
-          <h3>Engineering</h3>
-          <p>A decade of shipping software: front-end systems at Tencent, open-source tooling, and pragmatic infrastructure that stays up.</p>
-        </div>
-        <div class="card">
-          <h3>Writing</h3>
-          <p>Thinking in public. Long-form notes on models and methods, written to be understood — not just summarized.</p>
-        </div>
+  <section class="section about-home">
+    <div class="container about-wrap">
+      <div class="content">${about}</div>
+
+      <div class="about-section recent-notes">
+        <h2>Latest from the blog</h2>
+        <div class="writing">${recentRows}</div>
+        <p style="margin-top:18px"><a class="btn btn-ghost" href="/blog/">Browse all ${posts.length} notes →</a></p>
       </div>
-    </div>
-  </section>
 
-  <section class="section" style="padding-top:0">
-    <div class="container">
-      <div class="eyebrow">Selected projects</div>
-      <h2>Things I've built</h2>
-      <div style="margin-top:18px">
-        <div class="project">
-          <div class="pico">CM</div>
-          <div><h3><a href="https://github.com/Tencent/cherry-markdown" target="_blank" rel="noopener">Cherry Markdown</a></h3>
-          <p>Co-starter &amp; PMC of a modular, extensible Markdown editor — 4.4k★, used by 20+ teams.</p></div>
-        </div>
-        <div class="project">
-          <div class="pico">WX</div>
-          <div><h3><a href="https://github.com/jiawei686/wechat-dev-mcp" target="_blank" rel="noopener">wechat-dev-mcp</a></h3>
-          <p>An MCP server that lets an AI agent drive WeChat DevTools automatically.</p></div>
-        </div>
-        <div class="project">
-          <div class="pico">HV</div>
-          <div><h3><a href="https://github.com/hippy-contrib/hippy-vue-html" target="_blank" rel="noopener">hippy-vue-html</a></h3>
-          <p>Cross-platform rich-text component for the Hippy framework (hippy-contrib).</p></div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="section" style="padding-top:0">
-    <div class="container">
-      <div class="eyebrow">Recent writing</div>
-      <h2>From the blog</h2>
-      <div class="writing" style="margin-top:18px">${recentRows}</div>
-      <p style="margin-top:22px"><a class="btn btn-ghost" href="/blog/">Browse all ${posts.length} posts →</a></p>
-    </div>
-  </section>`;
-
-  return layout({
-    title: `${SITE.name} — Software engineer → AI researcher`,
-    description: SITE.description,
-    body,
-    active: "home",
-    urlPath: "/",
-  });
-}
-
-function aboutPage() {
-  const raw = fs.readFileSync(path.join(SRC, "about.md"), "utf8");
-  const { content } = matter(raw);
-  const html = marked.parse(content);
-  const body = `
-  <section class="article">
-    <div class="read">
-      <div class="a-head">
-        <div class="a-meta">About</div>
-        <h1>${esc(SITE.name)}</h1>
-      </div>
-      <div class="content">${html}</div>
       <div class="about-section" id="contact">
         <h2>Contact</h2>
         <p>Email: <a href="mailto:${SITE.email}">${esc(SITE.email)}</a><br>
@@ -273,13 +214,28 @@ function aboutPage() {
       </div>
     </div>
   </section>`;
+
   return layout({
-    title: `About — ${SITE.name}`,
+    title: `${SITE.name} — About`,
     description: SITE.description,
     body,
-    active: "about",
-    urlPath: "/about.html",
+    active: "home",
+    urlPath: "/",
   });
+}
+
+// /about.html is kept only as a redirect to "/" so old links keep working.
+function aboutRedirect() {
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>About — ${esc(SITE.name)}</title>
+<link rel="canonical" href="${SITE.domain}/">
+<meta http-equiv="refresh" content="0; url=/">
+</head>
+<body>Redirecting to <a href="/">home</a>…</body>
+</html>`;
 }
 
 function blogIndex(posts) {
@@ -372,7 +328,7 @@ function copyDir(src, dest) {
 
 // ---------- sitemap ----------
 function sitemap(posts) {
-  const urls = ["/", "/about.html", "/blog/"].concat(posts.map((p) => `/blog/${p.slug}/`));
+  const urls = ["/", "/blog/"].concat(posts.map((p) => `/blog/${p.slug}/`));
   const body = urls
     .map((u) => `  <url><loc>${SITE.domain}${u}</loc></url>`)
     .join("\n");
@@ -384,8 +340,8 @@ function main() {
   fs.rmSync(DIST, { recursive: true, force: true });
   const posts = readPosts();
 
-  writeFile("index.html", homePage(posts));
-  writeFile("about.html", aboutPage());
+  writeFile("index.html", indexPage(posts));
+  writeFile("about.html", aboutRedirect());
   writeFile("blog/index.html", blogIndex(posts));
   posts.forEach((p, i) => {
     const newer = posts[i - 1] || null;
@@ -399,7 +355,7 @@ function main() {
   fs.writeFileSync(path.join(DIST, "robots.txt"), "User-agent: *\nAllow: /\nSitemap: " + SITE.domain + "/sitemap.xml\n");
   writeFile("sitemap.xml", sitemap(posts));
 
-  console.log(`Built ${posts.length} posts + home/about/blog -> ${DIST} (theme: ${ARGS.theme})`);
+  console.log(`Built ${posts.length} posts + about-home/blog -> ${DIST} (theme: ${ARGS.theme})`);
 }
 
 main();
