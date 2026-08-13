@@ -1,0 +1,50 @@
+/* =========================================================
+   Theme: Terminal — dark, monospace, dev/engineer vibe
+   ========================================================= */
+:root {
+  --bg: #0d1117;
+  --bg-soft: #11161d;
+  --bg-card: #11161d;
+  --text: #e6edf3;
+  --text-soft: #9aa7b4;
+  --text-faint: #6b7785;
+  --border: #21262d;
+  --accent: #39d353;
+  --accent-2: #56d4dd;
+  --accent-soft: #0f2417;
+  --code-bg: #0a0e13;
+  --code-text: #7ee787;
+  --shadow: 0 1px 2px rgba(0,0,0,.5), 0 10px 30px rgba(0,0,0,.5);
+  --shadow-lg: 0 14px 44px rgba(0,0,0,.6);
+  --radius: 8px;
+  --radius-sm: 6px;
+  --font-sans: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --font-head: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --font-serif: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+[data-theme="dark"] {
+  --bg: #0d1117; --bg-soft: #11161d; --bg-card: #11161d; --text: #e6edf3;
+  --text-soft: #9aa7b4; --text-faint: #6b7785; --border: #21262d;
+  --accent: #39d353; --accent-2: #56d4dd; --accent-soft: #0f2417;
+  --code-bg: #0a0e13; --code-text: #7ee787;
+  --shadow: 0 1px 2px rgba(0,0,0,.5), 0 10px 30px rgba(0,0,0,.5);
+  --shadow-lg: 0 14px 44px rgba(0,0,0,.6);
+}
+/* terminal flavour */
+body.theme-terminal .nav { font-family: var(--font-mono); }
+body.theme-terminal .hero-eyebrow {
+  text-transform: none; letter-spacing: 0; font-size: .95rem; color: var(--accent);
+}
+body.theme-terminal .hero-eyebrow::after { content: "▋"; margin-left: 2px; animation: blink 1.1s steps(2, start) infinite; }
+@keyframes blink { to { opacity: 0; } }
+body.theme-terminal .hero h1 { font-weight: 700; }
+body.theme-terminal .avatar { border-radius: 10px; border: 1px solid var(--border); }
+body.theme-terminal .card, body.theme-terminal .post-card { border-radius: 8px; }
+body.theme-terminal .btn-primary {
+  background: transparent; color: var(--accent); border: 1px solid var(--accent);
+  box-shadow: none;
+}
+body.theme-terminal .btn-primary:hover { background: var(--accent-soft); filter: none; }
+body.theme-terminal .btn-ghost { background: transparent; border-color: var(--border); }
+body.theme-terminal .section .eyebrow::before { content: "# "; }
+body.theme-terminal .wrow .date { color: var(--accent-2); }

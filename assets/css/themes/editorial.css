@@ -1,0 +1,44 @@
+/* =========================================================
+   Theme: Editorial — warm paper, serif display, refined
+   Pairs with base style.css (tokens override only)
+   ========================================================= */
+:root {
+  --bg: #fbfaf7;
+  --bg-soft: #f4f1ea;
+  --bg-card: #ffffff;
+  --text: #1c1b19;
+  --text-soft: #56524b;
+  --text-faint: #8a847a;
+  --border: #e6e2d8;
+  --accent: #3b4cca;
+  --accent-2: #9a6b2f;
+  --accent-soft: #eceafc;
+  --code-bg: #f4f1ea;
+  --code-text: #9a3b5b;
+  --shadow: 0 1px 2px rgba(28,27,25,.05), 0 10px 30px rgba(28,27,25,.06);
+  --shadow-lg: 0 14px 44px rgba(28,27,25,.10);
+  --radius: 12px;
+  --radius-sm: 8px;
+  --font-head: var(--font-serif);
+}
+[data-theme="dark"] {
+  --bg: #16140f;
+  --bg-soft: #1f1c16;
+  --bg-card: #1c1914;
+  --text: #efe9df;
+  --text-soft: #b3ab9c;
+  --text-faint: #7d756a;
+  --border: #322d24;
+  --accent: #8aa0ff;
+  --accent-2: #d6a85f;
+  --accent-soft: #1d2236;
+  --code-bg: #211d16;
+  --code-text: #e89ab3;
+  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 30px rgba(0,0,0,.45);
+  --shadow-lg: 0 14px 44px rgba(0,0,0,.55);
+}
+/* serif flavour: rule under section headings */
+body.theme-editorial .section h2 { border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+body.theme-editorial .hero h1 { font-weight: 600; }
+body.theme-editorial .card, body.theme-editorial .post-card { border-radius: 10px; }
+body.theme-editorial .article h1 { font-family: var(--font-serif); }

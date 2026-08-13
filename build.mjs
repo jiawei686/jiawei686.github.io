@@ -13,7 +13,6 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = __dirname;
 const SRC = path.join(ROOT, "src");
 const POSTS_DIR = path.join(SRC, "posts");
-const DIST = path.join(ROOT, "dist");
 
 const SITE = {
   name: "Jiawei Cui",
@@ -26,6 +25,29 @@ const SITE = {
 };
 
 marked.setOptions({ gfm: true, breaks: false });
+
+// ---------- theme registry ----------
+const THEMES = {
+  editorial: { file: "editorial.css", heroEyebrow: "Hello, I'm", label: "Editorial" },
+  terminal:  { file: "terminal.css",  heroEyebrow: "~/jiawei $ whoami", label: "Terminal" },
+  soft:      { file: "soft.css",      heroEyebrow: "Hi, I'm", label: "Soft" },
+  bold:      { file: "bold.css",      heroEyebrow: "Jiawei Cui", label: "Bold" },
+};
+function parseArgs() {
+  const out = { theme: "editorial", outDir: null };
+  for (let i = 2; i < process.argv.length; i++) {
+    if (process.argv[i] === "--theme") out.theme = process.argv[++i];
+    else if (process.argv[i] === "--out") out.outDir = process.argv[++i];
+  }
+  if (!THEMES[out.theme]) {
+    console.error(`Unknown theme "${out.theme}". Options: ${Object.keys(THEMES).join(", ")}`);
+    process.exit(1);
+  }
+  return out;
+}
+const ARGS = parseArgs();
+const THEME = THEMES[ARGS.theme];
+const DIST = path.join(ROOT, ARGS.outDir || "dist");
 
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 function fmtDate(iso) {
@@ -116,6 +138,7 @@ function layout({ title, description, body, active, urlPath }) {
 <meta name="description" content="${esc(description)}">
 <link rel="icon" href="/public/img/logo.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/assets/css/style.css">
+<link rel="stylesheet" href="/assets/css/themes/${THEME.file}">
 <meta property="og:type" content="website">
 <meta property="og:title" content="${esc(title)}">
 <meta property="og:description" content="${esc(description)}">
@@ -128,7 +151,7 @@ function layout({ title, description, body, active, urlPath }) {
 {"@context":"https://schema.org","@type":"Person","name":"Jiawei Cui","alternateName":["kiritocui","崔家维","cuijiawei"],"url":"${SITE.domain}/","sameAs":["https://github.com/${SITE.github}"]}
 </script>
 </head>
-<body>
+<body class="theme-${ARGS.theme}">
 ${nav(active)}
 <main>
 ${body}
@@ -154,6 +177,7 @@ function homePage(posts) {
     <div class="container hero-grid">
       <img class="avatar" src="/public/img/logo.svg" alt="${esc(SITE.name)}">
       <div>
+        <div class="hero-eyebrow">${esc(THEME.heroEyebrow)}</div>
         <h1>${esc(SITE.name)}</h1>
         <p class="tag">Software engineer → AI researcher.</p>
         <p class="lede">I build things, then I train models. Five years shipping front-end systems at Tencent, now all-in on large language models and the path to a PhD. This is where I think in public.</p>
@@ -375,7 +399,7 @@ function main() {
   fs.writeFileSync(path.join(DIST, "robots.txt"), "User-agent: *\nAllow: /\nSitemap: " + SITE.domain + "/sitemap.xml\n");
   writeFile("sitemap.xml", sitemap(posts));
 
-  console.log(`Built ${posts.length} posts + home/about/blog -> dist/`);
+  console.log(`Built ${posts.length} posts + home/about/blog -> ${DIST} (theme: ${ARGS.theme})`);
 }
 
 main();

@@ -1,0 +1,42 @@
+/* =========================================================
+   Theme: Soft — airy, pastel, rounded, friendly minimal
+   ========================================================= */
+:root {
+  --bg: #fcfcfe;
+  --bg-soft: #f3f5ff;
+  --bg-card: #ffffff;
+  --text: #232530;
+  --text-soft: #5b6172;
+  --text-faint: #9aa0b0;
+  --border: #e9ecf5;
+  --accent: #6c8cff;
+  --accent-2: #ff9eb5;
+  --accent-soft: #eef1ff;
+  --code-bg: #f3f5ff;
+  --code-text: #d6487f;
+  --shadow: 0 2px 6px rgba(80,90,140,.07), 0 14px 40px rgba(80,90,140,.10);
+  --shadow-lg: 0 18px 50px rgba(80,90,140,.16);
+  --radius: 18px;
+  --radius-sm: 12px;
+  --font-head: var(--font-sans);
+}
+[data-theme="dark"] {
+  --bg: #0f1117; --bg-soft: #161a24; --bg-card: #151926; --text: #e8ebf5;
+  --text-soft: #a7aec2; --text-faint: #6c7286; --border: #232838;
+  --accent: #8aa0ff; --accent-2: #ffb3c6; --accent-soft: #1a2034;
+  --code-bg: #161a24; --code-text: #ff9ec0;
+  --shadow: 0 2px 6px rgba(0,0,0,.4), 0 14px 40px rgba(0,0,0,.45);
+  --shadow-lg: 0 18px 50px rgba(0,0,0,.55);
+}
+/* soft flavour: centered, friendly hero with round avatar */
+body.theme-soft .hero { padding: 76px 0 48px; text-align: center; }
+body.theme-soft .hero-grid { grid-template-columns: 1fr; justify-items: center; gap: 22px; }
+body.theme-soft .avatar { width: 116px; height: 116px; border-radius: 50%; }
+body.theme-soft .hero .tag, body.theme-soft .hero .lede { margin-left: auto; margin-right: auto; }
+body.theme-soft .cta-row { justify-content: center; }
+body.theme-soft .hero-eyebrow { font-size: .9rem; letter-spacing: .14em; }
+body.theme-soft .card, body.theme-soft .post-card { border-radius: 18px; border-color: transparent; }
+body.theme-soft .card:hover, body.theme-soft .post-card:hover { transform: translateY(-4px); }
+body.theme-soft .section h2 { font-weight: 800; }
+body.theme-soft .project .pico { border-radius: 14px; }
+body.theme-soft .tag { border-radius: 999px; }

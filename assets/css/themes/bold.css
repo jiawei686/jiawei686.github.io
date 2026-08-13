@@ -1,0 +1,57 @@
+/* =========================================================
+   Theme: Bold — dark, vibrant gradient, modern portfolio
+   ========================================================= */
+:root {
+  --bg: #0b1020;
+  --bg-soft: #121a30;
+  --bg-card: #121a30;
+  --text: #eaf0ff;
+  --text-soft: #aab6d6;
+  --text-faint: #7686ad;
+  --border: #23304f;
+  --accent: #7c5cff;
+  --accent-2: #22d3ee;
+  --accent-soft: #1a1438;
+  --code-bg: #0e1426;
+  --code-text: #7ee7ff;
+  --shadow: 0 1px 2px rgba(0,0,0,.5), 0 18px 50px rgba(60,40,140,.35);
+  --shadow-lg: 0 22px 60px rgba(60,40,140,.45);
+  --radius: 16px;
+  --radius-sm: 10px;
+  --font-head: var(--font-sans);
+}
+[data-theme="dark"] {
+  --bg: #0b1020; --bg-soft: #121a30; --bg-card: #121a30; --text: #eaf0ff;
+  --text-soft: #aab6d6; --text-faint: #7686ad; --border: #23304f;
+  --accent: #7c5cff; --accent-2: #22d3ee; --accent-soft: #1a1438;
+  --code-bg: #0e1426; --code-text: #7ee7ff;
+  --shadow: 0 1px 2px rgba(0,0,0,.5), 0 18px 50px rgba(60,40,140,.35);
+  --shadow-lg: 0 22px 60px rgba(60,40,140,.45);
+}
+/* bold flavor: gradient hero panel + big display type */
+body.theme-bold .nav { background: color-mix(in srgb, var(--bg) 80%, transparent); }
+body.theme-bold .hero {
+  position: relative;
+  margin-top: 0;
+  padding: 96px 0 72px;
+  background:
+    radial-gradient(1200px 500px at 80% -10%, rgba(124,92,255,.28), transparent 60%),
+    radial-gradient(900px 500px at 0% 0%, rgba(34,211,238,.20), transparent 55%);
+  border-bottom: 1px solid var(--border);
+}
+body.theme-bold .hero-eyebrow { letter-spacing: .18em; font-size: .82rem; }
+body.theme-bold .hero h1 {
+  font-weight: 800; font-size: clamp(2.6rem, 6.5vw, 4rem); letter-spacing: -.03em;
+  background: linear-gradient(120deg, #fff, #c9d4ff 55%, #8be9ff);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+body.theme-bold .avatar {
+  border-radius: 22px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  padding: 4px; box-shadow: var(--shadow-lg);
+}
+body.theme-bold .section h2 { font-weight: 800; letter-spacing: -.02em; }
+body.theme-bold .btn-primary { box-shadow: 0 10px 30px rgba(124,92,255,.35); }
+body.theme-bold .card, body.theme-bold .post-card { border-color: rgba(124,92,255,.18); }
+body.theme-bold .card:hover { border-color: var(--accent); }
+body.theme-bold .tag { background: rgba(124,92,255,.16); color: #b8a6ff; }

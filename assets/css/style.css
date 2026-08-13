@@ -26,6 +26,7 @@
   --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
   --font-serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
+  --font-head: var(--font-sans);
 }
 
 [data-theme="dark"] {
@@ -64,6 +65,8 @@ body {
 a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; }
 
+h1, h2, h3, h4 { font-family: var(--font-head); }
+
 img { max-width: 100%; height: auto; }
 
 .container { width: 100%; max-width: var(--maxw); margin: 0 auto; padding: 0 24px; }
@@ -97,6 +100,7 @@ img { max-width: 100%; height: auto; }
 
 /* ---------- Hero ---------- */
 .hero { padding: 84px 0 56px; }
+.hero-eyebrow { color: var(--accent); font-weight: 700; font-size: .85rem; text-transform: uppercase; letter-spacing: .12em; margin-bottom: 10px; }
 .hero-grid { display: grid; grid-template-columns: 132px 1fr; gap: 34px; align-items: center; }
 .avatar { width: 132px; height: 132px; border-radius: 26px; box-shadow: var(--shadow-lg); }
 .hero h1 { font-size: clamp(2.1rem, 5vw, 3.1rem); line-height: 1.08; margin: 0 0 14px; letter-spacing: -.02em; }
@@ -209,15 +213,36 @@ img { max-width: 100%; height: auto; }
 /* ---------- About ---------- */
 .about-section { margin: 2.2em 0; }
 .about-section h2 { font-size: 1.4rem; margin: 0 0 .6em; border-bottom: 1px solid var(--border); padding-bottom: .3em; }
-.cv-item { display: flex; gap: 14px; padding: 12px 0; border-bottom: 1px dashed var(--border); }
-.cv-item:last-child { border-bottom: 0; }
-.cv-when { flex: 0 0 130px; color: var(--text-faint); font-size: .9rem; font-variant-numeric: tabular-nums; }
-.cv-main { flex: 1; }
-.cv-main .t { font-weight: 700; }
-.cv-main .s { color: var(--text-soft); font-size: .94rem; }
-.patents { list-style: none; padding: 0; margin: 0; }
+
+/* CV card layout (preserved from the original About page) */
+.cv { margin: 6px 0 20px; }
+.cv-item { display: flex; align-items: center; gap: 16px; margin: 16px 0; }
+.cv-logo {
+  width: 64px; flex: 0 0 64px; height: 64px; display: flex; align-items: center; justify-content: center;
+  background: #fff; border-radius: 12px; padding: 7px; box-shadow: 0 1px 3px rgba(16,24,40,.12);
+}
+.cv-logo img { max-height: 100%; max-width: 100%; width: auto; height: auto; object-fit: contain; }
+.cv-body { flex: 1; min-width: 0; }
+.cv-row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.cv-title { font-weight: 700; font-size: 1.04rem; line-height: 1.25; color: var(--text); text-decoration: none; }
+a.cv-title:hover { text-decoration: underline; color: var(--accent); }
+.cv-date { color: var(--text-faint); font-size: .84rem; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.cv-sub { color: var(--text-soft); font-size: .94rem; line-height: 1.4; margin-top: 3px; }
+.cv-sub a { color: var(--accent); text-decoration: none; }
+.cv-sub a:hover { text-decoration: underline; }
+
+.patents { list-style: none; padding: 0; margin: 6px 0 18px; }
 .patents li { padding: 6px 0 6px 1.2em; position: relative; color: var(--text-soft); font-size: .95rem; }
-.patents li::before { content: "▪"; position: absolute; left: 0; color: var(--accent); }
+.patents li::before { content: "▪"; position: absolute; left: 0; top: 6px; color: var(--accent); }
+.patents li a { color: var(--text); text-decoration: none; }
+.patents li a:hover { color: var(--accent); text-decoration: underline; }
+
+@media (max-width: 600px) {
+  .cv-item { gap: 12px; }
+  .cv-logo { width: 52px; flex-basis: 52px; height: 52px; }
+  .cv-row { flex-direction: column; align-items: flex-start; gap: 2px; }
+  .cv-date { font-size: .8rem; }
+}
 
 /* ---------- Footer ---------- */
 .footer { border-top: 1px solid var(--border); padding: 40px 0 56px; margin-top: 40px; color: var(--text-soft); }
