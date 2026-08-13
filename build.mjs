@@ -396,6 +396,8 @@ function main() {
   copyDir(path.join(ROOT, "assets"), path.join(DIST, "site")); // served at /site/ (avoid nginx /assets/ proxy)
   copyDir(path.join(SRC, "..", "public"), path.join(DIST, "public")); // public/img/logo.svg
   fs.writeFileSync(path.join(DIST, ".nojekyll"), "");
+  const adsTxt = path.join(ROOT, "..", "ads.txt");
+  if (fs.existsSync(adsTxt)) fs.copyFileSync(adsTxt, path.join(DIST, "ads.txt")); // AdSense
   fs.writeFileSync(path.join(DIST, "robots.txt"), "User-agent: *\nAllow: /\nSitemap: " + SITE.domain + "/sitemap.xml\n");
   writeFile("sitemap.xml", sitemap(posts));
 
