@@ -232,8 +232,8 @@ img { max-width: 100%; height: auto; }
   background: #fff; border-radius: 12px; padding: 7px; box-shadow: 0 1px 3px rgba(16,24,40,.12);
 }
 .cv-logo img { max-height: 100%; max-width: 100%; width: auto; height: auto; object-fit: contain; }
-/* Wide wordmark logos (e.g. Tencent) get a wider chip so they stay legible */
-.cv-logo--wide { width: 124px; flex-basis: 124px; }
+/* Wide wordmark logos (e.g. Tencent) keep the same chip width as square logos */
+.cv-logo--wide { width: 64px; flex-basis: 64px; }
 .cv-body { flex: 1; min-width: 0; }
 .cv-row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
 .cv-title { font-weight: 700; font-size: 1.04rem; line-height: 1.25; color: var(--text); text-decoration: none; }
@@ -252,7 +252,7 @@ a.cv-title:hover { text-decoration: underline; color: var(--accent); }
 @media (max-width: 600px) {
   .cv-item { gap: 12px; }
   .cv-logo { width: 52px; flex-basis: 52px; height: 52px; }
-  .cv-logo--wide { width: 104px; flex-basis: 104px; }
+  .cv-logo--wide { width: 52px; flex-basis: 52px; }
   .cv-row { flex-direction: column; align-items: flex-start; gap: 2px; }
   .cv-date { font-size: .8rem; }
 }
