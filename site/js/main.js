@@ -6,7 +6,9 @@
   var root = document.documentElement;
   var stored = null;
   try { stored = localStorage.getItem("theme"); } catch (e) {}
-  var initial = stored || (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+  // Default to light so the site matches the approved preview. A manual
+  // toggle (stored in localStorage) still overrides this.
+  var initial = stored || "light";
   root.setAttribute("data-theme", initial);
 
   function toggleTheme() {
