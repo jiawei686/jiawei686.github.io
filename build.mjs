@@ -137,8 +137,8 @@ function layout({ title, description, body, active, urlPath }) {
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(description)}">
 <link rel="icon" href="/public/img/logo.svg" type="image/svg+xml">
-<link rel="stylesheet" href="/assets/css/style.css">
-<link rel="stylesheet" href="/assets/css/themes/${THEME.file}">
+<link rel="stylesheet" href="/site/css/style.css">
+<link rel="stylesheet" href="/site/css/themes/${THEME.file}">
 <meta property="og:type" content="website">
 <meta property="og:title" content="${esc(title)}">
 <meta property="og:description" content="${esc(description)}">
@@ -157,7 +157,7 @@ ${nav(active)}
 ${body}
 </main>
 ${footer()}
-<script src="/assets/js/main.js"></script>
+<script src="/site/js/main.js"></script>
 </body>
 </html>`;
 }
@@ -393,7 +393,7 @@ function main() {
     writeFile(`blog/${p.slug}/index.html`, postPage(p, newer, older));
   });
 
-  copyDir(path.join(ROOT, "assets"), path.join(DIST, "assets"));
+  copyDir(path.join(ROOT, "assets"), path.join(DIST, "site")); // served at /site/ (avoid nginx /assets/ proxy)
   copyDir(path.join(SRC, "..", "public"), path.join(DIST, "public")); // public/img/logo.svg
   fs.writeFileSync(path.join(DIST, ".nojekyll"), "");
   fs.writeFileSync(path.join(DIST, "robots.txt"), "User-agent: *\nAllow: /\nSitemap: " + SITE.domain + "/sitemap.xml\n");
