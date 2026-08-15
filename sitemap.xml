@@ -2,6 +2,9 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://cuijiawei.cn/</loc></url>
   <url><loc>https://cuijiawei.cn/blog/</loc></url>
+  <url><loc>https://cuijiawei.cn/blog/wechat-dev-mcp/</loc></url>
+  <url><loc>https://cuijiawei.cn/blog/complete-raspberry-pi-openclaw-deployment-guide/</loc></url>
+  <url><loc>https://cuijiawei.cn/blog/introducing-homeware-sense-skill-unified-smart-home-integration-for-openclaw-ai/</loc></url>
   <url><loc>https://cuijiawei.cn/blog/intro-to-deep-learning/</loc></url>
   <url><loc>https://cuijiawei.cn/blog/chinchilla/</loc></url>
   <url><loc>https://cuijiawei.cn/blog/dpo/</loc></url>
@@ -33,7 +36,6 @@
   <url><loc>https://cuijiawei.cn/blog/getting-started-with-iptables/</loc></url>
   <url><loc>https://cuijiawei.cn/blog/softmax/</loc></url>
   <url><loc>https://cuijiawei.cn/blog/clip/</loc></url>
-  <url><loc>https://cuijiawei.cn/blog/wechat-dev-mcp/</loc></url>
   <url><loc>https://cuijiawei.cn/blog/advanced-sql/</loc></url>
   <url><loc>https://cuijiawei.cn/blog/intro-to-game-ai-and-reinforcement-learning/</loc></url>
   <url><loc>https://cuijiawei.cn/blog/principles-of-economics/</loc></url>
@@ -41,7 +43,5 @@
   <url><loc>https://cuijiawei.cn/blog/rope/</loc></url>
   <url><loc>https://cuijiawei.cn/blog/geospatial-analysis/</loc></url>
   <url><loc>https://cuijiawei.cn/blog/linux-mail-server-postfix-dovecot/</loc></url>
-  <url><loc>https://cuijiawei.cn/blog/complete-raspberry-pi-openclaw-deployment-guide/</loc></url>
-  <url><loc>https://cuijiawei.cn/blog/introducing-homeware-sense-skill-unified-smart-home-integration-for-openclaw-ai/</loc></url>
   <url><loc>https://cuijiawei.cn/blog/kaggle-data-science-practical-notes/</loc></url>
 </urlset>
