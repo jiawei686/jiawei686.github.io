@@ -102,7 +102,7 @@ img { max-width: 100%; height: auto; }
 .hero { padding: 84px 0 56px; }
 .hero-eyebrow { color: var(--accent); font-weight: 700; font-size: .85rem; text-transform: uppercase; letter-spacing: .12em; margin-bottom: 10px; }
 .hero-grid { display: grid; grid-template-columns: 132px 1fr; gap: 34px; align-items: center; }
-.avatar { width: 132px; height: 132px; border-radius: 26px; box-shadow: var(--shadow-lg); }
+.avatar { width: 132px; height: 132px; border-radius: 26px; box-shadow: var(--shadow-lg); object-fit: cover; }
 .hero h1 { font-size: clamp(2.1rem, 5vw, 3.1rem); line-height: 1.08; margin: 0 0 14px; letter-spacing: -.02em; }
 .hero .tag { font-size: 1.18rem; color: var(--text-soft); margin: 0 0 18px; max-width: 36ch; }
 .hero .lede { color: var(--text-soft); margin: 0 0 26px; max-width: 52ch; }
