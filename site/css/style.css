@@ -243,10 +243,10 @@ a.cv-title:hover { text-decoration: underline; color: var(--accent); }
 .cv-sub a { color: var(--accent); text-decoration: none; }
 .cv-sub a:hover { text-decoration: underline; }
 
-.patents, .patents ul { list-style: none; padding: 0; margin: 6px 0 18px; overflow-x: auto; }
-.patents li { padding: 6px 0 6px 1.2em; position: relative; color: var(--text-soft); font-size: .95rem; white-space: nowrap; }
+.patents, .patents ul { list-style: none; padding: 0; margin: 6px 0 18px; }
+.patents li { padding: 6px 0 6px 1.2em; position: relative; color: var(--text-soft); font-size: .95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .patents li::before { content: "▪"; position: absolute; left: 0; top: 6px; color: var(--accent); }
-.patents li a { color: var(--text); text-decoration: none; white-space: nowrap; }
+.patents li a { color: var(--text); text-decoration: none; }
 .patents li a:hover { color: var(--accent); text-decoration: underline; }
 
 @media (max-width: 600px) {
