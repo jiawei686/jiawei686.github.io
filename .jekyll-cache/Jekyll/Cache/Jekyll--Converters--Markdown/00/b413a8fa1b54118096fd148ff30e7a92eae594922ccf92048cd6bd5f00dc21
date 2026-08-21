@@ -1,0 +1,2 @@
+I"�<p>Mixtral (Mistral AI, 2023) is the model that made <strong>mixture-of-experts (MoE)</strong> practical and popular in the open ecosystem. The idea behind MoE is old, but Mixtral shipped it in a way that actually beat dense models of similar <em>active</em> compute — at 7x the total parameter count — and ran efficiently. I’m writing this because MoE is now how most frontier models (and a lot of efficient ones) get their capacity, and the trade-offs are subtle.</p>
+:ET

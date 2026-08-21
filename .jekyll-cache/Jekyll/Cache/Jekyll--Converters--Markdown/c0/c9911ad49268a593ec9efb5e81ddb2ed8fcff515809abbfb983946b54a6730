@@ -1,0 +1,2 @@
+I"�<p>A while back I worked through a set of JavaScript exercises designed to expose the parts of the language people gloss over: function binding, named vs. anonymous functions, method references, memoization, and the classic chained-assignment puzzle. They look trivial, but each one hides a real behavior you’ll hit in production. Here are my notes, with the “why” spelled out.</p>
+:ET

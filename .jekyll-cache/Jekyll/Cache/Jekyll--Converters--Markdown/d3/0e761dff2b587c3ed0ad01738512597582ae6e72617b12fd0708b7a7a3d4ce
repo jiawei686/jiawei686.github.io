@@ -1,0 +1,52 @@
+I"�<p>Chinchilla (Hoffmann et al., 2022) is the paper that corrected a mistake the entire field was making about how to train large language models. It asked a deceptively simple question: <em>given a fixed compute budget, what’s the optimal split between model size and training data?</em> The answer overturned the prevailing “just make the model bigger” doctrine. I’m writing this because Chinchilla’s “20 tokens per parameter” rule is something every model trainer should have internalized, and ignoring it is a classic way to waste a training budget.</p>
+
+<h2 id="the-setup-a-compute-constrained-optimization">The setup: a compute-constrained optimization</h2>
+
+<p>You have a fixed training-compute budget <code class="language-plaintext highlighter-rouge">C</code> (say, FLOPs). You can spend it on:</p>
+
+<ul>
+  <li>A bigger model <code class="language-plaintext highlighter-rouge">N</code> (more parameters), or</li>
+  <li>More training tokens <code class="language-plaintext highlighter-rouge">D</code>.</li>
+</ul>
+
+<p>The earlier Kaplan scaling laws suggested pouring almost everything into <code class="language-plaintext highlighter-rouge">N</code> and undertraining on data. Chinchilla re-derived the scaling law <em>correctly</em> by fitting loss as a function of <strong>both</strong> <code class="language-plaintext highlighter-rouge">N</code> and <code class="language-plaintext highlighter-rouge">D</code> simultaneously and then minimizing for fixed <code class="language-plaintext highlighter-rouge">C</code>.</p>
+
+<h2 id="the-result-parameters-and-data-should-scale-together">The result: parameters and data should scale together</h2>
+
+<p>Chinchilla’s optimal law is approximately:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>N_opt ∝ C^0.5
+D_opt ∝ C^0.5
+</code></pre></div></div>
+
+<p>In plain terms: <strong>double your compute, increase both model size and data by ~√2 — not model size alone.</strong> Concretely, they found the optimal ratio is roughly <strong>20 tokens per parameter</strong>.</p>
+
+<h2 id="the-damning-implication-for-existing-models">The damning implication for existing models</h2>
+
+<p>Under Chinchilla’s law, models like GPT-3 (175B params, ~300B tokens) and Gopher (280B, ~300B tokens) were <em>massively undertrained</em>. They should have been trained on <strong>~4x more data</strong> for the same compute. Chinchilla itself — a 70B model trained on <strong>1.4 trillion tokens</strong> — matched or beat Gopher (280B) on most benchmarks while using a fraction of the parameters. Same compute, far better results, simply by feeding it enough data.</p>
+
+<p>This is the single most useful correction in modern LLM training. I’ve seen teams burn a budget on an oversized model trained on too little data; Chinchilla says that’s backwards for most compute budgets.</p>
+
+<h2 id="why-everyone-retrains-smaller-but-better">Why everyone retrains “smaller but better”</h2>
+
+<p>The lesson cascaded: a properly-trained 7B model on ~140B tokens (20×7B) often beats an undertrained 13B or 30B model on the same compute. This is why modern base models ship with large training corpora and why “my model is bigger” stopped being a winning argument on its own. The LLaMA family, for instance, leans heavily on the “more tokens, better-curated data” philosophy that Chinchilla legitimized.</p>
+
+<h2 id="practical-guidance">Practical guidance</h2>
+
+<ul>
+  <li><strong>Token budget ≈ 20 × parameters</strong> for compute-optimal pretraining. (This is a rule of thumb; real optimal ratios vary with data quality and architecture.)</li>
+  <li>If you’re pretraining and your data runs out long before your model is trained to the Chinchilla ratio, you’re either underusing parameters or need more data — not a bigger model.</li>
+  <li>For fine-tuning and most applied work this doesn’t directly apply; it’s a <em>pretraining</em> principle.</li>
+</ul>
+
+<h2 id="caveats">Caveats</h2>
+
+<ul>
+  <li>The “20 tokens/param” ratio is for <em>compute-optimal</em> training at a given budget. If your goal is the <em>best absolute model regardless of cost</em>, you still want a big model <em>and</em> lots of data (frontier labs do both).</li>
+  <li>Data quality matters as much as quantity; Chinchilla assumed decent data. Garbage data at 20× won’t save you — which is exactly why data curation (see the LLaMA post) is the real differentiator.</li>
+</ul>
+
+<h2 id="my-take">My take</h2>
+
+<p>Chinchilla is the paper I’d hand to anyone about to spend real money training a model. The headline isn’t “smaller models win” — it’s “stop undertraining.” Most wasted compute in this field comes from the instinct that more parameters = smarter, when the bottleneck was almost always <em>data</em>. Get the N:D split right first; everything else (architecture tweaks, fancy objectives) is secondary. And note how it builds on the scaling laws post — same power-law world, just fit correctly.</p>
+:ET

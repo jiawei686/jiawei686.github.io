@@ -1,0 +1,2 @@
+I"�<p>Retrieval-Augmented Generation (RAG, Lewis et al., 2020, arXiv:2005.11401) is, hands down, the most widely deployed LLM architecture in production. If you’ve used a chatbot that “knows your company’s documents,” it’s almost certainly RAG. I’m writing this because RAG is the practical bridge between a frozen base model and <em>your</em> data, and getting it right is 80% engineering, 20% ML.</p>
+:ET

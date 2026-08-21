@@ -1,0 +1,80 @@
+I":<p>These are my notes on the TCP chapters from <em>Computer Networking: A Top-Down Approach</em> (Kurose &amp; Ross). TCP is the protocol that makes the unreliable IP layer feel reliable, and the mechanisms it uses — connection setup, sequence numbers, adaptive timeouts, flow and congestion control — are worth understanding concretely rather than as vague buzzwords.</p>
+
+<h2 id="35-tcp-connection">3.5 TCP Connection</h2>
+
+<p>A TCP connection is <strong>connection-oriented</strong>: before application process A can send data to process B, the two must first “handshake” — exchange a few preliminary segments to establish the parameters that guarantee reliable delivery.</p>
+
+<ul>
+  <li><strong>Full-duplex service</strong>: once a TCP connection exists between A and B, application data can flow from A to B <em>and</em> from B to A at the same time.</li>
+  <li><strong>Point-to-point</strong>: a single sender has exactly one receiver.</li>
+  <li><strong>MSS (Maximum Segment Size)</strong>: the largest chunk of application data TCP will put in one segment.</li>
+</ul>
+
+<h3 id="351-connection-setup">3.5.1 Connection setup</h3>
+
+<p>The three-way handshake (<code class="language-plaintext highlighter-rouge">SYN</code>, <code class="language-plaintext highlighter-rouge">SYN-ACK</code>, <code class="language-plaintext highlighter-rouge">ACK</code>) establishes the connection and synchronizes both sides’ initial sequence numbers. Only after that can data flow.</p>
+
+<h3 id="352-segment-structure">3.5.2 Segment structure</h3>
+
+<p>Each segment carries a <strong>sequence number</strong> and an <strong>acknowledgment number</strong>. The sequence number of a segment is the byte-stream number of the first data byte it carries; the acknowledgment number is the next byte the sender expects to receive. This is the foundation of reliable, in-order delivery.</p>
+
+<h3 id="353-rtt-estimation-and-timeout">3.5.3 RTT estimation and timeout</h3>
+
+<p>TCP continuously estimates the round-trip time so it knows how long to wait before assuming a segment was lost.</p>
+
+<ul>
+  <li><strong>EstimatedRTT</strong>: every time a new <code class="language-plaintext highlighter-rouge">SampleRTT</code> arrives, TCP updates its estimate exponentially:</li>
+</ul>
+
+\[EstimatedRTT = (1-\alpha) \cdot EstimatedRTT + \alpha \cdot SampleRTT\]
+
+<ul>
+  <li><strong>DevRTT</strong> measures how much <code class="language-plaintext highlighter-rouge">SampleRTT</code> typically deviates from <code class="language-plaintext highlighter-rouge">EstimatedRTT</code>:</li>
+</ul>
+
+\[DevRTT = (1-\beta) \cdot DevRTT + \beta \cdot | SampleRTT - EstimatedRTT |\]
+
+<ul>
+  <li><strong>TimeoutInterval</strong> must be at least <code class="language-plaintext highlighter-rouge">EstimatedRTT</code> (otherwise you’d retransmit unnecessarily) but not so large that you stall on loss:</li>
+</ul>
+
+\[TimeoutInterval = EstimatedRTT + 4 \cdot DevRTT\]
+
+<h3 id="354-reliable-data-transfer">3.5.4 Reliable data transfer</h3>
+
+<p>When a timeout expires, TCP <strong>doubles</strong> the timeout interval after each retransmission. This is a deliberate back-off: if the network is congested, slamming it with immediate retransmits only makes things worse.</p>
+
+<h3 id="355-flow-control-and-congestion-control">3.5.5 Flow control and congestion control</h3>
+
+<ul>
+  <li><strong>Flow control</strong> keeps the sender from overwhelming the receiver’s buffer. It’s a speed-matching service: the sender’s rate is matched to how fast the receiver’s application reads.</li>
+  <li><strong>Congestion control</strong> throttles the sender because the IP network itself is congested.</li>
+</ul>
+
+<p>Two windows bound how much can be in flight:</p>
+
+<ul>
+  <li><strong>rwnd (receive window)</strong>: how much buffer space the receiver has left, advertised to the sender.</li>
+  <li><strong>cwnd (congestion window)</strong>: the sender’s own estimate of how much the network can take.</li>
+</ul>
+
+<p>The sender may have at most <code class="language-plaintext highlighter-rouge">min(cwnd, rwnd)</code> unacknowledged bytes outstanding.</p>
+
+<h2 id="36-principles-of-congestion-control">3.6 Principles of congestion control</h2>
+
+<h3 id="361-causes-and-cost-of-congestion">3.6.1 Causes and cost of congestion</h3>
+
+<p>When too many sources send too fast, routers drop packets, senders retransmit, and the useful throughput collapses. The cost isn’t just dropped packets — it’s wasted bandwidth from redundant retransmissions.</p>
+
+<h3 id="362-approaches-to-congestion-control">3.6.2 Approaches to congestion control</h3>
+
+<ul>
+  <li><strong>End-to-end congestion control</strong>: the network layer gives no explicit feedback; the end systems infer congestion from loss and delay (this is what TCP does).</li>
+  <li><strong>Network-assisted congestion control</strong>: routers signal congestion to end hosts. Hard to do in the IP layer, which provides no such explicit feedback.</li>
+  <li><strong>Slow start</strong>: <code class="language-plaintext highlighter-rouge">cwnd</code> starts small (often one MSS) and grows exponentially until it hits a threshold, then switches to additive-increase / multiplicative-decrease.</li>
+</ul>
+
+<h2 id="my-take">My take</h2>
+
+<p>The thing that finally made TCP “click” for me was realizing it solves <em>two different</em> problems with two different windows. Flow control protects the <strong>receiver</strong>; congestion control protects the <strong>network</strong>. Beginners conflate them because both end up limiting how fast you send, but they’re measured against completely different resources. If you only remember one equation, remember <code class="language-plaintext highlighter-rouge">TimeoutInterval = EstimatedRTT + 4·DevRTT</code> — it captures the whole philosophy: be patient enough to avoid spurious retransmits, but not so patient that a lost packet stalls the connection for seconds.</p>
+:ET

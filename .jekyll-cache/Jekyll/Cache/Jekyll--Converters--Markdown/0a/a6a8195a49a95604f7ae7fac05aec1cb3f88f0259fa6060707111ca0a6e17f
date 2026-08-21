@@ -1,0 +1,2 @@
+I"�<p>Softmax is the function that turns a model’s raw scores into a probability distribution. It is tiny, it is everywhere, and it has a numerical trap that bites almost everyone who implements it from scratch at least once. This post is the explainer I wish I’d had before I spent an afternoon chasing <code class="language-plaintext highlighter-rouge">NaN</code>s in a training loop.</p>
+:ET

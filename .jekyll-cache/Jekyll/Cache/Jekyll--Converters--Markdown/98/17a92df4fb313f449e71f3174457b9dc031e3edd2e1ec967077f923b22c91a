@@ -1,0 +1,56 @@
+I"�<p>Chain-of-Thought (CoT) prompting (Wei et al., 2022) is probably the highest-ROI prompting technique ever published. It costs you almost nothing — a sentence in the prompt — and can lift a model’s accuracy on math, logic, and multi-step tasks by double digits. I’m writing this because CoT is the foundation of essentially all LLM “reasoning” behavior you see today, and understanding <em>why</em> it works changes how you prompt.</p>
+
+<h2 id="the-problem-models-rush-to-the-answer">The problem: models rush to the answer</h2>
+
+<p>Give a model a multi-step problem and it often blurts the final answer, skipping the intermediate reasoning. For simple questions that’s fine. For anything requiring two or more reasoning steps — arithmetic, logic puzzles, multi-hop questions — skipping steps means mistakes compound and you get a confident wrong answer with no way to see where it broke.</p>
+
+<h2 id="the-fix-ask-for-the-steps">The fix: ask for the steps</h2>
+
+<p>CoT is trivial to apply. Instead of:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Q: Roger has 5 tennis balls. He buys 2 cans of 3. How many now?
+A: 11
+</code></pre></div></div>
+
+<p>You prompt with examples that show the <em>reasoning</em>:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Q: ... 
+A: Roger started with 5. 2 cans of 3 = 6. 5 + 6 = 11. So the answer is 11.
+</code></pre></div></div>
+
+<p>Or, even simpler, just append: <em>“Let’s think step by step.”</em> That single phrase reliably triggers the model to generate intermediate steps, and the final answer is usually correct far more often.</p>
+
+<h2 id="why-it-works-the-honest-version">Why it works (the honest version)</h2>
+
+<ul>
+  <li><strong>It forces sequential computation.</strong> A Transformer generates one token at a time; by writing out steps, the model creates intermediate tokens that later tokens can attend to. Each step becomes a “scratchpad” the model reasons over, instead of trying to solve everything in the final hop.</li>
+  <li><strong>It aligns the output distribution with how the training data looks.</strong> Reasoning examples on the web show workings-out, so generating steps matches the model’s learned patterns.</li>
+  <li><strong>It makes errors inspectable.</strong> When the answer is wrong, you can see <em>which step</em> failed — huge for debugging and for building trust.</li>
+</ul>
+
+<h2 id="what-surprised-the-authors">What surprised the authors</h2>
+
+<p>The gain <strong>scales with model size</strong>. On small models (e.g. &lt;10B), CoT barely helped. On large models (PaLM 540B, and today’s frontier models), the jump was dramatic. This is another emergent capability: the <em>technique</em> is the same, but only big enough models can actually use the scratchpad well. I’ve reproduced this locally — a 7B model does a mediocre job with CoT; a 70B+ does dramatically better.</p>
+
+<h2 id="practical-guidance">Practical guidance</h2>
+
+<ul>
+  <li><strong>Always try CoT on multi-step tasks</strong> before reaching for more complex methods. It’s free.</li>
+  <li>Use <strong>few-shot CoT</strong> (show 2–3 worked examples) when zero-shot (“think step by step”) underperforms — especially for domain-specific reasoning.</li>
+  <li><strong>Extract the final answer reliably.</strong> Models sometimes bury the result; I often ask for “the answer is X” format or parse the last number.</li>
+  <li>Pair CoT with <strong>self-consistency</strong> (covered separately) when you need maximum accuracy on hard problems.</li>
+  <li>CoT isn’t magic for factual recall or creative writing; it shines on reasoning/computation.</li>
+</ul>
+
+<h2 id="common-failure-modes">Common failure modes</h2>
+
+<ul>
+  <li>The model can produce a <em>plausible but wrong</em> chain — fluent reasoning that arrives at the wrong conclusion. CoT improves <em>rate</em> of correctness, not guarantees.</li>
+  <li>Very long chains can drift or contradict themselves; keeping the task scoped helps.</li>
+  <li>On small/local models, the chain quality is weak; don’t over-trust it.</li>
+</ul>
+
+<h2 id="my-take">My take</h2>
+
+<p>If you learn one prompting technique, make it this one. “Let’s think step by step” is the closest thing we have to a universal reasoning amplifier, and it directly enables everything that followed: self-consistency samples many chains, tree-of-thoughts searches over them, and modern “reasoning models” basically train the model to always do CoT internally. The mental model: give the model a scratchpad, and it’ll use it. Build your LLM features assuming CoT is on by default for anything that isn’t trivial.</p>
+:ET

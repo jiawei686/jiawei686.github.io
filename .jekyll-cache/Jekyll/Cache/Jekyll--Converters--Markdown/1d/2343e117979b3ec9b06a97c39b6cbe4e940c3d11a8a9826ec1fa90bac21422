@@ -1,0 +1,2 @@
+I"L<p>GPT-3 (Brown et al., 2020) is the moment the world stopped thinking of language models as “text completers” and started thinking of them as <em>programmable via prompts</em>. The paper’s headline — a 175-billion-parameter model that learns new tasks from a few examples in the prompt, with no fine-tuning — is the direct ancestor of everything we now call “prompt engineering” and, eventually, “in-context learning.” I’m writing this because the mechanism it revealed (in-context learning) is still not fully understood and is central to how we use LLMs today.</p>
+:ET

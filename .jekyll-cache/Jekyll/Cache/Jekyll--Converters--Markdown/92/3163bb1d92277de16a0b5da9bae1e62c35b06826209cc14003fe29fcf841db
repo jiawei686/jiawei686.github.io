@@ -1,0 +1,2 @@
+I"<p>Machine learning explainability is the set of methods for answering “why did the model predict <em>that</em>?” As models moved from simple linear regressions to opaque neural nets and gradient-boosted trees, their predictions got better and their reasoning got invisible. Explainability pushes back against that opacity — for debugging, for trust, and often because regulation demands it. I’m writing this as a practical intro: which tools exist, what they actually tell you, and where they mislead.</p>
+:ET

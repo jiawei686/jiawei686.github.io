@@ -1,0 +1,2 @@
+I"<p>FlashAttention (Dao et al., 2022, arXiv:2205.14135) is one of those papers that looks like a systems optimization but quietly reshaped what models are even <em>possible</em>. The headline claim — “2x training speedup, 3x longer sequences” — undersells it. Without FlashAttention, models like Longformer-style long-context LLMs and the long-context GPT/Claude variants would be economically impractical to train. I’m writing this because the core idea is genuinely elegant and most explanations bury it in GPU jargon.</p>
+:ET

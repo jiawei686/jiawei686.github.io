@@ -1,0 +1,2 @@
+I"�<p>Computer vision (CV) is the field of getting computers to <em>understand images</em> — classify them, find objects, segment regions, describe scenes. For a long time it was hand-engineered features and fragile heuristics; then deep learning rewrote the field almost overnight. I’m writing this as a foundation because CV also underpins multimodal models (CLIP, covered separately) and a lot of applied AI, and the arc from CNNs to Vision Transformers is a clean story worth knowing.</p>
+:ET

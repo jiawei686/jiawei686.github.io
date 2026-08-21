@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+  <head>
+  <meta name="baidu-site-verification" content="5GAItV9OXY" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+  <meta name="google-adsense-account" content="ca-pub-7129764839688468">
+
+  <!-- ===== SEO (per-page dynamic) ===== -->
+  
+  
+  <meta name="description" content="Over Kaggle competitions and real data-science projects I’ve collected a set of practical techniques covering data cleaning, visualization, and time-series f...">
+  <meta name="keywords" content="data">
+  <meta name="author" content="Jiawei Cui">
+  <meta name="robots" content="index,follow">
+  <link rel="canonical" href="https://cuijiawei.cn/2025/09/15/kaggle-data-science-practical-notes/">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Jiawei's Blog">
+  <meta property="og:title" content="Kaggle & Data Science - Practical Tips and Best Practices">
+  <meta property="og:description" content="Over Kaggle competitions and real data-science projects I’ve collected a set of practical techniques covering data cleaning, visualization, and time-series f...">
+  <meta property="og:url" content="https://cuijiawei.cn/2025/09/15/kaggle-data-science-practical-notes/">
+
+  
+  <meta property="og:image" content="https://cuijiawei.cn/public/img/og/kaggle-data-science-practical-notes.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:locale" content="en_US">
+  
+  <meta property="article:published_time" content="2025-09-15T10:00:00+08:00">
+  <meta property="article:section" content="data">
+  <meta property="article:tag" content="data">
+  
+  
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Kaggle & Data Science - Practical Tips and Best Practices">
+  <meta name="twitter:description" content="Over Kaggle competitions and real data-science projects I’ve collected a set of practical techniques covering data cleaning, visualization, and time-series f...">
+  <meta name="twitter:image" content="https://cuijiawei.cn/public/img/og/kaggle-data-science-practical-notes.png">
+
+  <title>
+    
+       Kaggle & Data Science - Practical Tips and Best Practices 
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Slab:700|PT+Serif:400,400italic,700,700italic" type="text/css">
+  <link rel="stylesheet" href="/public/css/poole.css">
+  <link rel="stylesheet" href="/public/css/hyde.css">
+  <!--  <link rel="stylesheet" href="/public/css/jekyll-github.css">-->
+  <link rel="stylesheet" href="/public/css/rouge.css">
+
+  
+
+  
+
+  
+
+  <style>
+    .content a,
+    .related-posts li a:hover {
+      color: #0d9488;
+    }
+    ::selection {
+      color: #fff;
+      background: #0d9488;
+    }
+    ::-moz-selection {
+      color: #fff;
+      background: #0d9488;
+    }
+  </style>
+
+  <!-- Icons -->
+  <link rel="icon" href="/public/img/logo.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/public/img/apple-touch-icon.png">
+
+  <!-- RSS -->
+  <link rel="alternate" type="application/atom+xml" title="Jiawei's Blog" href="/atom.xml">
+
+  <!-- MathJax for LaTeX math rendering -->
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']]
+      }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <!-- Baidu analytics -->
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?4a3679fd1f44022a55666cfdd9025484";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+  <!-- Baidu active push: submits each visited URL to Baidu for faster indexing -->
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') { bp.src = 'https://zz.bdstatic.com/linksubmit/push.js'; }
+      else { bp.src = 'http://push.zhanzhang.baidu.com/push.js'; }
+      var s = document.getElementsByTagName('script')[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7129764839688468"
+     crossorigin="anonymous"></script>
+
+  <!-- ===== Structured data ===== -->
+  
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "Kaggle & Data Science - Practical Tips and Best Practices",
+    "description": "Over Kaggle competitions and real data-science projects I’ve collected a set of practical techniques covering data cleaning, visualization, and time-series f...",
+    "image": "https://cuijiawei.cn/public/img/og/kaggle-data-science-practical-notes.png",
+    "datePublished": "2025-09-15T10:00:00+08:00",
+    "dateModified": "2025-09-15T10:00:00+08:00",
+    "keywords": "data",
+    "articleSection": "data",
+    "mainEntityOfPage": { "@type": "WebPage", "@id": "https://cuijiawei.cn/2025/09/15/kaggle-data-science-practical-notes/" },
+    "author": {
+      "@type": "Person",
+      "name": "Jiawei Cui",
+      "alternateName": ["kiritocui", "崔家维", "cuijiawei"]
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "Jiawei Cui",
+      "logo": { "@type": "ImageObject", "url": "https://cuijiawei.cn/public/img/logo.svg" }
+    }
+  }
+  </script>
+  
+
+</head>
+
+  <body>
+
+    <main class="content container">
+      
+
+
+<article class="post">
+  <h1 class="post-title">Kaggle & Data Science - Practical Tips and Best Practices</h1>
+  <div class="post-date">
+    <time datetime="2025-09-15T10:00:00+08:00">09/15/25</time>
+    <span>on <a href="/tag/data/">Data Science</a></span>
+  </div>
+  <hr/>
+  <p>Over Kaggle competitions and real data-science projects I’ve collected a set of practical techniques covering data cleaning, visualization, and time-series feature engineering. These come from actual work, and I hope they save you some time.</p>
+
+<h2 id="1-data-cleaning-techniques">1. Data cleaning techniques</h2>
+
+<h3 id="11-timestamp-normalization">1.1 Timestamp normalization</h3>
+
+<p>Messy timestamp formats are common in time-series data. Here’s a robust way to normalize them:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="n">pd</span>
+
+<span class="c1"># Load and normalize timestamps
+</span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="p">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s">"data.csv"</span><span class="p">)</span>
+<span class="n">df</span><span class="p">[</span><span class="s">"time"</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="p">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s">"time"</span><span class="p">],</span> <span class="n">utc</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>  <span class="c1"># standardize on UTC
+</span><span class="n">df</span><span class="p">.</span><span class="n">set_index</span><span class="p">(</span><span class="s">"time"</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>  <span class="c1"># make it the index
+</span><span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">.</span><span class="n">sort_index</span><span class="p">()</span>  <span class="c1"># sort by time - crucial for time series
+</span></code></pre></div></div>
+
+<h3 id="12-handling-non-standard-numeric-formats">1.2 Handling non-standard numeric formats</h3>
+
+<p>Real data often carries units or letters, e.g. <code class="language-plaintext highlighter-rouge">"15k"</code> or <code class="language-plaintext highlighter-rouge">"20000 yuan"</code>. Normalize them:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">clean_numeric_values</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+    <span class="s">"""Clean numeric values that carry units or letters."""</span>
+    <span class="k">if</span> <span class="n">pd</span><span class="p">.</span><span class="n">isna</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">None</span>
+
+    <span class="c1"># Handle the "15k" style
+</span>    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="s">'k'</span> <span class="ow">in</span> <span class="n">value</span><span class="p">.</span><span class="n">lower</span><span class="p">():</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">.</span><span class="n">lower</span><span class="p">().</span><span class="n">replace</span><span class="p">(</span><span class="s">'k'</span><span class="p">,</span> <span class="s">''</span><span class="p">))</span> <span class="o">*</span> <span class="mi">1000</span>
+
+    <span class="c1"># Handle values with currency symbols
+</span>    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">cleaned</span> <span class="o">=</span> <span class="s">''</span><span class="p">.</span><span class="n">join</span><span class="p">(</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">value</span> <span class="k">if</span> <span class="n">c</span><span class="p">.</span><span class="n">isdigit</span><span class="p">()</span> <span class="ow">or</span> <span class="n">c</span> <span class="o">==</span> <span class="s">'.'</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">cleaned</span><span class="p">)</span> <span class="k">if</span> <span class="n">cleaned</span> <span class="k">else</span> <span class="bp">None</span>
+
+    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+<span class="c1"># Apply the cleaner
+</span><span class="n">df</span><span class="p">[</span><span class="s">'cleaned_column'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s">'messy_column'</span><span class="p">].</span><span class="nb">apply</span><span class="p">(</span><span class="n">clean_numeric_values</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="13-missing-and-duplicate-values">1.3 Missing and duplicate values</h3>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Inspect the basics
+</span><span class="k">print</span><span class="p">(</span><span class="n">df</span><span class="p">.</span><span class="n">info</span><span class="p">())</span>
+<span class="k">print</span><span class="p">(</span><span class="n">df</span><span class="p">.</span><span class="n">describe</span><span class="p">())</span>
+
+<span class="c1"># Fill missing values
+</span><span class="n">df</span><span class="p">.</span><span class="n">fillna</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s">'ffill'</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>  <span class="c1"># forward fill
+# Or fill with specific values
+</span><span class="n">df</span><span class="p">.</span><span class="n">fillna</span><span class="p">({</span><span class="s">'column1'</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s">'column2'</span><span class="p">:</span> <span class="n">df</span><span class="p">[</span><span class="s">'column2'</span><span class="p">].</span><span class="n">median</span><span class="p">()},</span> <span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="c1"># Drop duplicates
+</span><span class="n">df</span><span class="p">.</span><span class="n">drop_duplicates</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h2 id="2-data-visualization-techniques">2. Data visualization techniques</h2>
+
+<h3 id="21-principles-of-effective-visualization">2.1 Principles of effective visualization</h3>
+
+<p>In Kaggle competitions I found that good visualization isn’t just about looking pretty — it’s about clearly telling the data’s story. First be clear about the goal; avoid “charts for the sake of charts.”</p>
+
+<p>Common tools:</p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">matplotlib</code> — fine-grained control.</li>
+  <li><code class="language-plaintext highlighter-rouge">seaborn</code> — attractive defaults out of the box.</li>
+  <li><code class="language-plaintext highlighter-rouge">plotly</code> — interactive charts.</li>
+</ul>
+
+<h3 id="22-reusable-visualization-templates">2.2 Reusable visualization templates</h3>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="n">pd</span>
+<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="n">sns</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+<span class="kn">import</span> <span class="nn">plotly.express</span> <span class="k">as</span> <span class="n">px</span>
+
+<span class="c1"># Set a font that supports your labels
+</span><span class="n">plt</span><span class="p">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s">'font.sans-serif'</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s">'DejaVu Sans'</span><span class="p">]</span>
+<span class="n">plt</span><span class="p">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s">'axes.unicode_minus'</span><span class="p">]</span> <span class="o">=</span> <span class="bp">False</span>
+
+<span class="c1"># Grouped bar chart
+</span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="p">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+<span class="n">sns</span><span class="p">.</span><span class="n">barplot</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">df</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="s">'category'</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s">'value'</span><span class="p">,</span> <span class="n">hue</span><span class="o">=</span><span class="s">'region'</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">.</span><span class="n">set_title</span><span class="p">(</span><span class="s">'Performance by category and region'</span><span class="p">)</span>
+<span class="n">plt</span><span class="p">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">rotation</span><span class="o">=</span><span class="mi">45</span><span class="p">)</span>
+<span class="n">plt</span><span class="p">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="p">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="c1"># Interactive scatter
+</span><span class="n">fig</span> <span class="o">=</span> <span class="n">px</span><span class="p">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="s">'feature1'</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s">'feature2'</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">'category'</span><span class="p">,</span>
+                 <span class="n">title</span><span class="o">=</span><span class="s">'Feature relationships'</span><span class="p">)</span>
+<span class="n">fig</span><span class="p">.</span><span class="n">show</span><span class="p">()</span>
+</code></pre></div></div>
+
+<h2 id="3-time-series-feature-engineering">3. Time-series feature engineering</h2>
+
+<h3 id="31-core-idea">3.1 Core idea</h3>
+
+<p>Skip the complex time-series models: extract temporal features from the timestamps, then feed them to a standard model (random forest, XGBoost). This is both practical and easy to implement.</p>
+
+<h3 id="32-time-index-features">3.2 Time-index features</h3>
+
+<p>Capture cyclical patterns (hour, weekday) and long-term trends:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="n">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="n">np</span>
+
+<span class="k">def</span> <span class="nf">extract_time_features</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">time_col</span><span class="o">=</span><span class="s">'timestamp'</span><span class="p">):</span>
+    <span class="s">"""Extract useful time features from a timestamp column."""</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">df</span><span class="p">[</span><span class="n">time_col</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="p">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">time_col</span><span class="p">])</span>
+
+    <span class="c1"># Base time features
+</span>    <span class="n">df</span><span class="p">[</span><span class="s">'year'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">time_col</span><span class="p">].</span><span class="n">dt</span><span class="p">.</span><span class="n">year</span>
+    <span class="n">df</span><span class="p">[</span><span class="s">'month'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">time_col</span><span class="p">].</span><span class="n">dt</span><span class="p">.</span><span class="n">month</span>
+    <span class="n">df</span><span class="p">[</span><span class="s">'day'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">time_col</span><span class="p">].</span><span class="n">dt</span><span class="p">.</span><span class="n">day</span>
+    <span class="n">df</span><span class="p">[</span><span class="s">'hour'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">time_col</span><span class="p">].</span><span class="n">dt</span><span class="p">.</span><span class="n">hour</span>
+    <span class="n">df</span><span class="p">[</span><span class="s">'weekday'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">time_col</span><span class="p">].</span><span class="n">dt</span><span class="p">.</span><span class="n">weekday</span>
+    <span class="n">df</span><span class="p">[</span><span class="s">'quarter'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">time_col</span><span class="p">].</span><span class="n">dt</span><span class="p">.</span><span class="n">quarter</span>
+
+    <span class="c1"># Cyclical encoding (sin/cos handles wrap-around)
+</span>    <span class="n">df</span><span class="p">[</span><span class="s">'hour_sin'</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">sin</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="p">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">df</span><span class="p">[</span><span class="s">'hour'</span><span class="p">]</span> <span class="o">/</span> <span class="mi">24</span><span class="p">)</span>
+    <span class="n">df</span><span class="p">[</span><span class="s">'hour_cos'</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">cos</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="p">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">df</span><span class="p">[</span><span class="s">'hour'</span><span class="p">]</span> <span class="o">/</span> <span class="mi">24</span><span class="p">)</span>
+    <span class="n">df</span><span class="p">[</span><span class="s">'day_sin'</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">sin</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="p">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">df</span><span class="p">[</span><span class="s">'day'</span><span class="p">]</span> <span class="o">/</span> <span class="mi">31</span><span class="p">)</span>
+    <span class="n">df</span><span class="p">[</span><span class="s">'day_cos'</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">cos</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="p">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">df</span><span class="p">[</span><span class="s">'day'</span><span class="p">]</span> <span class="o">/</span> <span class="mi">31</span><span class="p">)</span>
+    <span class="n">df</span><span class="p">[</span><span class="s">'month_sin'</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">sin</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="p">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">df</span><span class="p">[</span><span class="s">'month'</span><span class="p">]</span> <span class="o">/</span> <span class="mi">12</span><span class="p">)</span>
+    <span class="n">df</span><span class="p">[</span><span class="s">'month_cos'</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">cos</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="p">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">df</span><span class="p">[</span><span class="s">'month'</span><span class="p">]</span> <span class="o">/</span> <span class="mi">12</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">df</span>
+
+<span class="c1"># Usage
+</span><span class="n">df_with_features</span> <span class="o">=</span> <span class="n">extract_time_features</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="33-rolling-window-features">3.3 Rolling-window features</h3>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">add_rolling_features</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">target_col</span><span class="p">,</span> <span class="n">windows</span><span class="o">=</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">14</span><span class="p">]):</span>
+    <span class="s">"""Add rolling-window statistics as features."""</span>
+    <span class="k">for</span> <span class="n">window</span> <span class="ow">in</span> <span class="n">windows</span><span class="p">:</span>
+        <span class="n">df</span><span class="p">[</span><span class="sa">f</span><span class="s">'</span><span class="si">{</span><span class="n">target_col</span><span class="si">}</span><span class="s">_mean_</span><span class="si">{</span><span class="n">window</span><span class="si">}</span><span class="s">'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">target_col</span><span class="p">].</span><span class="n">rolling</span><span class="p">(</span><span class="n">window</span><span class="o">=</span><span class="n">window</span><span class="p">).</span><span class="n">mean</span><span class="p">()</span>
+        <span class="n">df</span><span class="p">[</span><span class="sa">f</span><span class="s">'</span><span class="si">{</span><span class="n">target_col</span><span class="si">}</span><span class="s">_std_</span><span class="si">{</span><span class="n">window</span><span class="si">}</span><span class="s">'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">target_col</span><span class="p">].</span><span class="n">rolling</span><span class="p">(</span><span class="n">window</span><span class="o">=</span><span class="n">window</span><span class="p">).</span><span class="n">std</span><span class="p">()</span>
+        <span class="n">df</span><span class="p">[</span><span class="sa">f</span><span class="s">'</span><span class="si">{</span><span class="n">target_col</span><span class="si">}</span><span class="s">_min_</span><span class="si">{</span><span class="n">window</span><span class="si">}</span><span class="s">'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">target_col</span><span class="p">].</span><span class="n">rolling</span><span class="p">(</span><span class="n">window</span><span class="o">=</span><span class="n">window</span><span class="p">).</span><span class="nb">min</span><span class="p">()</span>
+        <span class="n">df</span><span class="p">[</span><span class="sa">f</span><span class="s">'</span><span class="si">{</span><span class="n">target_col</span><span class="si">}</span><span class="s">_max_</span><span class="si">{</span><span class="n">window</span><span class="si">}</span><span class="s">'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">target_col</span><span class="p">].</span><span class="n">rolling</span><span class="p">(</span><span class="n">window</span><span class="o">=</span><span class="n">window</span><span class="p">).</span><span class="nb">max</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">df</span>
+
+<span class="c1"># Usage
+</span><span class="n">df_with_rolling</span> <span class="o">=</span> <span class="n">add_rolling_features</span><span class="p">(</span><span class="n">df_with_features</span><span class="p">,</span> <span class="s">'target_value'</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h2 id="4-date-format-handling">4. Date-format handling</h2>
+
+<p>Messy date formats are an everyday nuisance. Python’s <code class="language-plaintext highlighter-rouge">datetime</code> module handles them cleanly.</p>
+
+<h3 id="41-string-to-date-object">4.1 String to date object</h3>
+
+<p>This is the foundation — only once a string is a <code class="language-plaintext highlighter-rouge">datetime</code> can you freely reformat it.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+
+<span class="n">date_str1</span> <span class="o">=</span> <span class="s">"2025-12-02 15:30:00"</span>
+<span class="n">date_obj1</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">date_str1</span><span class="p">,</span> <span class="s">"%Y-%m-%d %H:%M:%S"</span><span class="p">)</span>
+
+<span class="n">date_str2</span> <span class="o">=</span> <span class="s">"2025/12/2"</span>
+<span class="n">date_obj2</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">date_str2</span><span class="p">,</span> <span class="s">"%Y/%m/%d"</span><span class="p">)</span>
+
+<span class="c1"># Common directives:
+# %Y - 4-digit year
+# %m - 2-digit month
+# %d - 2-digit day
+# %H - hour (24h)
+# %M - minute
+# %S - second
+</span></code></pre></div></div>
+
+<h3 id="42-pandas-date-handling">4.2 Pandas date handling</h3>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="n">pd</span>
+
+<span class="c1"># Parse dates directly on read
+</span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="p">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s">'data.csv'</span><span class="p">,</span> <span class="n">parse_dates</span><span class="o">=</span><span class="p">[</span><span class="s">'date_column'</span><span class="p">])</span>
+
+<span class="c1"># Or convert later
+</span><span class="n">df</span><span class="p">[</span><span class="s">'date_column'</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="p">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s">'date_column'</span><span class="p">])</span>
+
+<span class="c1"># Format for output
+</span><span class="n">df</span><span class="p">[</span><span class="s">'formatted_date'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s">'date_column'</span><span class="p">].</span><span class="n">dt</span><span class="p">.</span><span class="n">strftime</span><span class="p">(</span><span class="s">'%Y-%m-%d'</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h2 id="5-advanced-data-cleaning">5. Advanced data cleaning</h2>
+
+<h3 id="51-missing-value-strategy">5.1 Missing-value strategy</h3>
+
+<p>The right strategy depends on the data’s nature and why values are missing:</p>
+
+<ul>
+  <li><strong>Drop</strong> — acceptable if only a few rows are affected.</li>
+  <li><strong>Fill</strong> — with a constant (0, mean, median) or a more sophisticated model-based imputation.</li>
+  <li><strong>Analyze</strong> — sometimes the fact that a value is missing is itself a useful feature.</li>
+</ul>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Drop rows with few non-missing values
+</span><span class="n">df_clean</span> <span class="o">=</span> <span class="n">df</span><span class="p">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">thresh</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">.</span><span class="n">columns</span><span class="p">)</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span>
+
+<span class="c1"># Fill numeric column with mean
+</span><span class="n">df</span><span class="p">[</span><span class="s">'numeric_col'</span><span class="p">].</span><span class="n">fillna</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s">'numeric_col'</span><span class="p">].</span><span class="n">mean</span><span class="p">(),</span> <span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="c1"># Fill categorical column with mode
+</span><span class="n">mode_value</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s">'categorical_col'</span><span class="p">].</span><span class="n">mode</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">df</span><span class="p">[</span><span class="s">'categorical_col'</span><span class="p">].</span><span class="n">mode</span><span class="p">().</span><span class="n">empty</span> <span class="k">else</span> <span class="s">'Unknown'</span>
+<span class="n">df</span><span class="p">[</span><span class="s">'categorical_col'</span><span class="p">].</span><span class="n">fillna</span><span class="p">(</span><span class="n">mode_value</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="c1"># Missingness indicator feature
+</span><span class="n">df</span><span class="p">[</span><span class="s">'missing_indicator'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s">'some_col'</span><span class="p">].</span><span class="n">isna</span><span class="p">().</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="52-data-type-correction">5.2 Data-type correction</h3>
+
+<p>Make sure every column has the right type (numeric, datetime, categorical). Wrong types cause silent bugs in analysis and modeling.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">df</span><span class="p">[</span><span class="s">'date'</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="p">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s">'date'</span><span class="p">])</span>
+<span class="n">df</span><span class="p">[</span><span class="s">'zip_code'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s">'zip_code'</span><span class="p">].</span><span class="n">astype</span><span class="p">(</span><span class="s">'category'</span><span class="p">)</span>
+<span class="n">df</span><span class="p">[</span><span class="s">'integer_col'</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="p">.</span><span class="n">to_numeric</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s">'integer_col'</span><span class="p">],</span> <span class="n">downcast</span><span class="o">=</span><span class="s">'integer'</span><span class="p">)</span>
+<span class="n">df</span><span class="p">[</span><span class="s">'float_col'</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="p">.</span><span class="n">to_numeric</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s">'float_col'</span><span class="p">],</span> <span class="n">downcast</span><span class="o">=</span><span class="s">'float'</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="53-inconsistent-data">5.3 Inconsistent data</h3>
+
+<p>Inconsistencies come from typos, mixed formats, or different units. Regex and string ops are your friends.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Normalize street names
+</span><span class="n">df</span><span class="p">[</span><span class="s">'street'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s">'street'</span><span class="p">].</span><span class="nb">str</span><span class="p">.</span><span class="n">replace</span><span class="p">(</span><span class="s">'St.'</span><span class="p">,</span> <span class="s">'Street'</span><span class="p">).</span><span class="nb">str</span><span class="p">.</span><span class="n">replace</span><span class="p">(</span><span class="s">'Rd.'</span><span class="p">,</span> <span class="s">'Road'</span><span class="p">)</span>
+<span class="n">df</span><span class="p">[</span><span class="s">'street'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s">'street'</span><span class="p">].</span><span class="nb">str</span><span class="p">.</span><span class="n">title</span><span class="p">()</span>
+
+<span class="c1"># Normalize categorical values
+</span><span class="n">df</span><span class="p">[</span><span class="s">'category'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s">'category'</span><span class="p">].</span><span class="nb">str</span><span class="p">.</span><span class="n">lower</span><span class="p">().</span><span class="nb">str</span><span class="p">.</span><span class="n">strip</span><span class="p">()</span>
+<span class="n">df</span><span class="p">[</span><span class="s">'category'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s">'category'</span><span class="p">].</span><span class="n">replace</span><span class="p">({</span><span class="s">'male'</span><span class="p">:</span> <span class="s">'Male'</span><span class="p">,</span> <span class="s">'female'</span><span class="p">:</span> <span class="s">'Female'</span><span class="p">,</span> <span class="s">'f'</span><span class="p">:</span> <span class="s">'Female'</span><span class="p">,</span> <span class="s">'m'</span><span class="p">:</span> <span class="s">'Male'</span><span class="p">})</span>
+</code></pre></div></div>
+
+<h3 id="54-outliers">5.4 Outliers</h3>
+
+<p>An outlier is a point far from the rest. It may be a measurement error or a legitimate extreme.</p>
+
+<ul>
+  <li><strong>Visualize</strong>: box plots and scatter plots reveal them intuitively.</li>
+  <li><strong>Statistical</strong>: use tests or rules of thumb (e.g. more than 3 standard deviations from the mean).</li>
+  <li><strong>Handle</strong>: depending on cause, drop, cap, or transform.</li>
+</ul>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="n">np</span>
+
+<span class="c1"># IQR method
+</span><span class="n">Q1</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s">'value'</span><span class="p">].</span><span class="n">quantile</span><span class="p">(</span><span class="mf">0.25</span><span class="p">)</span>
+<span class="n">Q3</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s">'value'</span><span class="p">].</span><span class="n">quantile</span><span class="p">(</span><span class="mf">0.75</span><span class="p">)</span>
+<span class="n">IQR</span> <span class="o">=</span> <span class="n">Q3</span> <span class="o">-</span> <span class="n">Q1</span>
+<span class="n">lower_bound</span> <span class="o">=</span> <span class="n">Q1</span> <span class="o">-</span> <span class="mf">1.5</span> <span class="o">*</span> <span class="n">IQR</span>
+<span class="n">upper_bound</span> <span class="o">=</span> <span class="n">Q3</span> <span class="o">+</span> <span class="mf">1.5</span> <span class="o">*</span> <span class="n">IQR</span>
+
+<span class="n">outliers</span> <span class="o">=</span> <span class="n">df</span><span class="p">[(</span><span class="n">df</span><span class="p">[</span><span class="s">'value'</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">lower_bound</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s">'value'</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">upper_bound</span><span class="p">)]</span>
+
+<span class="c1"># Cap instead of drop
+</span><span class="n">df</span><span class="p">[</span><span class="s">'value_capped'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s">'value'</span><span class="p">].</span><span class="n">clip</span><span class="p">(</span><span class="n">lower</span><span class="o">=</span><span class="n">lower_bound</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="n">upper_bound</span><span class="p">)</span>
+
+<span class="c1"># Or Z-score method
+</span><span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">stats</span>
+<span class="n">z_scores</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="nb">abs</span><span class="p">(</span><span class="n">stats</span><span class="p">.</span><span class="n">zscore</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s">'value'</span><span class="p">]))</span>
+<span class="n">df_no_outliers</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">z_scores</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">]</span>
+</code></pre></div></div>
+
+<h3 id="55-duplicates">5.5 Duplicates</h3>
+
+<p>Duplicate rows distort analysis and should usually be removed.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">df_unique</span> <span class="o">=</span> <span class="n">df</span><span class="p">.</span><span class="n">drop_duplicates</span><span class="p">()</span>
+<span class="n">df_unique</span> <span class="o">=</span> <span class="n">df</span><span class="p">.</span><span class="n">drop_duplicates</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="s">'col1'</span><span class="p">,</span> <span class="s">'col2'</span><span class="p">])</span>
+<span class="n">df_unique</span> <span class="o">=</span> <span class="n">df</span><span class="p">.</span><span class="n">drop_duplicates</span><span class="p">(</span><span class="n">keep</span><span class="o">=</span><span class="s">'last'</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h2 id="6-feature-engineering-and-ml">6. Feature engineering and ML</h2>
+
+<h3 id="61-missing-values">6.1 Missing values</h3>
+
+<p>Real-world databases are rarely complete. Blindly dropping rows loses data; imputation is better.</p>
+
+<p><strong>Simple imputation:</strong></p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn.impute</span> <span class="kn">import</span> <span class="n">SimpleImputer</span>
+
+<span class="n">num_imputer</span> <span class="o">=</span> <span class="n">SimpleImputer</span><span class="p">(</span><span class="n">strategy</span><span class="o">=</span><span class="s">'median'</span><span class="p">)</span>
+<span class="n">df</span><span class="p">[[</span><span class="s">'col1'</span><span class="p">,</span> <span class="s">'col2'</span><span class="p">]]</span> <span class="o">=</span> <span class="n">num_imputer</span><span class="p">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">df</span><span class="p">[[</span><span class="s">'col1'</span><span class="p">,</span> <span class="s">'col2'</span><span class="p">]])</span>
+
+<span class="n">cat_imputer</span> <span class="o">=</span> <span class="n">SimpleImputer</span><span class="p">(</span><span class="n">strategy</span><span class="o">=</span><span class="s">'most_frequent'</span><span class="p">)</span>
+<span class="n">df</span><span class="p">[[</span><span class="s">'cat_col1'</span><span class="p">,</span> <span class="s">'cat_col2'</span><span class="p">]]</span> <span class="o">=</span> <span class="n">cat_imputer</span><span class="p">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">df</span><span class="p">[[</span><span class="s">'cat_col1'</span><span class="p">,</span> <span class="s">'cat_col2'</span><span class="p">]])</span>
+</code></pre></div></div>
+
+<p><strong>Advanced imputation:</strong></p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn.experimental</span> <span class="kn">import</span> <span class="n">enable_iterative_imputer</span>
+<span class="kn">from</span> <span class="nn">sklearn.impute</span> <span class="kn">import</span> <span class="n">IterativeImputer</span>
+
+<span class="n">imp</span> <span class="o">=</span> <span class="n">IterativeImputer</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">df_imputed</span> <span class="o">=</span> <span class="n">imp</span><span class="p">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="62-the-core-idea-of-feature-engineering">6.2 The core idea of feature engineering</h3>
+
+<p>The features in your data ultimately determine model success. Feature engineering is the art and science of creating new features from existing data to better represent the underlying problem to the model.</p>
+
+<p><strong>Mutual information (MI)</strong> measures the relationship between two variables and helps identify features with the most predictive power for the target.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn.feature_selection</span> <span class="kn">import</span> <span class="n">mutual_info_regression</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="n">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="n">np</span>
+
+<span class="k">def</span> <span class="nf">make_mi_scores</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">discrete_features</span><span class="p">):</span>
+    <span class="s">"""Compute mutual-information scores."""</span>
+    <span class="n">mi_scores</span> <span class="o">=</span> <span class="n">mutual_info_regression</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">discrete_features</span><span class="o">=</span><span class="n">discrete_features</span><span class="p">)</span>
+    <span class="n">mi_scores</span> <span class="o">=</span> <span class="n">pd</span><span class="p">.</span><span class="n">Series</span><span class="p">(</span><span class="n">mi_scores</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">"MI Scores"</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">X</span><span class="p">.</span><span class="n">columns</span><span class="p">)</span>
+    <span class="n">mi_scores</span> <span class="o">=</span> <span class="n">mi_scores</span><span class="p">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">mi_scores</span>
+
+<span class="c1"># Usage:
+# mi_scores = make_mi_scores(X, y, discrete_features)
+# print(mi_scores)
+</span></code></pre></div></div>
+
+<h3 id="63-common-feature-engineering-techniques">6.3 Common feature-engineering techniques</h3>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># 1. Count encoding - replace category with its frequency
+</span><span class="n">counts</span> <span class="o">=</span> <span class="n">X_train</span><span class="p">[</span><span class="n">col</span><span class="p">].</span><span class="n">value_counts</span><span class="p">()</span>
+<span class="n">X_train</span><span class="p">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">col</span> <span class="o">+</span> <span class="s">'_count'</span><span class="p">]</span> <span class="o">=</span> <span class="n">X_train</span><span class="p">[</span><span class="n">col</span><span class="p">].</span><span class="nb">map</span><span class="p">(</span><span class="n">counts</span><span class="p">)</span>
+
+<span class="c1"># 2. Target encoding - replace category with target mean from training set
+</span><span class="n">encoding</span> <span class="o">=</span> <span class="n">X_train</span><span class="p">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">col</span><span class="p">)[</span><span class="s">'target'</span><span class="p">].</span><span class="n">mean</span><span class="p">()</span>
+<span class="n">X_train</span><span class="p">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">col</span> <span class="o">+</span> <span class="s">'_target'</span><span class="p">]</span> <span class="o">=</span> <span class="n">X_train</span><span class="p">[</span><span class="n">col</span><span class="p">].</span><span class="nb">map</span><span class="p">(</span><span class="n">encoding</span><span class="p">)</span>
+
+<span class="c1"># 3. Binning - turn a continuous feature into discrete buckets
+</span><span class="n">X</span><span class="p">[</span><span class="s">'feature_binned'</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="p">.</span><span class="n">cut</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="s">'continuous_feature'</span><span class="p">],</span> <span class="n">bins</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+<span class="c1"># 4. Interaction features - combine two or more features
+</span><span class="n">X</span><span class="p">[</span><span class="s">'interaction'</span><span class="p">]</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="s">'feature1'</span><span class="p">]</span> <span class="o">*</span> <span class="n">X</span><span class="p">[</span><span class="s">'feature2'</span><span class="p">]</span>
+
+<span class="c1"># 5. Aggregation features - derive stats from grouped data
+</span><span class="n">agg_features</span> <span class="o">=</span> <span class="n">df</span><span class="p">.</span><span class="n">groupby</span><span class="p">(</span><span class="s">'category'</span><span class="p">).</span><span class="n">agg</span><span class="p">({</span>
+    <span class="s">'value'</span><span class="p">:</span> <span class="p">[</span><span class="s">'mean'</span><span class="p">,</span> <span class="s">'std'</span><span class="p">,</span> <span class="s">'count'</span><span class="p">],</span>
+<span class="p">}).</span><span class="n">reset_index</span><span class="p">()</span>
+<span class="n">agg_features</span><span class="p">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s">'category'</span><span class="p">,</span> <span class="s">'value_mean'</span><span class="p">,</span> <span class="s">'value_std'</span><span class="p">,</span> <span class="s">'value_count'</span><span class="p">]</span>
+</code></pre></div></div>
+
+<h2 id="7-lessons-learned">7. Lessons learned</h2>
+
+<ol>
+  <li><strong>Define the goal first</strong> — clarify the objective before any processing to avoid needless complexity.</li>
+  <li><strong>Validate step by step</strong> — check that each operation produces the expected result.</li>
+  <li><strong>Preserve data integrity</strong> — don’t lose important information while cleaning.</li>
+  <li><strong>Document the process</strong> — record every step for reproducibility and debugging.</li>
+  <li><strong>Leverage Pandas</strong> — use vectorized operations to boost efficiency.</li>
+  <li><strong>Cleaning is iterative</strong> — expect it to be a slow, repeated process.</li>
+  <li><strong>Be systematic</strong> — a structured approach is essential for reliable models.</li>
+  <li><strong>Reproducibility</strong> — always log your cleaning steps.</li>
+  <li><strong>Strategy depends on context</strong> — the best approach varies with the data and the goal.</li>
+  <li><strong>Features decide success</strong> — feature engineering often matters more than model choice.</li>
+  <li><strong>Avoid leakage</strong> — be careful not to let future information leak into features.</li>
+</ol>
+
+<p>These techniques are what I’ve gathered from Kaggle competitions and real projects. I hope they help you handle data-science tasks more efficiently. Remember: the heart of data science is solving real problems — tools and tricks are just means, and the key is understanding the story behind the data.</p>
+
+</article>
+
+
+<aside class="author">
+  <h2 class="aside-title">About</h2>
+
+  
+  <img class="me" src="/public/img/head.jpg" alt="Jiawei Cui"/>
+  
+
+  <p>I’m Jiawei — a developer who spent years shipping software (networking,
+distributed systems) and is now going all-in on AI and machine learning.</p>
+
+<p>This blog is where I think in public: deep dives into LLMs and the papers
+behind them, practical ML, and the occasional build. Formerly writing code
+for a living; now training and shipping models.</p>
+
+<p><em>Don’t you close your eyes.</em></p>
+
+</aside>
+
+
+
+<aside class="related">
+  <h2 class="aside-title">Related Posts</h2>
+  <ul class="related-posts">
+    
+    
+    
+      
+      
+        <li>
+          <h4>
+            <a href="/2026/01/10/advanced-sql/">
+              <span>Advanced SQL</span>
+              <small>01/10/26</small>
+            </a>
+          </h4>
+        </li>
+      
+    
+      
+      
+        <li>
+          <h4>
+            <a href="/2026/01/02/geospatial-analysis/">
+              <span>Geospatial Analysis</span>
+              <small>01/02/26</small>
+            </a>
+          </h4>
+        </li>
+      
+    
+      
+        
+        
+  </ul>
+</aside>
+
+
+
+    </main>
+    <div class="love content container">
+      © 2026 Jiawei &nbsp;&nbsp;
+      <a href="/about/">About</a> ·
+      <a href="/contact/">Contact</a> ·
+      <a href="/privacy/">Privacy</a> &nbsp;&nbsp;
+      <a href="https://beian.miit.gov.cn/" target="_blank">粤ICP备18035774号</a>
+    </div>
+    
+
+
+
+
+
+<div id="_backdrop"></div>
+<a   id="_menu" href="#_sidebar">☰</a>
+
+<aside id="_sidebar" class="sidebar" style="background-image:url('/public/img/hyde.jpg')">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <h1><a href="/">Jiawei's Blog</a></h1>
+      <p>Notes on LLMs, deep learning, and building things that work.</p>
+
+    </div>
+
+    <nav class="sidebar-nav">
+      
+        
+        <a class="sidebar-nav-item" href="/tag/llm/">Paper Deep-Dives</a>
+      
+        
+        <a class="sidebar-nav-item" href="/tag/ai/">AI & Machine Learning</a>
+      
+        
+        <a class="sidebar-nav-item" href="/tag/data/">Data Science</a>
+      
+        
+        <a class="sidebar-nav-item" href="/tag/projects/">Projects</a>
+      
+        
+        <a class="sidebar-nav-item" href="/tag/engineering/">Engineering Archive</a>
+      
+
+      
+
+      
+      
+        
+          
+            
+          
+        
+      
+        
+          
+            
+              <a class="sidebar-nav-item" href="/about/">About</a>
+            
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+            
+          
+        
+      
+        
+          
+        
+      
+        
+          
+            
+              <a class="sidebar-nav-item" href="/playground/">Playground</a>
+            
+          
+        
+      
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+    </nav>
+
+    <div class="sidebar-social">
+      
+        <a href="https://github.com/jiawei686"><span class="icon-icon-github"></span></a>
+
+      
+    </div>
+  </div>
+</aside>
+
+
+  </body>
+</html>

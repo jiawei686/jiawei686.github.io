@@ -1,0 +1,2 @@
+I"�<p>DPO (Rafailov et al., 2023) is the method I now reach for by default when aligning a model. It delivers what RLHF gives you — a model that prefers responses humans like — but <strong>without a separate reward model and without an unstable RL training loop</strong>. I’m writing this because DPO quietly became the workhorse of open-model alignment, and understanding it saves you from a lot of PPO pain.</p>
+:ET

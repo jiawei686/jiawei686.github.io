@@ -1,0 +1,61 @@
+# cuijiawei.cn
+
+> A blog on large language models, deep learning, and engineering. Paper deep-dives, tutorials, and build notes.
+
+## Posts by topic
+### [AI]
+- [Deep Learning](https://cuijiawei.cn/2025/10/22/intro-to-deep-learning/)
+- [Game AI and Reinforcement Learning](https://cuijiawei.cn/2025/12/20/intro-to-game-ai-and-reinforcement-learning/)
+- [Machine Learning Explainability](https://cuijiawei.cn/2025/12/28/machine-learning-explainability/)
+- [Computer Vision](https://cuijiawei.cn/2026/01/15/computer-vision/)
+
+### [DATA]
+- [Kaggle & Data Science - Practical Tips and Best Practices](https://cuijiawei.cn/2025/09/15/kaggle-data-science-practical-notes/)
+- [Geospatial Analysis](https://cuijiawei.cn/2026/01/02/geospatial-analysis/)
+- [Advanced SQL](https://cuijiawei.cn/2026/01/10/advanced-sql/)
+
+### [ENGINEERING]
+- [Advanced JavaScript - Exercises and Gotchas](https://cuijiawei.cn/2017/03/16/advanced-javascript-exercises/)
+- [Connection-Oriented Transport - TCP](https://cuijiawei.cn/2017/05/18/connection-oriented-transport-tcp/)
+- [Principles of Economics (Mankiw)](https://cuijiawei.cn/2017/06/26/principles-of-economics/)
+- [Getting Started with iptables](https://cuijiawei.cn/2017/11/25/getting-started-with-iptables/)
+- [Building a Linux Mail Server with Postfix and Dovecot](https://cuijiawei.cn/2017/12/01/linux-mail-server-postfix-dovecot/)
+- [IE Quirk: Clicks on <a> Inside <button> Don't Fire](https://cuijiawei.cn/2018/04/26/ie-button-a-tag-click-fix/)
+
+### [LLM]
+- [The Transformer: Attention Is All You Need](https://cuijiawei.cn/2026/03/01/the-transformer-attention-is-all-you-need/)
+- [BERT: Bidirectional Pretraining from Transformers](https://cuijiawei.cn/2026/03/08/bert-bidirectional-pretraining/)
+- [GPT-3 and Few-Shot Learning at Scale](https://cuijiawei.cn/2026/03/15/gpt-3-few-shot-learners/)
+- [InstructGPT: Aligning LLMs with Human Preference (RLHF)](https://cuijiawei.cn/2026/03/22/instructgpt-rlhf-alignment/)
+- [Chain-of-Thought Prompting: Let the Model Think Step by Step](https://cuijiawei.cn/2026/03/29/chain-of-thought-prompting/)
+- [LoRA: Low-Rank Adaptation of Large Models](https://cuijiawei.cn/2026/04/05/lora-low-rank-adaptation/)
+- [FlashAttention: IO-Aware Exact Attention](https://cuijiawei.cn/2026/04/12/flashattention-efficient-attention/)
+- [LLaMA: The Open-Weight Catalyst](https://cuijiawei.cn/2026/04/19/llama-open-weights-revolution/)
+- [Mixtral of Experts: Sparse Mixture of Experts](https://cuijiawei.cn/2026/04/26/mixtral-mixture-of-experts/)
+- [DeepSeek-R1: Reasoning via Reinforcement Learning](https://cuijiawei.cn/2026/05/03/deepseek-r1-reasoning-rl/)
+- [RAG: Retrieval-Augmented Generation](https://cuijiawei.cn/2026/05/10/rag-retrieval-augmented-generation/)
+- [ReAct: Reasoning + Acting in Language Models](https://cuijiawei.cn/2026/05/17/react-reasoning-acting/)
+- [Toolformer: Language Models That Teach Themselves to Use Tools](https://cuijiawei.cn/2026/05/24/toolformer-tools/)
+- [Reflexion: Verbal Reinforcement Learning for Language Agents](https://cuijiawei.cn/2026/05/31/reflexion-verbal-rl/)
+- [Generative Agents: Believable Simulacra of Human Behavior](https://cuijiawei.cn/2026/06/07/generative-agents/)
+- [AutoGen: Multi-Agent Conversation as Computation](https://cuijiawei.cn/2026/06/14/autogen-multi-agent/)
+- [Tree of Thoughts: Deliberate Problem Solving](https://cuijiawei.cn/2026/06/21/tree-of-thoughts/)
+- [Scaling Laws for Neural Language Models](https://cuijiawei.cn/2026/06/28/scaling-laws/)
+- [RoPE: Rotary Position Embedding](https://cuijiawei.cn/2026/07/03/rope/)
+- [Chinchilla: Training Compute-Optimal Large Language Models](https://cuijiawei.cn/2026/07/05/chinchilla/)
+- [RLHF: Deep Reinforcement Learning from Human Preferences](https://cuijiawei.cn/2026/07/05/rlhf-from-human-preferences/)
+- [DPO: Direct Preference Optimization](https://cuijiawei.cn/2026/07/07/dpo/)
+- [Constitutional AI: Harmlessness from AI Feedback](https://cuijiawei.cn/2026/07/09/constitutional-ai/)
+- [Self-Consistency: Improving Chain-of-Thought Reasoning](https://cuijiawei.cn/2026/07/10/self-consistency/)
+- [CLIP: Learning Transferable Visual Models From Language Supervision](https://cuijiawei.cn/2026/07/11/clip/)
+- [Softmax: Turning Logits into Probabilities](https://cuijiawei.cn/2026/07/18/softmax/)
+
+### [PROJECTS]
+- [wechat-dev-mcp: Bridging AI and WeChat Mini-Program Development](https://cuijiawei.cn/2026/01/31/wechat-dev-mcp/)
+- [Homeware Sense: Open Source Smart Home Integration for OpenClaw AI](https://cuijiawei.cn/2026/02/02/introducing-homeware-sense-skill-unified-smart-home-integration-for-openclaw-ai/)
+- [Deploy OpenClaw AI on Raspberry Pi: Our Open Source Guide](https://cuijiawei.cn/2026/02/04/complete-raspberry-pi-openclaw-deployment-guide/)
+
+## Other resources
+- [About](https://cuijiawei.cn/about/)
+- [Playground](https://cuijiawei.cn/playground/)
+

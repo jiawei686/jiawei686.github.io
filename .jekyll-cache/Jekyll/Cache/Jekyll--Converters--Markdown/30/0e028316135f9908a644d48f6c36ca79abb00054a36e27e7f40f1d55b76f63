@@ -1,0 +1,72 @@
+I"<p>SQL is easy to start and surprisingly deep to master. The “advanced” parts — window functions, CTEs, query planning, indexing — are what separate “I can fetch rows” from “I can answer real analytical questions efficiently.” I’m writing this as a practical guide because these features are high-leverage: they turn multi-query, application-side hacks into a single clear statement, and they’re where most real-world data work happens.</p>
+
+<h2 id="window-functions-the-biggest-unlock">Window functions: the biggest unlock</h2>
+
+<p>A window function computes a value across a set of rows <em>related</em> to the current row, without collapsing them like <code class="language-plaintext highlighter-rouge">GROUP BY</code> does. This is the feature people most underuse.</p>
+
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">-- running total per user, ordered by date, WITHOUT losing rows</span>
+<span class="k">SELECT</span> <span class="n">user_id</span><span class="p">,</span> <span class="n">order_date</span><span class="p">,</span> <span class="n">amount</span><span class="p">,</span>
+       <span class="k">SUM</span><span class="p">(</span><span class="n">amount</span><span class="p">)</span> <span class="n">OVER</span> <span class="p">(</span>
+         <span class="n">PARTITION</span> <span class="k">BY</span> <span class="n">user_id</span>
+         <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">order_date</span>
+       <span class="p">)</span> <span class="k">AS</span> <span class="n">running_total</span>
+<span class="k">FROM</span> <span class="n">orders</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p>Key clauses:</p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">PARTITION BY</code> — the “group” (resets per user).</li>
+  <li><code class="language-plaintext highlighter-rouge">ORDER BY</code> — the order within the window (enables running totals, ranks).</li>
+  <li><strong>Window vs. aggregate:</strong> <code class="language-plaintext highlighter-rouge">GROUP BY</code> reduces rows; <code class="language-plaintext highlighter-rouge">OVER(...)</code> keeps every row and adds a computed column. That distinction is the whole point.</li>
+</ul>
+
+<p>Common patterns: <code class="language-plaintext highlighter-rouge">ROW_NUMBER()</code> (dedupe, pick latest), <code class="language-plaintext highlighter-rouge">RANK()/DENSE_RANK()</code> (leaderboards), <code class="language-plaintext highlighter-rouge">LAG()/LEAD()</code> (period-over-period change), <code class="language-plaintext highlighter-rouge">NTILE()</code> (bucket into quantiles).</p>
+
+<h2 id="ctes-readable-composable-queries">CTEs: readable, composable queries</h2>
+
+<p>Common Table Expressions (<code class="language-plaintext highlighter-rouge">WITH</code>) let you name intermediate result sets:</p>
+
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">WITH</span> <span class="n">active</span> <span class="k">AS</span> <span class="p">(</span>
+  <span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">users</span> <span class="k">WHERE</span> <span class="n">last_seen</span> <span class="o">&gt;</span> <span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="n">interval</span> <span class="s1">'30 days'</span>
+<span class="p">),</span> <span class="n">spend</span> <span class="k">AS</span> <span class="p">(</span>
+  <span class="k">SELECT</span> <span class="n">user_id</span><span class="p">,</span> <span class="k">SUM</span><span class="p">(</span><span class="n">amount</span><span class="p">)</span> <span class="k">AS</span> <span class="n">total</span>
+  <span class="k">FROM</span> <span class="n">orders</span> <span class="k">JOIN</span> <span class="n">active</span> <span class="k">USING</span> <span class="p">(</span><span class="n">user_id</span><span class="p">)</span>
+  <span class="k">GROUP</span> <span class="k">BY</span> <span class="n">user_id</span>
+<span class="p">)</span>
+<span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">spend</span> <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">total</span> <span class="k">DESC</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p>CTEs are mostly readability aids (the optimizer usually inlines them) — but <code class="language-plaintext highlighter-rouge">RECURSIVE</code> CTEs can do real work, like walking a tree/hierarchy (org charts, category trees) in pure SQL.</p>
+
+<h2 id="query-optimization-think-like-the-planner">Query optimization: think like the planner</h2>
+
+<ul>
+  <li><strong>Indexes</strong> are the primary speed lever. They’re great for <code class="language-plaintext highlighter-rouge">WHERE</code>, <code class="language-plaintext highlighter-rouge">JOIN</code>, and <code class="language-plaintext highlighter-rouge">ORDER BY</code> on indexed columns; useless for functions wrapped around a column (<code class="language-plaintext highlighter-rouge">WHERE LOWER(name) = ...</code> won’t use a plain index on <code class="language-plaintext highlighter-rouge">name</code>).</li>
+  <li><strong>EXPLAIN / EXPLAIN ANALYZE</strong> is your friend — see the actual plan and where the cost is. I never tune a slow query without it.</li>
+  <li><strong>Avoid SELECT *</strong> in analytical queries; fetch only needed columns (helps columnar stores especially).</li>
+  <li><strong>Join order and filters:</strong> push filters down early; a bad plan often comes from missing statistics or a missing index on a join key.</li>
+  <li><strong>Beware correlated subqueries</strong> — they can re-run per row; a window function or CTE join is usually better.</li>
+</ul>
+
+<h2 id="indexing-strategy">Indexing strategy</h2>
+
+<ul>
+  <li>Index columns you filter/join/sort on.</li>
+  <li>Composite indexes follow the <strong>leftmost-prefix</strong> rule — <code class="language-plaintext highlighter-rouge">(a, b, c)</code> helps queries filtering on <code class="language-plaintext highlighter-rouge">a</code>, or <code class="language-plaintext highlighter-rouge">a,b</code>, but not on <code class="language-plaintext highlighter-rouge">b</code> alone.</li>
+  <li>Too many indexes slow writes; it’s a trade-off, not free.</li>
+  <li>Partial and expression indexes solve specific hot queries elegantly (<code class="language-plaintext highlighter-rouge">CREATE INDEX ... WHERE status = 'open'</code>).</li>
+</ul>
+
+<h2 id="practical-habits">Practical habits</h2>
+
+<ul>
+  <li>Write CTEs top-to-bottom to mirror your thinking; future-you will thank you.</li>
+  <li>Reach for window functions before pulling data into Python to “post-process” — the database does it faster.</li>
+  <li>Profile with EXPLAIN before assuming; intuition about what’s slow is often wrong.</li>
+  <li>Know your dialect (Postgres, BigQuery, MySQL, Snowflake differ in window/CTE support and types).</li>
+</ul>
+
+<h2 id="my-take">My take</h2>
+
+<p>Advanced SQL is the difference between a query that answers the question and one that almost does, slowly. The two features I’d learn first are <strong>window functions</strong> (they eliminate a whole category of app-side loops) and <strong>EXPLAIN</strong> (it ends guesswork about performance). Everything else — CTEs for readability, recursive CTEs for hierarchies, sensible indexing — compounds from there. If you do any analytics, investing a few days in these pays back on nearly every query you’ll write afterward. The database is almost always faster at this than your application code; let it do the work.</p>
+:ET

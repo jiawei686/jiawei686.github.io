@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+  <head>
+  <meta name="baidu-site-verification" content="5GAItV9OXY" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+  <meta name="google-adsense-account" content="ca-pub-7129764839688468">
+
+  <!-- ===== SEO (per-page dynamic) ===== -->
+  
+  
+  <meta name="description" content="A practical intro to deep learning: from perceptrons to backprop, CNNs, RNNs, and Transformers.">
+  <meta name="keywords" content="ai">
+  <meta name="author" content="Jiawei Cui">
+  <meta name="robots" content="index,follow">
+  <link rel="canonical" href="https://cuijiawei.cn/2025/10/22/intro-to-deep-learning/">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Jiawei's Blog">
+  <meta property="og:title" content="Deep Learning">
+  <meta property="og:description" content="A practical intro to deep learning: from perceptrons to backprop, CNNs, RNNs, and Transformers.">
+  <meta property="og:url" content="https://cuijiawei.cn/2025/10/22/intro-to-deep-learning/">
+
+  
+  <meta property="og:image" content="https://cuijiawei.cn/public/img/og/intro-to-deep-learning.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:locale" content="en_US">
+  
+  <meta property="article:published_time" content="2025-10-22T00:00:00+08:00">
+  <meta property="article:section" content="ai">
+  <meta property="article:tag" content="ai">
+  
+  
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Deep Learning">
+  <meta name="twitter:description" content="A practical intro to deep learning: from perceptrons to backprop, CNNs, RNNs, and Transformers.">
+  <meta name="twitter:image" content="https://cuijiawei.cn/public/img/og/intro-to-deep-learning.png">
+
+  <title>
+    
+       Deep Learning 
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Slab:700|PT+Serif:400,400italic,700,700italic" type="text/css">
+  <link rel="stylesheet" href="/public/css/poole.css">
+  <link rel="stylesheet" href="/public/css/hyde.css">
+  <!--  <link rel="stylesheet" href="/public/css/jekyll-github.css">-->
+  <link rel="stylesheet" href="/public/css/rouge.css">
+
+  
+
+  
+
+  
+
+  <style>
+    .content a,
+    .related-posts li a:hover {
+      color: #2563eb;
+    }
+    ::selection {
+      color: #fff;
+      background: #2563eb;
+    }
+    ::-moz-selection {
+      color: #fff;
+      background: #2563eb;
+    }
+  </style>
+
+  <!-- Icons -->
+  <link rel="icon" href="/public/img/logo.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/public/img/apple-touch-icon.png">
+
+  <!-- RSS -->
+  <link rel="alternate" type="application/atom+xml" title="Jiawei's Blog" href="/atom.xml">
+
+  <!-- MathJax for LaTeX math rendering -->
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']]
+      }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <!-- Baidu analytics -->
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?4a3679fd1f44022a55666cfdd9025484";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+  <!-- Baidu active push: submits each visited URL to Baidu for faster indexing -->
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') { bp.src = 'https://zz.bdstatic.com/linksubmit/push.js'; }
+      else { bp.src = 'http://push.zhanzhang.baidu.com/push.js'; }
+      var s = document.getElementsByTagName('script')[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7129764839688468"
+     crossorigin="anonymous"></script>
+
+  <!-- ===== Structured data ===== -->
+  
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "Deep Learning",
+    "description": "A practical intro to deep learning: from perceptrons to backprop, CNNs, RNNs, and Transformers.",
+    "image": "https://cuijiawei.cn/public/img/og/intro-to-deep-learning.png",
+    "datePublished": "2025-10-22T00:00:00+08:00",
+    "dateModified": "2025-10-22T00:00:00+08:00",
+    "keywords": "ai",
+    "articleSection": "ai",
+    "mainEntityOfPage": { "@type": "WebPage", "@id": "https://cuijiawei.cn/2025/10/22/intro-to-deep-learning/" },
+    "author": {
+      "@type": "Person",
+      "name": "Jiawei Cui",
+      "alternateName": ["kiritocui", "崔家维", "cuijiawei"]
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "Jiawei Cui",
+      "logo": { "@type": "ImageObject", "url": "https://cuijiawei.cn/public/img/logo.svg" }
+    }
+  }
+  </script>
+  
+
+</head>
+
+  <body>
+
+    <main class="content container">
+      
+
+
+<article class="post">
+  <h1 class="post-title">Deep Learning</h1>
+  <div class="post-date">
+    <time datetime="2025-10-22T00:00:00+08:00">10/22/25</time>
+    <span>on <a href="/tag/ai/">AI & Machine Learning</a></span>
+  </div>
+  <hr/>
+  <p>Deep learning is the subfield of machine learning built around <strong>neural networks with many layers</strong> — “deep” because of the stack of transformations between input and output. If you’ve used speech recognition, a photo app that tags faces, or any modern chatbot, you’ve used deep learning. I’m writing this as a grounded intro: not the math for its own sake, but the intuition and the moving parts you actually need to understand the rest of this blog (most of which assumes you know what a neural net is).</p>
+
+<h2 id="the-basic-unit-the-neuron">The basic unit: the neuron</h2>
+
+<p>A single artificial neuron takes several numbers, weights them, sums them, adds a bias, and passes the result through a non-linear <strong>activation function</strong>:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>output = activation( w1·x1 + w2·x2 + ... + b )
+</code></pre></div></div>
+
+<p>The “weights” <code class="language-plaintext highlighter-rouge">w</code> and bias <code class="language-plaintext highlighter-rouge">b</code> are the <em>learned</em> parameters. A neural network is just many of these arranged in layers: layer 1 reads the input, the last layer produces the output, and the layers in between (“hidden layers”) learn progressively richer representations.</p>
+
+<h2 id="why-the-non-linearity-matters">Why the non-linearity matters</h2>
+
+<p>Without an activation function, stacking layers would collapse into a single linear transformation — you could never learn “X-shaped” or “circular” boundaries. The non-linearity (ReLU, tanh, sigmoid, GELU…) is what lets networks approximate complicated functions. This is the single most common thing beginners omit and then wonder why their network can’t learn anything non-trivial.</p>
+
+<h2 id="learning-backpropagation">Learning: backpropagation</h2>
+
+<p>Training means finding weights that make the network’s outputs match the data. The loop:</p>
+
+<ol>
+  <li><strong>Forward pass:</strong> run an input through the network to get a prediction.</li>
+  <li><strong>Loss:</strong> measure the error (e.g. how far the prediction is from the true answer).</li>
+  <li><strong>Backward pass (backprop):</strong> use the chain rule to compute how much each weight contributed to the error.</li>
+  <li><strong>Update:</strong> nudge every weight slightly in the direction that reduces the error (gradient descent / its variants).</li>
+</ol>
+
+<p>Repeat over the dataset many times. Backprop is just “compute gradients efficiently through the whole graph” — the chain rule applied mechanically. Modern frameworks (PyTorch, JAX) do it automatically; you rarely write it by hand, but understanding <em>that</em> it’s happening explains why a bad learning rate or a vanishing gradient breaks training.</p>
+
+<h2 id="the-architectures-youll-meet">The architectures you’ll meet</h2>
+
+<ul>
+  <li><strong>MLPs (multilayer perceptrons):</strong> the vanilla stack. Good for tabular/structured data; bad at spatial or sequential structure.</li>
+  <li><strong>CNNs (convolutional nets):</strong> use local filters that slide over an image, exploiting translation invariance. The backbone of classic computer vision (covered in the CV post).</li>
+  <li><strong>RNNs / LSTMs:</strong> process sequences step by step, carrying a hidden state. Formerly the default for text; now mostly supplanted by Transformers (covered in depth separately).</li>
+  <li><strong>Transformers:</strong> attention-based, parallel-friendly, the architecture behind every LLM. The most important one to understand today.</li>
+</ul>
+
+<h2 id="practical-realities">Practical realities</h2>
+
+<ul>
+  <li><strong>Data is the bottleneck</strong>, not algorithms. A simple model on lots of clean data usually beats a fancy model on little data.</li>
+  <li><strong>Overfitting is the default failure.</strong> Your network will memorize training data if you let it; regularization, validation splits, and early stopping are how you fight back.</li>
+  <li><strong>GPUs matter.</strong> Matrix multiplies at scale need them; this is why deep learning exploded after GPUs became accessible.</li>
+  <li><strong>Start simple.</strong> For a new problem I reach for a baseline (logistic regression or a small MLP) before anything deep, to know what “easy” looks like.</li>
+</ul>
+
+<h2 id="my-take">My take</h2>
+
+<p>Deep learning isn’t magic — it’s differentiable functions + gradient descent + lots of data and compute. The conceptual spine (neuron → layer → forward/backward → update) is learnable in an afternoon; the <em>engineering</em> (data pipelines, regularization, debugging training) is where real skill lives. If you’re here to understand LLMs, treat this post as the foundation: every Transformer and attention mechanism later in this blog is just a specific, very successful arrangement of these same building blocks. Get comfortable with backprop intuition and you’ll never be lost.</p>
+
+</article>
+
+
+<aside class="author">
+  <h2 class="aside-title">About</h2>
+
+  
+  <img class="me" src="/public/img/head.jpg" alt="Jiawei Cui"/>
+  
+
+  <p>I’m Jiawei — a developer who spent years shipping software (networking,
+distributed systems) and is now going all-in on AI and machine learning.</p>
+
+<p>This blog is where I think in public: deep dives into LLMs and the papers
+behind them, practical ML, and the occasional build. Formerly writing code
+for a living; now training and shipping models.</p>
+
+<p><em>Don’t you close your eyes.</em></p>
+
+</aside>
+
+
+
+<aside class="related">
+  <h2 class="aside-title">Related Posts</h2>
+  <ul class="related-posts">
+    
+    
+    
+      
+      
+        <li>
+          <h4>
+            <a href="/2026/01/15/computer-vision/">
+              <span>Computer Vision</span>
+              <small>01/15/26</small>
+            </a>
+          </h4>
+        </li>
+      
+    
+      
+      
+        <li>
+          <h4>
+            <a href="/2025/12/28/machine-learning-explainability/">
+              <span>Machine Learning Explainability</span>
+              <small>12/28/25</small>
+            </a>
+          </h4>
+        </li>
+      
+    
+      
+      
+        <li>
+          <h4>
+            <a href="/2025/12/20/intro-to-game-ai-and-reinforcement-learning/">
+              <span>Game AI and Reinforcement Learning</span>
+              <small>12/20/25</small>
+            </a>
+          </h4>
+        </li>
+      
+    
+      
+        
+        
+  </ul>
+</aside>
+
+
+
+    </main>
+    <div class="love content container">
+      © 2026 Jiawei &nbsp;&nbsp;
+      <a href="/about/">About</a> ·
+      <a href="/contact/">Contact</a> ·
+      <a href="/privacy/">Privacy</a> &nbsp;&nbsp;
+      <a href="https://beian.miit.gov.cn/" target="_blank">粤ICP备18035774号</a>
+    </div>
+    
+
+
+
+
+
+<div id="_backdrop"></div>
+<a   id="_menu" href="#_sidebar">☰</a>
+
+<aside id="_sidebar" class="sidebar" style="background-image:url('/public/img/nap.jpg')">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <h1><a href="/">Jiawei's Blog</a></h1>
+      <p>Notes on LLMs, deep learning, and building things that work.</p>
+
+    </div>
+
+    <nav class="sidebar-nav">
+      
+        
+        <a class="sidebar-nav-item" href="/tag/llm/">Paper Deep-Dives</a>
+      
+        
+        <a class="sidebar-nav-item" href="/tag/ai/">AI & Machine Learning</a>
+      
+        
+        <a class="sidebar-nav-item" href="/tag/data/">Data Science</a>
+      
+        
+        <a class="sidebar-nav-item" href="/tag/projects/">Projects</a>
+      
+        
+        <a class="sidebar-nav-item" href="/tag/engineering/">Engineering Archive</a>
+      
+
+      
+
+      
+      
+        
+          
+            
+          
+        
+      
+        
+          
+            
+              <a class="sidebar-nav-item" href="/about/">About</a>
+            
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+            
+          
+        
+      
+        
+          
+        
+      
+        
+          
+            
+              <a class="sidebar-nav-item" href="/playground/">Playground</a>
+            
+          
+        
+      
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+    </nav>
+
+    <div class="sidebar-social">
+      
+        <a href="https://github.com/jiawei686"><span class="icon-icon-github"></span></a>
+
+      
+    </div>
+  </div>
+</aside>
+
+
+  </body>
+</html>

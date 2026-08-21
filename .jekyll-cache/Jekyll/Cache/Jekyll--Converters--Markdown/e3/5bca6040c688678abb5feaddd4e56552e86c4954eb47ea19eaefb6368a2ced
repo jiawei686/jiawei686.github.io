@@ -1,0 +1,2 @@
+I"<p>InstructGPT (Ouyang et al., 2022) is the paper that made LLMs <em>useful</em> as assistants. Before it, GPT-3 was a brilliant next-token predictor that rarely did what you asked. InstructGPT showed that a three-step recipe — supervised fine-tuning, a reward model, and RLHF — turns a raw model into one that follows instructions, is less toxic, and is genuinely helpful. I’m writing this because it’s the direct ancestor of ChatGPT, and understanding the recipe explains why modern models “listen” to you.</p>
+:ET

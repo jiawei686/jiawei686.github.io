@@ -1,0 +1,51 @@
+I"�<p>LoRA (Hu et al., 2021) is the technique that made it practical for ordinary people — not just labs with clusters — to <em>specialize</em> a large model. If you’ve ever downloaded a “chat” or “instruct” variant of a base model, or swapped a “style” adapter on a Stable Diffusion model, you’ve used LoRA’s idea. I’m writing this because it’s one of the highest-leverage tricks in the entire fine-tuning toolkit, and the math is simpler than its reputation.</p>
+
+<h2 id="the-problem-lora-solves">The problem LoRA solves</h2>
+
+<p>Full fine-tuning updates <em>every</em> weight of a model. For a 7B model that’s ~7 billion gradient-updated parameters, plus you must store a full copy of the weights for each task. That’s expensive in memory, storage, and compute, and it risks “catastrophic forgetting” — overwriting useful general knowledge.</p>
+
+<p>LoRA’s observation: the change a model needs to adapt to a task has a <strong>low “intrinsic rank.”</strong> You don’t need to move every weight; a small, low-rank adjustment captures most of the task-specific behavior.</p>
+
+<h2 id="the-mechanism-concretely">The mechanism, concretely</h2>
+
+<p>For a weight matrix <code class="language-plaintext highlighter-rouge">W</code> (shape <code class="language-plaintext highlighter-rouge">d×k</code>), instead of learning a full update <code class="language-plaintext highlighter-rouge">ΔW</code>, LoRA learns it as a product of two small matrices:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ΔW = B · A        where B is d×r, A is r×k, and r &lt;&lt; min(d, k)
+</code></pre></div></div>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">r</code> is the <strong>rank</strong> — a small number like 4, 8, 16, 64.</li>
+  <li><code class="language-plaintext highlighter-rouge">W</code> itself is <strong>frozen</strong> (no gradient updates).</li>
+  <li>Only <code class="language-plaintext highlighter-rouge">A</code> and <code class="language-plaintext highlighter-rouge">B</code> are trained — a tiny fraction of the parameters.</li>
+</ul>
+
+<p>At inference, the adapted weight is just <code class="language-plaintext highlighter-rouge">W + B·A·α</code> (α scales the contribution). The forward pass is <code class="language-plaintext highlighter-rouge">h = Wx + BAx</code>, and <code class="language-plaintext highlighter-rouge">BA</code> is so small you can often keep it merged or added with negligible cost.</p>
+
+<h2 id="why-this-is-such-a-big-deal-in-practice">Why this is such a big deal in practice</h2>
+
+<ol>
+  <li><strong>Massive memory savings.</strong> Training a 7B model with LoRA might need ~1/3 the VRAM of full fine-tuning, because you don’t store optimizer state for the frozen weights.</li>
+  <li><strong>Tiny adapters.</strong> The trained <code class="language-plaintext highlighter-rouge">A,B</code> for one task might be a few megabytes vs. gigabytes for a full model copy. You can keep dozens of adapters and swap them like plugins.</li>
+  <li><strong>No catastrophic forgetting.</strong> The base model is untouched; you’re adding a small delta on top.</li>
+  <li><strong>Cheap experimentation.</strong> Try a rank-8 vs rank-64 run; the cost difference is small.</li>
+</ol>
+
+<p>I’ve fine-tuned 7B–13B models on a single consumer GPU using LoRA where full fine-tuning would have been impossible. The quality gap to full fine-tuning is often surprisingly small for narrow tasks.</p>
+
+<h2 id="practical-knobs">Practical knobs</h2>
+
+<ul>
+  <li><strong>Rank <code class="language-plaintext highlighter-rouge">r</code>:</strong> higher = more capacity but more params. Start at 8 or 16; raise if the task is complex (e.g. learning a new language or very different style).</li>
+  <li><strong>Alpha <code class="language-plaintext highlighter-rouge">α</code>:</strong> effective scale is <code class="language-plaintext highlighter-rouge">α/r</code>. Common to set <code class="language-plaintext highlighter-rouge">α = 2r</code>.</li>
+  <li><strong>Which layers to adapt:</strong> usually attention <code class="language-plaintext highlighter-rouge">q,v</code> projections first; adding <code class="language-plaintext highlighter-rouge">k,o</code> and MLP layers helps harder tasks but costs more.</li>
+  <li><strong>QLoRA:</strong> quantize the base model to 4-bit, then train LoRA on top — lets you fine-tune a 65B model on a single 48GB GPU. This combination (QLoRA) is what made “fine-tune a huge model at home” realistic.</li>
+</ul>
+
+<h2 id="when-lora-is-not-enough">When LoRA is NOT enough</h2>
+
+<p>If the task requires the model to <em>forget</em> or substantially <em>restructure</em> its knowledge (not just steer style or add a narrow format), full fine-tuning or a stronger method may be needed. And LoRA won’t fix a base model that fundamentally lacks the capability — you can’t LoRA your way to reasoning a 7B model doesn’t have.</p>
+
+<h2 id="my-take">My take</h2>
+
+<p>LoRA is the closest thing we have to “model customization as a commodity.” It turned fine-tuning from a cluster-only operation into something you can do on a workstation, and it’s the reason the open-model ecosystem has thousands of community adapters. If you’re doing any model specialization — a company tone, a domain vocabulary, a specific output format — LoRA (ideally QLoRA) should be your default before you even consider full fine-tuning. Start small, measure, scale rank only if needed.</p>
+:ET

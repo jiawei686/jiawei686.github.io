@@ -1,0 +1,2 @@
+I"�<p><code class="language-plaintext highlighter-rouge">iptables</code> is the user-space tool for configuring the Linux kernel firewall (netfilter). It looks arcane at first, but it’s really just a set of <strong>tables</strong>, each containing <strong>chains</strong> of rules that packets traverse in order. Here are the commands I actually reached for when learning it, with the “why” behind each flag.</p>
+:ET

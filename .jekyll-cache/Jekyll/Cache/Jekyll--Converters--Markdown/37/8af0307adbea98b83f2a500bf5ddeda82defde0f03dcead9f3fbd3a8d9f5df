@@ -1,0 +1,82 @@
+I"R<p>Softmax is the function that turns a model’s raw scores into a probability distribution. It is tiny, it is everywhere, and it has a numerical trap that bites almost everyone who implements it from scratch at least once. This post is the explainer I wish I’d had before I spent an afternoon chasing <code class="language-plaintext highlighter-rouge">NaN</code>s in a training loop.</p>
+
+<h2 id="what-it-does-intuitively">What it does, intuitively</h2>
+
+<p>A language model’s final layer produces a vector of <strong>logits</strong> — one score per token in the vocabulary. Those scores are unbounded: they can be -3.2, 11.7, 0.4, anything. We can’t sample from unbounded numbers as if they were probabilities. Softmax fixes that:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>softmax(z_i) = exp(z_i) / sum_j exp(z_j)
+</code></pre></div></div>
+
+<p>After softmax, every output is positive and they all sum to 1. So <code class="language-plaintext highlighter-rouge">softmax(z)</code> is a proper probability distribution over the vocabulary, and the token with the highest logit gets the highest probability. That’s the whole job.</p>
+
+<h2 id="a-concrete-example">A concrete example</h2>
+
+<p>Suppose the model is choosing the next word and the logits for three candidate tokens are:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cat:    2.0
+dog:    1.0
+rocket: -1.0
+</code></pre></div></div>
+
+<p>Step by step:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>exp(2.0)  = 7.389
+exp(1.0)  = 2.718
+exp(-1.0) = 0.368
+sum       = 10.475
+
+P(cat)    = 7.389 / 10.475 = 0.705
+P(dog)    = 2.718 / 10.475 = 0.260
+P(rocket) = 0.368 / 10.475 = 0.035
+</code></pre></div></div>
+
+<p>“cat” had the highest logit, so it ends up with ~70% of the probability mass. Notice the exponential makes the gap <em>nonlinear</em>: a 1-point logit lead becomes a roughly 2.7x probability lead, because <code class="language-plaintext highlighter-rouge">exp(1) ≈ 2.718</code>. That’s why softmax is “winner-takes-most” — it sharpens differences rather than preserving them.</p>
+
+<h2 id="the-numerical-trap-and-the-fix-you-should-always-use">The numerical trap (and the fix you should always use)</h2>
+
+<p>Here’s the bug: <code class="language-plaintext highlighter-rouge">exp(1000)</code> overflows to infinity, and <code class="language-plaintext highlighter-rouge">inf / inf = NaN</code>, which poisons the whole batch. In a real LLM, logits can easily exceed 50 or 100 once the model is confident. The standard fix is the <strong>max-subtraction trick</strong>:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="n">np</span>
+
+<span class="k">def</span> <span class="nf">softmax</span><span class="p">(</span><span class="n">z</span><span class="p">):</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">z</span> <span class="o">-</span> <span class="n">np</span><span class="p">.</span><span class="nb">max</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>          <span class="c1"># shift so the max is 0
+</span>    <span class="n">e</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">exp</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">e</span> <span class="o">/</span> <span class="n">np</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Subtracting the maximum from every element doesn’t change the result — <code class="language-plaintext highlighter-rouge">exp(z_i - c) / sum(exp(z_j - c))</code> simplifies to the original because the <code class="language-plaintext highlighter-rouge">exp(-c)</code> cancels top and bottom — but it guarantees the largest exponent is <code class="language-plaintext highlighter-rouge">exp(0) = 1</code>, so nothing overflows. Every serious library (PyTorch, JAX, TensorFlow) does this internally; if you ever hand-roll it, do too. I’ve seen production inference code break on exactly this after a model update made logits larger.</p>
+
+<h2 id="why-temperature-matters">Why temperature matters</h2>
+
+<p>You’ll hear “temperature” constantly in LLM settings. All it does is scale the logits before softmax:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>softmax(z / T)
+</code></pre></div></div>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">T = 1</code>: no change.</li>
+  <li><code class="language-plaintext highlighter-rouge">T &gt; 1</code>: flattens the distribution → more random, more diverse, sometimes incoherent.</li>
+  <li><code class="language-plaintext highlighter-rouge">T &lt; 1</code> (e.g. 0.7): sharpens it → the model becomes more confident and repetitive, often more “on topic.”</li>
+</ul>
+
+<p>At <code class="language-plaintext highlighter-rouge">T → 0</code> softmax degenerates to <code class="language-plaintext highlighter-rouge">argmax</code> (always pick the top token). At <code class="language-plaintext highlighter-rouge">T → ∞</code> it becomes uniform random. So temperature is literally a knob on how much the model explores vs. commits. For code generation I usually want <code class="language-plaintext highlighter-rouge">T</code> around 0.2–0.4; for creative writing, 0.8–1.0.</p>
+
+<h2 id="where-softmax-actually-lives-in-a-transformer">Where softmax actually lives in a Transformer</h2>
+
+<p>Softmax appears in two critical places:</p>
+
+<ol>
+  <li><strong>Attention weights.</strong> Inside each attention head, the <code class="language-plaintext highlighter-rouge">Q·K</code> scores are divided by <code class="language-plaintext highlighter-rouge">sqrt(d_k)</code> and softmaxed so each query distributes its attention as a probability over all keys (each row sums to 1). This is what lets “it” attend to the right noun.</li>
+  <li><strong>The output layer.</strong> The final vocabulary logits are softmaxed to get the next-token distribution we sample from.</li>
+</ol>
+
+<p>Both are the same function; only the scale and meaning differ.</p>
+
+<h2 id="a-subtlety-people-miss-softmax-isnt-symmetric">A subtlety people miss: softmax isn’t symmetric</h2>
+
+<p>Because the exponential is sensitive to absolute offsets, adding a constant to <em>all</em> logits does nothing (the max-trick proves it), but adding a constant to <em>only some</em> logits changes the output. This is why calibrating logits matters: two models can “agree” on ranking yet produce very different sampling behavior if one is systematically shifted.</p>
+
+<h2 id="my-take">My take</h2>
+
+<p>Softmax is the unglamorous hinge of the entire LLM stack. It’s the boundary between “the model computed a score” and “the model made a probabilistic choice.” Spend an hour really understanding the max-trick and temperature and you’ll debug sampling problems an order of magnitude faster than someone who treats it as a black box. And if you’re implementing it yourself: always subtract the max first. Always.</p>
+:ET

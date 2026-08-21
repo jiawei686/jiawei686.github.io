@@ -1,0 +1,2 @@
+I"�<p>Every large language model you use today — GPT, Claude, LLaMA, Gemini — is built on a single 2017 paper that, frankly, I did not fully appreciate when it came out. “Attention Is All You Need” replaced recurrence and convolution with a mechanism called <strong>self-attention</strong>, and in doing so removed the biggest bottleneck in sequence modeling: the need to process text strictly left-to-right.</p>
+:ET

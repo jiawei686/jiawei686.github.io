@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+  <head>
+  <meta name="baidu-site-verification" content="5GAItV9OXY" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+  <meta name="google-adsense-account" content="ca-pub-7129764839688468">
+
+  <!-- ===== SEO (per-page dynamic) ===== -->
+  
+  
+  <meta name="description" content="Chinchilla established the compute-optimal scaling law: model size and training tokens should scale together, favoring far more data than was common.">
+  <meta name="keywords" content="llm">
+  <meta name="author" content="Jiawei Cui">
+  <meta name="robots" content="index,follow">
+  <link rel="canonical" href="https://cuijiawei.cn/2026/06/30/chinchilla/">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Jiawei's Blog">
+  <meta property="og:title" content="Chinchilla: Training Compute-Optimal Large Language Models">
+  <meta property="og:description" content="Chinchilla established the compute-optimal scaling law: model size and training tokens should scale together, favoring far more data than was common.">
+  <meta property="og:url" content="https://cuijiawei.cn/2026/06/30/chinchilla/">
+
+  
+  <meta property="og:image" content="https://cuijiawei.cn/public/img/og/chinchilla.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:locale" content="en_US">
+  
+  <meta property="article:published_time" content="2026-06-30T00:00:00+08:00">
+  <meta property="article:section" content="llm">
+  <meta property="article:tag" content="llm">
+  
+  
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Chinchilla: Training Compute-Optimal Large Language Models">
+  <meta name="twitter:description" content="Chinchilla established the compute-optimal scaling law: model size and training tokens should scale together, favoring far more data than was common.">
+  <meta name="twitter:image" content="https://cuijiawei.cn/public/img/og/chinchilla.png">
+
+  <title>
+    
+       Chinchilla: Training Compute-Optimal Large Language Models 
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Slab:700|PT+Serif:400,400italic,700,700italic" type="text/css">
+  <link rel="stylesheet" href="/public/css/poole.css">
+  <link rel="stylesheet" href="/public/css/hyde.css">
+  <!--  <link rel="stylesheet" href="/public/css/jekyll-github.css">-->
+  <link rel="stylesheet" href="/public/css/rouge.css">
+
+  
+
+  
+
+  
+
+  <style>
+    .content a,
+    .related-posts li a:hover {
+      color: #6b46c1;
+    }
+    ::selection {
+      color: #fff;
+      background: #6b46c1;
+    }
+    ::-moz-selection {
+      color: #fff;
+      background: #6b46c1;
+    }
+  </style>
+
+  <!-- Icons -->
+  <link rel="icon" href="/public/img/logo.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/public/img/apple-touch-icon.png">
+
+  <!-- RSS -->
+  <link rel="alternate" type="application/atom+xml" title="Jiawei's Blog" href="/atom.xml">
+
+  <!-- MathJax for LaTeX math rendering -->
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']]
+      }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <!-- Baidu analytics -->
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?4a3679fd1f44022a55666cfdd9025484";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+  <!-- Baidu active push: submits each visited URL to Baidu for faster indexing -->
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') { bp.src = 'https://zz.bdstatic.com/linksubmit/push.js'; }
+      else { bp.src = 'http://push.zhanzhang.baidu.com/push.js'; }
+      var s = document.getElementsByTagName('script')[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7129764839688468"
+     crossorigin="anonymous"></script>
+
+  <!-- ===== Structured data ===== -->
+  
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "Chinchilla: Training Compute-Optimal Large Language Models",
+    "description": "Chinchilla established the compute-optimal scaling law: model size and training tokens should scale together, favoring far more data than was common.",
+    "image": "https://cuijiawei.cn/public/img/og/chinchilla.png",
+    "datePublished": "2026-06-30T00:00:00+08:00",
+    "dateModified": "2026-06-30T00:00:00+08:00",
+    "keywords": "llm",
+    "articleSection": "llm",
+    "mainEntityOfPage": { "@type": "WebPage", "@id": "https://cuijiawei.cn/2026/06/30/chinchilla/" },
+    "author": {
+      "@type": "Person",
+      "name": "Jiawei Cui",
+      "alternateName": ["kiritocui", "崔家维", "cuijiawei"]
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "Jiawei Cui",
+      "logo": { "@type": "ImageObject", "url": "https://cuijiawei.cn/public/img/logo.svg" }
+    }
+  }
+  </script>
+  
+
+</head>
+
+  <body>
+
+    <main class="content container">
+      
+
+
+<article class="post">
+  <h1 class="post-title">Chinchilla: Training Compute-Optimal Large Language Models</h1>
+  <div class="post-date">
+    <time datetime="2026-06-30T00:00:00+08:00">06/30/26</time>
+    <span>on <a href="/tag/llm/">Paper Deep-Dives</a></span>
+  </div>
+  <hr/>
+  <p>Chinchilla (Hoffmann et al., 2022) is the paper that corrected a mistake the entire field was making about how to train large language models. It asked a deceptively simple question: <em>given a fixed compute budget, what’s the optimal split between model size and training data?</em> The answer overturned the prevailing “just make the model bigger” doctrine. I’m writing this because Chinchilla’s “20 tokens per parameter” rule is something every model trainer should have internalized, and ignoring it is a classic way to waste a training budget.</p>
+
+<h2 id="the-setup-a-compute-constrained-optimization">The setup: a compute-constrained optimization</h2>
+
+<p>You have a fixed training-compute budget <code class="language-plaintext highlighter-rouge">C</code> (say, FLOPs). You can spend it on:</p>
+
+<ul>
+  <li>A bigger model <code class="language-plaintext highlighter-rouge">N</code> (more parameters), or</li>
+  <li>More training tokens <code class="language-plaintext highlighter-rouge">D</code>.</li>
+</ul>
+
+<p>The earlier Kaplan scaling laws suggested pouring almost everything into <code class="language-plaintext highlighter-rouge">N</code> and undertraining on data. Chinchilla re-derived the scaling law <em>correctly</em> by fitting loss as a function of <strong>both</strong> <code class="language-plaintext highlighter-rouge">N</code> and <code class="language-plaintext highlighter-rouge">D</code> simultaneously and then minimizing for fixed <code class="language-plaintext highlighter-rouge">C</code>.</p>
+
+<h2 id="the-result-parameters-and-data-should-scale-together">The result: parameters and data should scale together</h2>
+
+<p>Chinchilla’s optimal law is approximately:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>N_opt ∝ C^0.5
+D_opt ∝ C^0.5
+</code></pre></div></div>
+
+<p>In plain terms: <strong>double your compute, increase both model size and data by ~√2 — not model size alone.</strong> Concretely, they found the optimal ratio is roughly <strong>20 tokens per parameter</strong>.</p>
+
+<h2 id="the-damning-implication-for-existing-models">The damning implication for existing models</h2>
+
+<p>Under Chinchilla’s law, models like GPT-3 (175B params, ~300B tokens) and Gopher (280B, ~300B tokens) were <em>massively undertrained</em>. They should have been trained on <strong>~4x more data</strong> for the same compute. Chinchilla itself — a 70B model trained on <strong>1.4 trillion tokens</strong> — matched or beat Gopher (280B) on most benchmarks while using a fraction of the parameters. Same compute, far better results, simply by feeding it enough data.</p>
+
+<p>This is the single most useful correction in modern LLM training. I’ve seen teams burn a budget on an oversized model trained on too little data; Chinchilla says that’s backwards for most compute budgets.</p>
+
+<h2 id="why-everyone-retrains-smaller-but-better">Why everyone retrains “smaller but better”</h2>
+
+<p>The lesson cascaded: a properly-trained 7B model on ~140B tokens (20×7B) often beats an undertrained 13B or 30B model on the same compute. This is why modern base models ship with large training corpora and why “my model is bigger” stopped being a winning argument on its own. The LLaMA family, for instance, leans heavily on the “more tokens, better-curated data” philosophy that Chinchilla legitimized.</p>
+
+<h2 id="practical-guidance">Practical guidance</h2>
+
+<ul>
+  <li><strong>Token budget ≈ 20 × parameters</strong> for compute-optimal pretraining. (This is a rule of thumb; real optimal ratios vary with data quality and architecture.)</li>
+  <li>If you’re pretraining and your data runs out long before your model is trained to the Chinchilla ratio, you’re either underusing parameters or need more data — not a bigger model.</li>
+  <li>For fine-tuning and most applied work this doesn’t directly apply; it’s a <em>pretraining</em> principle.</li>
+</ul>
+
+<h2 id="caveats">Caveats</h2>
+
+<ul>
+  <li>The “20 tokens/param” ratio is for <em>compute-optimal</em> training at a given budget. If your goal is the <em>best absolute model regardless of cost</em>, you still want a big model <em>and</em> lots of data (frontier labs do both).</li>
+  <li>Data quality matters as much as quantity; Chinchilla assumed decent data. Garbage data at 20× won’t save you — which is exactly why data curation (see the LLaMA post) is the real differentiator.</li>
+</ul>
+
+<h2 id="my-take">My take</h2>
+
+<p>Chinchilla is the paper I’d hand to anyone about to spend real money training a model. The headline isn’t “smaller models win” — it’s “stop undertraining.” Most wasted compute in this field comes from the instinct that more parameters = smarter, when the bottleneck was almost always <em>data</em>. Get the N:D split right first; everything else (architecture tweaks, fancy objectives) is secondary. And note how it builds on the scaling laws post — same power-law world, just fit correctly.</p>
+
+</article>
+
+
+<aside class="author">
+  <h2 class="aside-title">About</h2>
+
+  
+  <img class="me" src="/public/img/head.jpg" alt="Jiawei Cui"/>
+  
+
+  <p>I’m Jiawei — a developer who spent years shipping software (networking,
+distributed systems) and is now going all-in on AI and machine learning.</p>
+
+<p>This blog is where I think in public: deep dives into LLMs and the papers
+behind them, practical ML, and the occasional build. Formerly writing code
+for a living; now training and shipping models.</p>
+
+<p><em>Don’t you close your eyes.</em></p>
+
+</aside>
+
+
+
+<aside class="related">
+  <h2 class="aside-title">Related Posts</h2>
+  <ul class="related-posts">
+    
+    
+    
+      
+      
+        <li>
+          <h4>
+            <a href="/2026/07/18/softmax/">
+              <span>Softmax: Turning Logits into Probabilities</span>
+              <small>07/18/26</small>
+            </a>
+          </h4>
+        </li>
+      
+    
+      
+      
+        <li>
+          <h4>
+            <a href="/2026/07/11/clip/">
+              <span>CLIP: Learning Transferable Visual Models From Language Supervision</span>
+              <small>07/11/26</small>
+            </a>
+          </h4>
+        </li>
+      
+    
+      
+      
+        <li>
+          <h4>
+            <a href="/2026/07/10/self-consistency/">
+              <span>Self-Consistency: Improving Chain-of-Thought Reasoning</span>
+              <small>07/10/26</small>
+            </a>
+          </h4>
+        </li>
+      
+    
+      
+      
+    
+  </ul>
+</aside>
+
+
+
+    </main>
+    <div class="love content container">
+      © 2026 Jiawei &nbsp;&nbsp;
+      <a href="/about/">About</a> ·
+      <a href="/contact/">Contact</a> ·
+      <a href="/privacy/">Privacy</a> &nbsp;&nbsp;
+      <a href="https://beian.miit.gov.cn/" target="_blank">粤ICP备18035774号</a>
+    </div>
+    
+
+
+
+
+
+<div id="_backdrop"></div>
+<a   id="_menu" href="#_sidebar">☰</a>
+
+<aside id="_sidebar" class="sidebar" style="background-image:url('/public/img/mrrobot.jpg')">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <h1><a href="/">Jiawei's Blog</a></h1>
+      <p>Notes on LLMs, deep learning, and building things that work.</p>
+
+    </div>
+
+    <nav class="sidebar-nav">
+      
+        
+        <a class="sidebar-nav-item" href="/tag/llm/">Paper Deep-Dives</a>
+      
+        
+        <a class="sidebar-nav-item" href="/tag/ai/">AI & Machine Learning</a>
+      
+        
+        <a class="sidebar-nav-item" href="/tag/data/">Data Science</a>
+      
+        
+        <a class="sidebar-nav-item" href="/tag/projects/">Projects</a>
+      
+        
+        <a class="sidebar-nav-item" href="/tag/engineering/">Engineering Archive</a>
+      
+
+      
+
+      
+      
+        
+          
+            
+          
+        
+      
+        
+          
+            
+              <a class="sidebar-nav-item" href="/about/">About</a>
+            
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+            
+          
+        
+      
+        
+          
+        
+      
+        
+          
+            
+              <a class="sidebar-nav-item" href="/playground/">Playground</a>
+            
+          
+        
+      
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+    </nav>
+
+    <div class="sidebar-social">
+      
+        <a href="https://github.com/jiawei686"><span class="icon-icon-github"></span></a>
+
+      
+    </div>
+  </div>
+</aside>
+
+
+  </body>
+</html>

@@ -1,0 +1,188 @@
+I"7)<p><em>Part of the Tencent Cloud developer-lab series.</em></p>
+
+<p>A full-featured mail server is a serious undertaking; this lab just stands up a simple one. Postfix handles sending and receiving via SMTP; Dovecot handles retrieving mail via IMAP/POP3. Here’s the end-to-end setup.</p>
+
+<h2 id="domain-resolution">Domain resolution</h2>
+
+<p>After buying a domain, point it at your server (IP <code class="language-plaintext highlighter-rouge">123.207.70.98</code> in the lab). Add two records in the console:</p>
+
+<p><strong>A record</strong></p>
+<ul>
+  <li>Type: <code class="language-plaintext highlighter-rouge">A</code></li>
+  <li>Host: <code class="language-plaintext highlighter-rouge">@</code></li>
+  <li>Value: <code class="language-plaintext highlighter-rouge">123.207.70.98</code></li>
+</ul>
+
+<p><strong>MX record</strong></p>
+<ul>
+  <li>Type: <code class="language-plaintext highlighter-rouge">MX</code></li>
+  <li>Host: <code class="language-plaintext highlighter-rouge">@</code></li>
+  <li>Value: <code class="language-plaintext highlighter-rouge">yourdomain.com</code> (replace with your own)</li>
+</ul>
+
+<h3 id="verify-it-took-effect">Verify it took effect</h3>
+
+<p>DNS changes need time to propagate.</p>
+
+<ul>
+  <li>Check the A record with <code class="language-plaintext highlighter-rouge">ping</code>:</li>
+</ul>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ping yourdomain.com
+</code></pre></div></div>
+
+<p>If the reply shows the IP you set, resolution works.</p>
+
+<ul>
+  <li>Check the MX record:</li>
+</ul>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>nslookup <span class="nt">-q</span><span class="o">=</span>mx yourdomain.com
+</code></pre></div></div>
+
+<p>If the output shows your domain, the MX record is correct.</p>
+
+<h2 id="before-you-start">Before you start</h2>
+
+<p>Configuring a complete mail server is not a trivial task; this lab only builds a minimal one, and more advanced features are left for you to explore.</p>
+
+<h3 id="postfix-and-dovecot-overview">Postfix and Dovecot overview</h3>
+
+<ul>
+  <li><strong>Postfix</strong> is a standard MTA (Mail Transfer Agent). It manages mail sent to the local machine and mail the machine sends outward, using the SMTP protocol.</li>
+  <li><strong>Dovecot</strong> is an excellent IMAP/POP3 server for retrieving mail addressed to the local machine.</li>
+</ul>
+
+<h3 id="install">Install</h3>
+
+<p>On CentOS 7:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>yum <span class="nt">-y</span> <span class="nb">install </span>postfix dovecot
+</code></pre></div></div>
+
+<h2 id="postfix">Postfix</h2>
+
+<h3 id="configure">Configure</h3>
+
+<p>Replace <code class="language-plaintext highlighter-rouge">yourdomain.com</code> with your own domain. Set the parameters with <code class="language-plaintext highlighter-rouge">postconf -e</code>:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>postconf <span class="nt">-e</span> <span class="s1">'myhostname = server.cuijiawei.tk'</span>
+postconf <span class="nt">-e</span> <span class="s1">'mydestination = localhost, localhost.localdomain'</span>
+postconf <span class="nt">-e</span> <span class="s1">'myorigin = $mydomain'</span>
+postconf <span class="nt">-e</span> <span class="s1">'mynetworks = 127.0.0.0/8'</span>
+postconf <span class="nt">-e</span> <span class="s1">'inet_interfaces = all'</span>
+postconf <span class="nt">-e</span> <span class="s1">'inet_protocols = all'</span>
+postconf <span class="nt">-e</span> <span class="s1">'mydestination = $myhostname, localhost.$mydomain, localhost, $mydomain'</span>
+postconf <span class="nt">-e</span> <span class="s1">'home_mailbox = Maildir/'</span>
+postconf <span class="nt">-e</span> <span class="s1">'smtpd_sasl_type = dovecot'</span>
+postconf <span class="nt">-e</span> <span class="s1">'smtpd_sasl_path = private/auth'</span>
+postconf <span class="nt">-e</span> <span class="s1">'smtpd_sasl_auth_enable = yes'</span>
+postconf <span class="nt">-e</span> <span class="s1">'broken_sasl_auth_clients = yes'</span>
+postconf <span class="nt">-e</span> <span class="s1">'smtpd_sasl_authenticated_header = yes'</span>
+postconf <span class="nt">-e</span> <span class="s1">'smtpd_recipient_restrictions = permit_mynetworks, permit_sasl_authenticated, reject_unauth_destination'</span>
+postconf <span class="nt">-e</span> <span class="s1">'smtpd_use_tls = yes'</span>
+postconf <span class="nt">-e</span> <span class="s1">'smtpd_tls_cert_file = /etc/pki/dovecot/certs/dovecot.pem'</span>
+postconf <span class="nt">-e</span> <span class="s1">'smtpd_tls_key_file = /etc/pki/dovecot/private/dovecot.pem'</span>
+</code></pre></div></div>
+
+<p>Postfix uses <strong>SASL</strong> for authentication and <strong>TLS</strong> to encrypt the connection. The lab reuses Dovecot’s default SSL certificate and key; swap the last two paths if you have your own.</p>
+
+<h3 id="enable-smtps-port-465">Enable SMTPS (port 465)</h3>
+
+<p>Some mail clients require encrypted connections on port 465. Edit <code class="language-plaintext highlighter-rouge">/etc/postfix/master.cf</code> and uncomment these two lines (keep the space before <code class="language-plaintext highlighter-rouge">-o</code>):</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>smtps inet n - n - - smtpd
+  -o smtpd_tls_wrappermode=yes
+</code></pre></div></div>
+
+<h3 id="start">Start</h3>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>systemctl <span class="nb">enable </span>postfix.service
+systemctl start  postfix.service
+</code></pre></div></div>
+
+<h3 id="logs">Logs</h3>
+
+<p>Postfix logs to <code class="language-plaintext highlighter-rouge">/var/log/maillog</code>, which records the server’s runtime status.</p>
+
+<h2 id="dovecot">Dovecot</h2>
+
+<h3 id="configure-1">Configure</h3>
+
+<p>Edit <code class="language-plaintext highlighter-rouge">/etc/dovecot/dovecot.conf</code> and append at the bottom (replace the cert paths if you used your own):</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ssl_cert <span class="o">=</span> &lt;/etc/pki/dovecot/certs/dovecot.pem
+ssl_key <span class="o">=</span> &lt;/etc/pki/dovecot/private/dovecot.pem
+
+protocols <span class="o">=</span> imap pop3 lmtp
+listen <span class="o">=</span> <span class="k">*</span>
+mail_location <span class="o">=</span> Maildir:~/Maildir
+disable_plaintext_auth <span class="o">=</span> no
+</code></pre></div></div>
+
+<p>Then edit <code class="language-plaintext highlighter-rouge">/etc/dovecot/conf.d/10-master.conf</code>, find the <code class="language-plaintext highlighter-rouge">service auth</code> section, and uncomment:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>unix_listener /var/spool/postfix/private/auth <span class="o">{</span>
+       mode <span class="o">=</span> 0666
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h3 id="start-1">Start</h3>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>systemctl <span class="nb">enable </span>dovecot.service
+systemctl start  dovecot.service
+</code></pre></div></div>
+
+<p>Check <code class="language-plaintext highlighter-rouge">/var/log/maillog</code>. A successful startup looks like:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Jun 26 12:00:28 localhost postfix/postfix-script[28338]: starting the Postfix mail system
+Jun 26 12:00:29 localhost postfix/master[28340]: daemon started <span class="nt">--</span> version 2.10.1, configuration /etc/postfix
+Jun 26 12:28:40 localhost dovecot: master: Dovecot v2.2.10 starting up <span class="k">for </span>imap, pop3, lmtp <span class="o">(</span>core dumps disabled<span class="o">)</span>
+</code></pre></div></div>
+
+<h2 id="create-an-account">Create an account</h2>
+
+<p>In this setup, mailbox accounts map to system users. Create one with <code class="language-plaintext highlighter-rouge">useradd</code>, then set its password:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>useradd <span class="nb">test
+</span>passwd <span class="nb">test</span>
+</code></pre></div></div>
+
+<h2 id="test">Test</h2>
+
+<p>If something fails, check the error messages in <code class="language-plaintext highlighter-rouge">maillog</code>.</p>
+
+<h3 id="send-from-the-server">Send from the server</h3>
+
+<p>Switch user and send a test message (<code class="language-plaintext highlighter-rouge">xxxx@xxx.com</code> → your real inbox):</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>su <span class="nb">test
+echo</span> <span class="s2">"Mail Content"</span> | mail <span class="nt">-s</span> <span class="s2">"Mail Subject"</span> 892001108@qq.com
+</code></pre></div></div>
+
+<h3 id="mail-client">Mail client</h3>
+
+<p>You can add the account to a desktop client (Foxmail is recommended in the lab). Example settings:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Server type:     POP3
+Mail account:    test@yourdomain.com
+
+Incoming (POP3):  yourdomain.com
+Port:             995
+SSL:              Yes
+User:             test
+Password:         test user's password
+
+Outgoing (SMTP):  yourdomain.com
+Port:             465
+SSL:              Yes
+User:             test
+Password:         test user's password
+</code></pre></div></div>
+
+<p>(With a self-signed/generic certificate, some clients may warn or misbehave — that’s expected.)</p>
+
+<h2 id="my-take">My take</h2>
+
+<p>The mental model that makes this whole setup click: <strong>Postfix = outgoing/incoming transport (SMTP), Dovecot = retrieval (IMAP/POP3)</strong>, and they handshake over a private SASL socket (<code class="language-plaintext highlighter-rouge">private/auth</code>). The part that trips most people up is that mail has <em>two</em> protocols — one for transport, one for reading — and you must configure both or you can send but never receive (or vice versa). For a real deployment you’d separate the services, use a proper CA-signed cert instead of Dovecot’s default, and add SPF/DKIM/DMARC so you’re not flagged as spam. This lab is the minimum viable slice.</p>
+:ET

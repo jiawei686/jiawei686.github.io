@@ -1,0 +1,2 @@
+I"�<p>SQL is easy to start and surprisingly deep to master. The “advanced” parts — window functions, CTEs, query planning, indexing — are what separate “I can fetch rows” from “I can answer real analytical questions efficiently.” I’m writing this as a practical guide because these features are high-leverage: they turn multi-query, application-side hacks into a single clear statement, and they’re where most real-world data work happens.</p>
+:ET

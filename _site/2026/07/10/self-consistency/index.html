@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+  <head>
+  <meta name="baidu-site-verification" content="5GAItV9OXY" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+  <meta name="google-adsense-account" content="ca-pub-7129764839688468">
+
+  <!-- ===== SEO (per-page dynamic) ===== -->
+  
+  
+  <meta name="description" content="Self-Consistency explained: sample many reasoning paths, take the majority vote. The cheapest accuracy win for LLM reasoning. arXiv:2203.11171">
+  <meta name="keywords" content="llm">
+  <meta name="author" content="Jiawei Cui">
+  <meta name="robots" content="index,follow">
+  <link rel="canonical" href="https://cuijiawei.cn/2026/07/10/self-consistency/">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Jiawei's Blog">
+  <meta property="og:title" content="Self-Consistency: Improving Chain-of-Thought Reasoning">
+  <meta property="og:description" content="Self-Consistency explained: sample many reasoning paths, take the majority vote. The cheapest accuracy win for LLM reasoning. arXiv:2203.11171">
+  <meta property="og:url" content="https://cuijiawei.cn/2026/07/10/self-consistency/">
+
+  
+  <meta property="og:image" content="https://cuijiawei.cn/public/img/og/self-consistency.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:locale" content="en_US">
+  
+  <meta property="article:published_time" content="2026-07-10T00:00:00+08:00">
+  <meta property="article:section" content="llm">
+  <meta property="article:tag" content="llm">
+  
+  
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Self-Consistency: Improving Chain-of-Thought Reasoning">
+  <meta name="twitter:description" content="Self-Consistency explained: sample many reasoning paths, take the majority vote. The cheapest accuracy win for LLM reasoning. arXiv:2203.11171">
+  <meta name="twitter:image" content="https://cuijiawei.cn/public/img/og/self-consistency.png">
+
+  <title>
+    
+       Self-Consistency: Improving Chain-of-Thought Reasoning 
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Slab:700|PT+Serif:400,400italic,700,700italic" type="text/css">
+  <link rel="stylesheet" href="/public/css/poole.css">
+  <link rel="stylesheet" href="/public/css/hyde.css">
+  <!--  <link rel="stylesheet" href="/public/css/jekyll-github.css">-->
+  <link rel="stylesheet" href="/public/css/rouge.css">
+
+  
+
+  
+
+  
+
+  <style>
+    .content a,
+    .related-posts li a:hover {
+      color: #6b46c1;
+    }
+    ::selection {
+      color: #fff;
+      background: #6b46c1;
+    }
+    ::-moz-selection {
+      color: #fff;
+      background: #6b46c1;
+    }
+  </style>
+
+  <!-- Icons -->
+  <link rel="icon" href="/public/img/logo.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/public/img/apple-touch-icon.png">
+
+  <!-- RSS -->
+  <link rel="alternate" type="application/atom+xml" title="Jiawei's Blog" href="/atom.xml">
+
+  <!-- MathJax for LaTeX math rendering -->
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']]
+      }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <!-- Baidu analytics -->
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?4a3679fd1f44022a55666cfdd9025484";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+  <!-- Baidu active push: submits each visited URL to Baidu for faster indexing -->
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') { bp.src = 'https://zz.bdstatic.com/linksubmit/push.js'; }
+      else { bp.src = 'http://push.zhanzhang.baidu.com/push.js'; }
+      var s = document.getElementsByTagName('script')[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7129764839688468"
+     crossorigin="anonymous"></script>
+
+  <!-- ===== Structured data ===== -->
+  
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "Self-Consistency: Improving Chain-of-Thought Reasoning",
+    "description": "Self-Consistency explained: sample many reasoning paths, take the majority vote. The cheapest accuracy win for LLM reasoning. arXiv:2203.11171",
+    "image": "https://cuijiawei.cn/public/img/og/self-consistency.png",
+    "datePublished": "2026-07-10T00:00:00+08:00",
+    "dateModified": "2026-07-10T00:00:00+08:00",
+    "keywords": "llm",
+    "articleSection": "llm",
+    "mainEntityOfPage": { "@type": "WebPage", "@id": "https://cuijiawei.cn/2026/07/10/self-consistency/" },
+    "author": {
+      "@type": "Person",
+      "name": "Jiawei Cui",
+      "alternateName": ["kiritocui", "崔家维", "cuijiawei"]
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "Jiawei Cui",
+      "logo": { "@type": "ImageObject", "url": "https://cuijiawei.cn/public/img/logo.svg" }
+    }
+  }
+  </script>
+  
+
+</head>
+
+  <body>
+
+    <main class="content container">
+      
+
+
+<article class="post">
+  <h1 class="post-title">Self-Consistency: Improving Chain-of-Thought Reasoning</h1>
+  <div class="post-date">
+    <time datetime="2026-07-10T00:00:00+08:00">07/10/26</time>
+    <span>on <a href="/tag/llm/">Paper Deep-Dives</a></span>
+  </div>
+  <hr/>
+  <p>Self-Consistency (Wang et al., 2022, arXiv:2203.11171) is, in my experience, the <strong>best accuracy-per-dollar trick</strong> in LLM reasoning. It builds directly on Chain-of-Thought: instead of generating one reasoning path, you generate <em>many</em>, then take the <strong>majority answer</strong>. I’m writing this because it’s shockingly effective, trivial to implement, and a perfect example of “let the model vote instead of guess once.”</p>
+
+<h2 id="the-problem-with-a-single-chain">The problem with a single chain</h2>
+
+<p>Even with CoT, a single sampled reasoning path can go wrong — one arithmetic slip, one bad leap, and you get a wrong final answer. But here’s the key observation: if you sample <em>many</em> reasoning paths for the same problem, the <em>correct</em> answer tends to be reached by <em>multiple</em> diverse paths, while wrong answers are scattered across different mistakes. So the <strong>majority</strong> is far more reliable than any single sample.</p>
+
+<h2 id="the-method-step-by-step">The method, step by step</h2>
+
+<ol>
+  <li>Prompt the model with Chain-of-Thought.</li>
+  <li>Sample <code class="language-plaintext highlighter-rouge">k</code> reasoning paths (e.g. <code class="language-plaintext highlighter-rouge">k=5</code> to <code class="language-plaintext highlighter-rouge">40</code>) with high temperature so they differ.</li>
+  <li>Extract the final answer from each path.</li>
+  <li>Take the <strong>most common answer</strong> (majority vote). Optionally weight by path confidence.</li>
+</ol>
+
+<p>That’s it. No extra training, no new model, no verifier needed.</p>
+
+<h2 id="why-it-works-intuition">Why it works (intuition)</h2>
+
+<p>Reasoning is a search over possible solution trajectories. A single sample is one trajectory — noisy. Many samples explore the trajectory space; the <em>correct</em> destination is a strong attractor (many routes converge there), while each wrong destination has only one or two routes. Majority voting selects the attractor. This is the same statistical principle behind ensemble methods in ML, applied to reasoning paths.</p>
+
+<h2 id="how-much-does-it-help">How much does it help?</h2>
+
+<p>Substantially. On arithmetic and commonsense reasoning benchmarks the paper reported large gains (e.g. +10–15 points on GSM8K-style math) just from majority voting over ~20–40 samples. In my own use, even <code class="language-plaintext highlighter-rouge">k=5</code> often fixes ambiguous or borderline problems, and <code class="language-plaintext highlighter-rouge">k=10–20</code> is the sweet spot before diminishing returns.</p>
+
+<h2 id="practical-guidance">Practical guidance</h2>
+
+<ul>
+  <li><strong>Set a moderate temperature</strong> (e.g. 0.7–0.9) so paths actually diverge; at temperature 0 they’d all be identical and voting is pointless.</li>
+  <li><strong>Extract answers robustly.</strong> The fragile part is parsing “the answer is 42” from free text. I use a strict format (e.g. “Answer: <number>") or a small regex, and fall back to the longest/most-confident parse.</number></li>
+  <li><strong>Pick k by budget.</strong> k=5 is cheap and helps; k=20–40 for high-stakes tasks. Each extra sample costs a full generation, so it’s a latency/cost trade-off.</li>
+  <li><strong>It pairs perfectly with verifiers.</strong> If you have a checker (code that runs, a math grader), prefer <em>best-of-n by verifier</em> over blind majority — but majority is the fallback when no verifier exists.</li>
+</ul>
+
+<h2 id="when-not-to-use-it">When NOT to use it</h2>
+
+<ul>
+  <li><strong>Open-ended generation / creative writing:</strong> there’s no single “correct answer” to vote on, and you don’t want 20 near-identical essays.</li>
+  <li><strong>Strict latency constraints:</strong> it multiplies generation cost by k. For real-time chat you usually can’t sample 20 times per message (though some “reasoning” services do this server-side).</li>
+  <li><strong>Factual questions with a known answer in context:</strong> one good RAG retrieval beats 20 guesses.</li>
+</ul>
+
+<h2 id="my-take">My take</h2>
+
+<p>Self-consistency is the technique I reach for first whenever a reasoning task is <em>important and checkable by majority</em>. It’s almost free to implement (a loop and a counter) and routinely beats a single carefully-crafted chain. The mental model: don’t ask the model once and trust it; ask several times, let the answers vote. Combine with CoT (the paths) and you get most of the “reasoning model” behavior without training one. For production, the only real cost is latency — and you can dial k to fit your budget.</p>
+
+</article>
+
+
+<aside class="author">
+  <h2 class="aside-title">About</h2>
+
+  
+  <img class="me" src="/public/img/head.jpg" alt="Jiawei Cui"/>
+  
+
+  <p>I’m Jiawei — a developer who spent years shipping software (networking,
+distributed systems) and is now going all-in on AI and machine learning.</p>
+
+<p>This blog is where I think in public: deep dives into LLMs and the papers
+behind them, practical ML, and the occasional build. Formerly writing code
+for a living; now training and shipping models.</p>
+
+<p><em>Don’t you close your eyes.</em></p>
+
+</aside>
+
+
+
+<aside class="related">
+  <h2 class="aside-title">Related Posts</h2>
+  <ul class="related-posts">
+    
+    
+    
+      
+      
+        <li>
+          <h4>
+            <a href="/2026/07/18/softmax/">
+              <span>Softmax: Turning Logits into Probabilities</span>
+              <small>07/18/26</small>
+            </a>
+          </h4>
+        </li>
+      
+    
+      
+      
+        <li>
+          <h4>
+            <a href="/2026/07/11/clip/">
+              <span>CLIP: Learning Transferable Visual Models From Language Supervision</span>
+              <small>07/11/26</small>
+            </a>
+          </h4>
+        </li>
+      
+    
+      
+        
+        
+      
+      
+        <li>
+          <h4>
+            <a href="/2026/07/09/constitutional-ai/">
+              <span>Constitutional AI: Harmlessness from AI Feedback</span>
+              <small>07/09/26</small>
+            </a>
+          </h4>
+        </li>
+      
+    
+  </ul>
+</aside>
+
+
+
+    </main>
+    <div class="love content container">
+      © 2026 Jiawei &nbsp;&nbsp;
+      <a href="/about/">About</a> ·
+      <a href="/contact/">Contact</a> ·
+      <a href="/privacy/">Privacy</a> &nbsp;&nbsp;
+      <a href="https://beian.miit.gov.cn/" target="_blank">粤ICP备18035774号</a>
+    </div>
+    
+
+
+
+
+
+<div id="_backdrop"></div>
+<a   id="_menu" href="#_sidebar">☰</a>
+
+<aside id="_sidebar" class="sidebar" style="background-image:url('/public/img/mrrobot.jpg')">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <h1><a href="/">Jiawei's Blog</a></h1>
+      <p>Notes on LLMs, deep learning, and building things that work.</p>
+
+    </div>
+
+    <nav class="sidebar-nav">
+      
+        
+        <a class="sidebar-nav-item" href="/tag/llm/">Paper Deep-Dives</a>
+      
+        
+        <a class="sidebar-nav-item" href="/tag/ai/">AI & Machine Learning</a>
+      
+        
+        <a class="sidebar-nav-item" href="/tag/data/">Data Science</a>
+      
+        
+        <a class="sidebar-nav-item" href="/tag/projects/">Projects</a>
+      
+        
+        <a class="sidebar-nav-item" href="/tag/engineering/">Engineering Archive</a>
+      
+
+      
+
+      
+      
+        
+          
+            
+          
+        
+      
+        
+          
+            
+              <a class="sidebar-nav-item" href="/about/">About</a>
+            
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+            
+          
+        
+      
+        
+          
+        
+      
+        
+          
+            
+              <a class="sidebar-nav-item" href="/playground/">Playground</a>
+            
+          
+        
+      
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+    </nav>
+
+    <div class="sidebar-social">
+      
+        <a href="https://github.com/jiawei686"><span class="icon-icon-github"></span></a>
+
+      
+    </div>
+  </div>
+</aside>
+
+
+  </body>
+</html>

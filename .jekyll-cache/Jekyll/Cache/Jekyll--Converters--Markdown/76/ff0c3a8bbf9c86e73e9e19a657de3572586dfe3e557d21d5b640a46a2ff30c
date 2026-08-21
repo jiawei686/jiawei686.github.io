@@ -1,0 +1,34 @@
+I"�<p><strong>Core Idea</strong>: The <code class="language-plaintext highlighter-rouge">wechat-dev-mcp</code> project is a specialized Model Context Protocol (MCP) server that connects AI agents directly to the WeChat Developer Tools. It transforms the mini-program development experience from manual coding and clicking to an AI-orchestrated workflow. I published it at <a href="https://github.com/jiawei686/wechat-dev-mcp">https://github.com/jiawei686/wechat-dev-mcp</a>.</p>
+
+<h2 id="1-the-gap-in-mini-program-development">1. The Gap in Mini-Program Development</h2>
+
+<p>WeChat mini-program development has always been a bit of a “walled garden.” While standard web development enjoys a vast ecosystem of automation tools, mini-programs rely heavily on the proprietary WeChat Developer Tools IDE. For developers looking to integrate AI into their workflow, this has traditionally meant a lot of context-switching: copying code from an AI chat, pasting it into the IDE, manually refreshing the simulator, and checking page data.</p>
+
+<h2 id="2-what-is-wechat-dev-mcp">2. What is wechat-dev-mcp?</h2>
+
+<p>The <code class="language-plaintext highlighter-rouge">wechat-dev-mcp</code> server acts as a bridge. By leveraging the <code class="language-plaintext highlighter-rouge">miniprogram-automator</code> library, it exposes the internal capabilities of the WeChat Developer Tools to any AI agent that supports the Model Context Protocol (like Claude Desktop or custom autonomous agents).</p>
+
+<p>This isn’t just about writing code; it’s about <strong>controlling the environment</strong>. The server provides a set of tools that allow an AI to:</p>
+<ul>
+  <li><strong>Launch and Connect</strong>: Open a specific project path and establish an automation session.</li>
+  <li><strong>Navigate and Inspect</strong>: Move between different pages of the mini-program and retrieve real-time page data.</li>
+  <li><strong>Interact and Manipulate</strong>: Set page data, call methods on page instances, and even interact with specific WXML elements.</li>
+</ul>
+
+<h2 id="3-why-this-matters-for-the-modern-developer">3. Why This Matters for the Modern Developer</h2>
+
+<p>The real power of this project lies in the <strong>elimination of manual friction</strong>. Instead of telling an AI “I want to change the data on this page,” and then doing it yourself, you can now say: “Connect to my project, navigate to the profile page, and update the user’s nickname to ‘Manus’.” The AI handles the navigation, finds the correct page instance, and executes the <code class="language-plaintext highlighter-rouge">setData</code> call.</p>
+
+<p>This level of integration is a glimpse into the future of “Agentic Development.” The developer moves from being a manual operator to a high-level architect, delegating the tactical execution—like UI testing, data state verification, and even complex navigation flows—to an AI that has direct “hands” inside the development environment.</p>
+
+<h2 id="4-key-takeaways">4. Key Takeaways</h2>
+
+<ul>
+  <li><strong>Direct Integration</strong>: No more manual context-switching between the AI and the WeChat IDE.</li>
+  <li><strong>Full Lifecycle Control</strong>: From launching the project to manipulating live page data, the AI has comprehensive access.</li>
+  <li><strong>Standardized Protocol</strong>: Built on MCP, making it compatible with a growing ecosystem of AI tools and agents.</li>
+  <li><strong>Empowering Automation</strong>: Opens the door for automated UI testing and AI-driven prototyping within the WeChat ecosystem.</li>
+</ul>
+
+<p>For anyone building in the WeChat ecosystem, <code class="language-plaintext highlighter-rouge">wechat-dev-mcp</code> is a significant step toward a more intelligent, automated, and frictionless development experience.</p>
+:ET

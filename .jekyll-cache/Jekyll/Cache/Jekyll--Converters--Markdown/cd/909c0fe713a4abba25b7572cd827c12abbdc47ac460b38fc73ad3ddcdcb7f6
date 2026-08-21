@@ -1,0 +1,172 @@
+I"M]<p>A while back I worked through a set of JavaScript exercises designed to expose the parts of the language people gloss over: function binding, named vs. anonymous functions, method references, memoization, and the classic chained-assignment puzzle. They look trivial, but each one hides a real behavior you’ll hit in production. Here are my notes, with the “why” spelled out.</p>
+
+<h2 id="1-reimplementing-functionprototypebind">1. Reimplementing <code class="language-plaintext highlighter-rouge">Function.prototype.bind</code></h2>
+
+<p>The goal was to understand this snippet (the <code class="language-plaintext highlighter-rouge">bind</code> polyfill from early Prototype.js):</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">Function</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">bind</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){</span>
+  <span class="kd">var</span> <span class="nx">fn</span> <span class="o">=</span> <span class="k">this</span><span class="p">,</span> <span class="nx">args</span> <span class="o">=</span> <span class="nb">Array</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">slice</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">arguments</span><span class="p">),</span> <span class="nx">object</span> <span class="o">=</span> <span class="nx">args</span><span class="p">.</span><span class="nx">shift</span><span class="p">();</span>
+  <span class="k">return</span> <span class="kd">function</span><span class="p">(){</span>
+    <span class="k">return</span> <span class="nx">fn</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="nx">object</span><span class="p">,</span>
+      <span class="nx">args</span><span class="p">.</span><span class="nx">concat</span><span class="p">(</span><span class="nb">Array</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">slice</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">arguments</span><span class="p">)));</span>
+  <span class="p">};</span>
+<span class="p">};</span>
+</code></pre></div></div>
+
+<p>To read it you need three basics:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">slice(start, end)</code> returns a subarray. With no arguments it clones the whole array.</li>
+  <li><code class="language-plaintext highlighter-rouge">shift()</code> removes and returns the <strong>first</strong> element.</li>
+  <li><code class="language-plaintext highlighter-rouge">concat()</code> joins two arrays.</li>
+</ul>
+
+<p>The subtle part is <code class="language-plaintext highlighter-rouge">call</code> vs. <code class="language-plaintext highlighter-rouge">apply</code>. They do the same thing — bind a function to a <code class="language-plaintext highlighter-rouge">this</code> object — the only difference is how you pass arguments: <code class="language-plaintext highlighter-rouge">call</code> takes them individually, <code class="language-plaintext highlighter-rouge">apply</code> takes an array.</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">func</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">arg1</span><span class="p">,</span> <span class="nx">arg2</span><span class="p">);</span>
+<span class="nx">func</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="p">[</span><span class="nx">arg1</span><span class="p">,</span> <span class="nx">arg2</span><span class="p">]);</span>
+</code></pre></div></div>
+
+<p>In the polyfill, <code class="language-plaintext highlighter-rouge">arguments</code> is <strong>not</strong> a real array, so it has no <code class="language-plaintext highlighter-rouge">slice</code> method. The trick <code class="language-plaintext highlighter-rouge">Array.prototype.slice.call(arguments)</code> borrows <code class="language-plaintext highlighter-rouge">slice</code> from <code class="language-plaintext highlighter-rouge">Array.prototype</code> and runs it against <code class="language-plaintext highlighter-rouge">arguments</code>. The later <code class="language-plaintext highlighter-rouge">concat</code> folds in any arguments that were bound up front. Once you see that, the whole function reads cleanly.</p>
+
+<h2 id="2-named-vs-anonymous-functions">2. Named vs. anonymous functions</h2>
+
+<p><strong>#11 — a function with a name:</strong></p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">var</span> <span class="nx">ninja</span> <span class="o">=</span> <span class="kd">function</span> <span class="nx">myNinja</span><span class="p">(){</span>
+  <span class="nx">assert</span><span class="p">(</span> <span class="nx">ninja</span> <span class="o">==</span> <span class="nx">myNinja</span><span class="p">,</span> <span class="dl">"</span><span class="s2">This function is named two things - at once!</span><span class="dl">"</span> <span class="p">);</span>
+<span class="p">};</span>
+<span class="nx">ninja</span><span class="p">();</span>
+<span class="nx">assert</span><span class="p">(</span> <span class="k">typeof</span> <span class="nx">myNinja</span> <span class="o">==</span> <span class="dl">"</span><span class="s2">undefined</span><span class="dl">"</span><span class="p">,</span> <span class="dl">"</span><span class="s2">But myNinja isn't defined outside of the function.</span><span class="dl">"</span> <span class="p">);</span>
+<span class="nx">log</span><span class="p">(</span> <span class="nx">ninja</span> <span class="p">);</span>
+</code></pre></div></div>
+
+<p>Output:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>PASS This function is named two things - at once!
+PASS But myNinja isn't defined outside of the function.
+LOG function myNinja(){ ... }
+</code></pre></div></div>
+
+<p>The takeaway: a named function expression keeps its name <strong>inside</strong> itself but is invisible outside. An anonymous function is <code class="language-plaintext highlighter-rouge">undefined</code> when referenced by name from the outside.</p>
+
+<p><strong>#12 — a method on an object:</strong></p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">var</span> <span class="nx">ninja</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="na">yell</span><span class="p">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">n</span><span class="p">){</span>
+    <span class="k">return</span> <span class="nx">n</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="p">?</span> <span class="nx">ninja</span><span class="p">.</span><span class="nx">yell</span><span class="p">(</span><span class="nx">n</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="dl">"</span><span class="s2">a</span><span class="dl">"</span> <span class="p">:</span> <span class="dl">"</span><span class="s2">hiy</span><span class="dl">"</span><span class="p">;</span>
+  <span class="p">}</span>
+<span class="p">};</span>
+<span class="nx">assert</span><span class="p">(</span> <span class="nx">ninja</span><span class="p">.</span><span class="nx">yell</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span> <span class="o">==</span> <span class="dl">"</span><span class="s2">hiyaaaa</span><span class="dl">"</span><span class="p">,</span> <span class="dl">"</span><span class="s2">A single object isn't too bad, either.</span><span class="dl">"</span> <span class="p">);</span>
+</code></pre></div></div>
+
+<p>Even though <code class="language-plaintext highlighter-rouge">yell</code> is defined inside <code class="language-plaintext highlighter-rouge">ninja</code>, you can still call it from outside via <code class="language-plaintext highlighter-rouge">ninja.yell(...)</code>.</p>
+
+<h2 id="3-the-danger-of-referencing-this-by-name">3. The danger of referencing <code class="language-plaintext highlighter-rouge">this</code> by name</h2>
+
+<p><strong>#13 — what happens when you delete the original object?</strong></p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">var</span> <span class="nx">ninja</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="na">yell</span><span class="p">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">n</span><span class="p">){</span>
+    <span class="k">return</span> <span class="nx">n</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="p">?</span> <span class="nx">ninja</span><span class="p">.</span><span class="nx">yell</span><span class="p">(</span><span class="nx">n</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="dl">"</span><span class="s2">a</span><span class="dl">"</span> <span class="p">:</span> <span class="dl">"</span><span class="s2">hiy</span><span class="dl">"</span><span class="p">;</span>
+  <span class="p">}</span>
+<span class="p">};</span>
+<span class="nx">assert</span><span class="p">(</span> <span class="nx">ninja</span><span class="p">.</span><span class="nx">yell</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span> <span class="o">==</span> <span class="dl">"</span><span class="s2">hiyaaaa</span><span class="dl">"</span><span class="p">,</span> <span class="dl">"</span><span class="s2">A single object isn't too bad, either.</span><span class="dl">"</span> <span class="p">);</span>
+
+<span class="kd">var</span> <span class="nx">samurai</span> <span class="o">=</span> <span class="p">{</span> <span class="na">yell</span><span class="p">:</span> <span class="nx">ninja</span><span class="p">.</span><span class="nx">yell</span> <span class="p">};</span>
+<span class="kd">var</span> <span class="nx">ninja</span> <span class="o">=</span> <span class="kc">null</span><span class="p">;</span>
+
+<span class="k">try</span> <span class="p">{</span>
+  <span class="nx">samurai</span><span class="p">.</span><span class="nx">yell</span><span class="p">(</span><span class="mi">4</span><span class="p">);</span>
+<span class="p">}</span> <span class="k">catch</span><span class="p">(</span><span class="nx">e</span><span class="p">){</span>
+  <span class="nx">assert</span><span class="p">(</span> <span class="kc">false</span><span class="p">,</span> <span class="dl">"</span><span class="s2">Uh, this isn't good! Where'd ninja.yell go?</span><span class="dl">"</span> <span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Output:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>PASS A single object isn't too bad, either.
+FAIL Uh, this isn't good! Where'd ninja.yell go?
+</code></pre></div></div>
+
+<p>Object assignment copies a <strong>reference</strong>, not the function. When <code class="language-plaintext highlighter-rouge">ninja</code> becomes <code class="language-plaintext highlighter-rouge">null</code>, the <code class="language-plaintext highlighter-rouge">ninja.yell</code> inside the method points at nothing.</p>
+
+<p><strong>#14 — give the inner function a name and it fixes itself:</strong></p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">var</span> <span class="nx">ninja</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="na">yell</span><span class="p">:</span> <span class="kd">function</span> <span class="nx">yell</span><span class="p">(</span><span class="nx">n</span><span class="p">){</span>
+    <span class="k">return</span> <span class="nx">n</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="p">?</span> <span class="nx">yell</span><span class="p">(</span><span class="nx">n</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="dl">"</span><span class="s2">a</span><span class="dl">"</span> <span class="p">:</span> <span class="dl">"</span><span class="s2">hiy</span><span class="dl">"</span><span class="p">;</span>
+  <span class="p">}</span>
+<span class="p">};</span>
+<span class="nx">assert</span><span class="p">(</span> <span class="nx">ninja</span><span class="p">.</span><span class="nx">yell</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span> <span class="o">==</span> <span class="dl">"</span><span class="s2">hiyaaaa</span><span class="dl">"</span><span class="p">,</span> <span class="dl">"</span><span class="s2">Works as we would expect it to!</span><span class="dl">"</span> <span class="p">);</span>
+
+<span class="kd">var</span> <span class="nx">samurai</span> <span class="o">=</span> <span class="p">{</span> <span class="na">yell</span><span class="p">:</span> <span class="nx">ninja</span><span class="p">.</span><span class="nx">yell</span> <span class="p">};</span>
+<span class="kd">var</span> <span class="nx">ninja</span> <span class="o">=</span> <span class="p">{};</span>
+<span class="nx">assert</span><span class="p">(</span> <span class="nx">samurai</span><span class="p">.</span><span class="nx">yell</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span> <span class="o">==</span> <span class="dl">"</span><span class="s2">hiyaaaa</span><span class="dl">"</span><span class="p">,</span> <span class="dl">"</span><span class="s2">The method correctly calls itself.</span><span class="dl">"</span> <span class="p">);</span>
+</code></pre></div></div>
+
+<p>Naming the function lets it recurse via its own name instead of <code class="language-plaintext highlighter-rouge">ninja.yell(n-1)</code>. If you’d rather stay anonymous, <code class="language-plaintext highlighter-rouge">arguments.callee(n-1)</code> achieves the same (though <code class="language-plaintext highlighter-rouge">arguments.callee</code> is deprecated in strict mode).</p>
+
+<h2 id="4-memoization-caching-function-results">4. Memoization (caching function results)</h2>
+
+<p><strong>#19 — caching via a static property:</strong></p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">function</span> <span class="nx">getElements</span><span class="p">(</span> <span class="nx">name</span> <span class="p">)</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">results</span><span class="p">;</span>
+  <span class="k">if</span> <span class="p">(</span> <span class="nx">getElements</span><span class="p">.</span><span class="nx">cache</span><span class="p">[</span><span class="nx">name</span><span class="p">]</span> <span class="p">)</span> <span class="p">{</span>
+    <span class="nx">results</span> <span class="o">=</span> <span class="nx">getElements</span><span class="p">.</span><span class="nx">cache</span><span class="p">[</span><span class="nx">name</span><span class="p">];</span>
+  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="nx">results</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">getElementsByTagName</span><span class="p">(</span><span class="nx">name</span><span class="p">);</span>
+    <span class="nx">getElements</span><span class="p">.</span><span class="nx">cache</span><span class="p">[</span><span class="nx">name</span><span class="p">]</span> <span class="o">=</span> <span class="nx">results</span><span class="p">;</span>
+  <span class="p">}</span>
+  <span class="k">return</span> <span class="nx">results</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="nx">getElements</span><span class="p">.</span><span class="nx">cache</span> <span class="o">=</span> <span class="p">{};</span>
+</code></pre></div></div>
+
+<p>Simple and effective: attach a <code class="language-plaintext highlighter-rouge">cache</code> object to the function itself.</p>
+
+<p><strong>#20 — the interview puzzle:</strong> cache the result of <code class="language-plaintext highlighter-rouge">isPrime</code>. The catch is the chained assignment <code class="language-plaintext highlighter-rouge">a.x = a = {n:2}</code> in the setup. The short version: JavaScript resolves <strong>all</strong> the assignment targets’ references first, then points them all at the rightmost value. So <code class="language-plaintext highlighter-rouge">a</code> ends up as <code class="language-plaintext highlighter-rouge">{n:2}</code> with no <code class="language-plaintext highlighter-rouge">x</code> property, while <code class="language-plaintext highlighter-rouge">b</code> (which still referenced the old object) ends up with <code class="language-plaintext highlighter-rouge">x</code> pointing at <code class="language-plaintext highlighter-rouge">{n:2}</code>. The answers (<code class="language-plaintext highlighter-rouge">a.x === undefined</code>, <code class="language-plaintext highlighter-rouge">b.x === {n:2}</code>) fall out of that.</p>
+
+<p>The real lesson of the exercise, though, is memoization:</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">function</span> <span class="nx">isPrime</span><span class="p">(</span> <span class="nx">num</span> <span class="p">)</span> <span class="p">{</span>
+  <span class="k">if</span><span class="p">(</span><span class="nx">isPrime</span><span class="p">.</span><span class="nx">cache</span><span class="p">[</span><span class="nx">num</span><span class="p">])</span> <span class="k">return</span> <span class="nx">isPrime</span><span class="p">.</span><span class="nx">cache</span><span class="p">[</span><span class="nx">num</span><span class="p">];</span>
+  <span class="k">else</span> <span class="p">{</span>
+      <span class="kd">var</span> <span class="nx">prime</span> <span class="o">=</span> <span class="nx">num</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">;</span> <span class="c1">// Everything but 1 can be prime</span>
+      <span class="k">for</span> <span class="p">(</span> <span class="kd">var</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">2</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">num</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span> <span class="nx">num</span> <span class="o">%</span> <span class="nx">i</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">)</span> <span class="p">{</span>
+          <span class="nx">prime</span> <span class="o">=</span> <span class="kc">false</span><span class="p">;</span>
+          <span class="k">break</span><span class="p">;</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+      <span class="nx">isPrime</span><span class="p">.</span><span class="nx">cache</span><span class="p">[</span><span class="nx">num</span><span class="p">]</span> <span class="o">=</span> <span class="nx">prime</span><span class="p">;</span>
+      <span class="k">return</span> <span class="nx">prime</span><span class="p">;</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+<span class="nx">isPrime</span><span class="p">.</span><span class="nx">cache</span> <span class="o">=</span> <span class="p">{};</span>
+</code></pre></div></div>
+
+<h2 id="5-looping-with-a-callback">5. Looping with a callback</h2>
+
+<p><strong>#27 — implement the body so the callback receives the value and the array as <code class="language-plaintext highlighter-rouge">this</code>:</strong></p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">function</span> <span class="nx">loop</span><span class="p">(</span><span class="nx">array</span><span class="p">,</span> <span class="nx">fn</span><span class="p">){</span>
+  <span class="k">for</span> <span class="p">(</span> <span class="kd">var</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">array</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">)</span>
+    <span class="nx">fn</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span> <span class="nx">array</span><span class="p">,</span> <span class="nx">array</span><span class="p">[</span><span class="nx">i</span><span class="p">],</span> <span class="nx">i</span> <span class="p">);</span>
+<span class="p">}</span>
+<span class="kd">var</span> <span class="nx">num</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+<span class="nx">loop</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="kd">function</span><span class="p">(</span><span class="nx">value</span><span class="p">,</span> <span class="nx">i</span><span class="p">){</span>
+  <span class="nx">assert</span><span class="p">(</span><span class="nx">value</span> <span class="o">==</span> <span class="nx">num</span><span class="o">++</span><span class="p">,</span> <span class="dl">"</span><span class="s2">Make sure the contents are as we expect it.</span><span class="dl">"</span><span class="p">);</span>
+  <span class="nx">assert</span><span class="p">(</span><span class="k">this</span> <span class="k">instanceof</span> <span class="nb">Array</span><span class="p">,</span> <span class="dl">"</span><span class="s2">The context should be the full array.</span><span class="dl">"</span><span class="p">);</span>
+<span class="p">});</span>
+</code></pre></div></div>
+
+<p>The trick is <code class="language-plaintext highlighter-rouge">fn.call(array, ...)</code> so that <code class="language-plaintext highlighter-rouge">this</code> inside the callback is the whole array, exactly as the assertion expects.</p>
+
+<h2 id="my-take">My take</h2>
+
+<p>None of these are “hard” in isolation, but they’re the kind of thing that separates someone who has <em>read</em> about closures and <code class="language-plaintext highlighter-rouge">this</code> from someone who has <em>been bitten</em> by them. The two I see most in real code reviews: (1) recursively referencing an object by variable name instead of using a named function / <code class="language-plaintext highlighter-rouge">arguments.callee</code>, and (2) forgetting that <code class="language-plaintext highlighter-rouge">this</code> inside a callback is whatever you bound it to — which is exactly why <code class="language-plaintext highlighter-rouge">fn.call(array, ...)</code> matters. If you internalize these six exercises, you’ll debug a surprising number of “why is this undefined?” bugs in seconds.</p>
+
+<p><em>This page is original content; please cite the source if you repost.</em></p>
+:ET

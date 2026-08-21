@@ -1,0 +1,2 @@
+I"�<p>Rotary Position Embedding (RoPE, Su et al., 2021) is the positional encoding used in LLaMA, Mistral, Qwen, and most open-weight models you’ll actually deploy. If you’ve ever wondered why a fine-tuned LLaMA can extrapolate to longer contexts with a simple tweak, RoPE is the reason. I’m covering it separately from the Transformer post because it’s subtle and, once it clicks, a lot of LLM behavior (and the whole “NTK-aware scaling” scene) makes sense.</p>
+:ET

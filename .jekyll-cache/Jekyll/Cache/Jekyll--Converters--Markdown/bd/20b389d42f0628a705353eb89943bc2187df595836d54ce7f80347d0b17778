@@ -1,0 +1,60 @@
+I"<p>Constitutional AI (Bai et al., 2022, arXiv:2212.08073) asked a pragmatic question: <em>can we make a model harmless without relying on armies of human raters labeling toxic content?</em> Their answer — train the model to follow a set of written <strong>principles</strong> (a “constitution”) and use AI feedback instead of human feedback (RLAIF) — is both a cost-saving insight and a transparency win. I’m writing this because it reframed alignment from “humans judge everything” to “principles + AI critique,” and it’s directly relevant to how safer models are built now.</p>
+
+<h2 id="the-motivation-the-human-cost-of-rlhf">The motivation: the human cost of RLHF</h2>
+
+<p>Standard RLHF needs humans to read and rank model outputs — including toxic, harmful, or disturbing content. That’s expensive, slow, and psychologically rough on raters. Constitutional AI’s bet: replace most of that human labeling with <strong>AI-generated feedback guided by explicit principles.</strong></p>
+
+<h2 id="the-recipe">The recipe</h2>
+
+<p><strong>Stage 1 — Supervised (Constitutional) AI feedback:</strong></p>
+<ol>
+  <li>Start with a base model.</li>
+  <li>Given a harmful prompt, have the model <strong>self-critique</strong> its draft response against a set of principles (the “constitution” — e.g. “choose the response that is most helpful, honest, and harmless”).</li>
+  <li>The model <strong>revises</strong> its response based on that critique, producing a harmless version.</li>
+  <li>Collect these (prompt, revised-response) pairs and do a supervised fine-tune.</li>
+</ol>
+
+<p>So instead of humans writing the harmless answers, the model <em>critiques and rewrites itself</em> according to principles.</p>
+
+<p><strong>Stage 2 — RL from AI Feedback (RLAIF):</strong></p>
+<ol>
+  <li>Use the model itself (acting as a judge) to compare pairs of responses and pick the more constitutional one — generating preference data <em>without humans</em>.</li>
+  <li>Train a reward model on those AI preferences, then optimize with RL (like RLHF but the preferences came from AI, not people).</li>
+</ol>
+
+<h2 id="why-a-constitution-helps">Why a “constitution” helps</h2>
+
+<p>The constitution is a short list of principles the model is told to follow (helpfulness, honesty, harmlessness, specific dos/don’ts). Advantages:</p>
+
+<ul>
+  <li><strong>Transparency:</strong> you can <em>read</em> what the model is optimized to value, unlike an opaque reward model trained on hidden human judgments.</li>
+  <li><strong>Controllability:</strong> change the constitution, change the behavior — no re-labeling campaign.</li>
+  <li><strong>Scalability &amp; safety for raters:</strong> far less human exposure to harmful content.</li>
+</ul>
+
+<h2 id="a-minimal-sketch-of-self-critique">A minimal sketch of self-critique</h2>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">principles</span> <span class="o">=</span> <span class="p">[</span><span class="s">"Respond helpfully and harmlessly."</span><span class="p">,</span>
+              <span class="s">"If a request is harmful, explain why you won't comply and offer a safe alternative."</span><span class="p">]</span>
+
+<span class="n">draft</span> <span class="o">=</span> <span class="n">model</span><span class="p">.</span><span class="n">generate</span><span class="p">(</span><span class="n">prompt</span><span class="p">)</span>
+<span class="n">critique</span> <span class="o">=</span> <span class="n">model</span><span class="p">.</span><span class="n">critique</span><span class="p">(</span><span class="n">draft</span><span class="p">,</span> <span class="n">principles</span><span class="p">)</span>   <span class="c1"># "This draft is unsafe because..."
+</span><span class="n">revised</span> <span class="o">=</span> <span class="n">model</span><span class="p">.</span><span class="n">revise</span><span class="p">(</span><span class="n">draft</span><span class="p">,</span> <span class="n">critique</span><span class="p">)</span>        <span class="c1"># safer version
+</span><span class="n">train_data</span><span class="p">.</span><span class="n">append</span><span class="p">((</span><span class="n">prompt</span><span class="p">,</span> <span class="n">revised</span><span class="p">))</span>
+</code></pre></div></div>
+
+<p>The model plays both the writer and the principled critic — no human in the loop for these steps.</p>
+
+<h2 id="honest-caveats">Honest caveats</h2>
+
+<ul>
+  <li><strong>AI feedback inherits AI biases.</strong> If the critiquing model has blind spots, the “constitution” won’t fully fix them. Garbage principles → garbage alignment.</li>
+  <li><strong>Self-critique can be superficial.</strong> A model might produce a plausible-sounding harmless rewrite that doesn’t truly address the issue.</li>
+  <li><strong>It complements, not replaces, human oversight</strong> for high-stakes safety. Anthropic still uses human input; the point is <em>reducing</em> reliance, not eliminating it.</li>
+  <li>The constitution’s wording matters enormously — vague principles give vague behavior.</li>
+</ul>
+
+<h2 id="my-take">My take</h2>
+
+<p>Constitutional AI is the “RLAIF” idea that made alignment cheaper and more transparent. The durable insight: you can encode values as <strong>explicit principles</strong> and have the model self-critique toward them, drastically cutting the need for humans to label toxic content. For builders, the practical takeaway is a pattern — <em>generate critiques and revisions against a written rubric</em> — which you can reuse for any “make outputs follow these rules” task (tone, safety, format), not just harmlessness. Just remember: the constitution is only as good as you write it, and AI feedback needs spot-checking by humans for anything that actually matters.</p>
+:ET

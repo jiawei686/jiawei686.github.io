@@ -1,0 +1,2 @@
+I"�<p>RLHF — Reinforcement Learning from Human Feedback — is the technique family behind every helpful modern chatbot. While InstructGPT (covered separately) popularized the specific three-step recipe, “RLHF” as a method has a longer lineage (from robotics and preference learning) and a deeper set of moving parts. I’m writing this as the <em>mechanics</em> companion: how the reward model and the PPO optimization actually fit together, and where it breaks.</p>
+:ET

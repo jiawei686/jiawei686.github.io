@@ -1,0 +1,53 @@
+I"R<p>GPT-3 (Brown et al., 2020) is the moment the world stopped thinking of language models as “text completers” and started thinking of them as <em>programmable via prompts</em>. The paper’s headline — a 175-billion-parameter model that learns new tasks from a few examples in the prompt, with no fine-tuning — is the direct ancestor of everything we now call “prompt engineering” and, eventually, “in-context learning.” I’m writing this because the mechanism it revealed (in-context learning) is still not fully understood and is central to how we use LLMs today.</p>
+
+<h2 id="the-shift-from-fine-tuning-to-prompting">The shift: from fine-tuning to prompting</h2>
+
+<p>Before GPT-3, adapting a model to a task meant updating its weights (fine-tuning). GPT-3 flipped that: you put a few examples of the task directly in the input, and the model infers the pattern. For instance, to build a translator you don’t train anything — you write:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>English: sea otter
+French: loutre de mer
+
+English: cheese
+French: fromage
+
+English: snow
+French:
+</code></pre></div></div>
+
+<p>…and the model completes “neige.” No gradients, no dataset, no training run. That was genuinely surprising in 2020.</p>
+
+<h2 id="what-few-shot-actually-means-here">What “few-shot” actually means here</h2>
+
+<p>The paper tested three setups:</p>
+
+<ul>
+  <li><strong>Zero-shot:</strong> just a description of the task, no examples.</li>
+  <li><strong>One-shot:</strong> a single example.</li>
+  <li><strong>Few-shot:</strong> a handful (typically 10–100) of examples in the context.</li>
+</ul>
+
+<p>The striking result: performance <em>improved steadily with model size and with the number of in-context examples</em>, and at 175B parameters GPT-3 could often match or approach fine-tuned smaller models on benchmarks — without any task-specific training. This is the empirical origin of the now-obvious fact that bigger models are better <em>promptable</em>.</p>
+
+<h2 id="why-this-matters-and-why-it-was-controversial">Why this matters (and why it was controversial)</h2>
+
+<p>In-context learning meant you could adapt a model you couldn’t even fine-tune (because you didn’t have the weights or the compute), just by writing text. That democratized access but also raised uncomfortable questions: is the model “learning” in the prompt, or just pattern-matching against training data that already contained similar examples? Researchers still debate the mechanism. My operating assumption: in-context learning is partly genuine generalization and partly clever retrieval of similar structures seen during pretraining. Both are useful; the honest framing matters when you’re relying on it for production.</p>
+
+<h2 id="the-limitations-nobody-should-ignore">The limitations nobody should ignore</h2>
+
+<ul>
+  <li><strong>Context window is the new bottleneck.</strong> Few-shot examples eat tokens. Early GPT-3 had a 2k–4k window; you couldn’t fit many examples or long documents.</li>
+  <li><strong>It’s sensitive to wording.</strong> The exact phrasing, ordering, and formatting of the prompt change results. This fragility is real and frustrating.</li>
+  <li><strong>It can silently fail on rare tasks</strong> where the pretraining distribution had little coverage.</li>
+  <li><strong>Cost and latency</strong> scale with how much context you shove in.</li>
+</ul>
+
+<p>These are still the core constraints of prompt-based systems. When I build LLM features, I treat few-shot examples as a <em>calibration tool</em>, not a guarantee — and I always keep a few-shot variant around for when zero-shot underperforms.</p>
+
+<h2 id="practical-lineage">Practical lineage</h2>
+
+<p>GPT-3 is the hinge between “language model as autocomplete” and “language model as general interface.” Every later capability — instruction tuning (InstructGPT), chain-of-thought, tool use, agents — sits on top of the in-context learning substrate GPT-3 demonstrated. If you’ve ever written a prompt with examples, you’re using a GPT-3 idea.</p>
+
+<h2 id="my-take">My take</h2>
+
+<p>The enduring lesson of GPT-3 is that <em>scale changes the qualitative behavior of a model</em>, not just its accuracy. A 1B model can’t do in-context learning; a 175B one can. That’s not a smooth curve — it’s an emergent capability that appears past a threshold. When people argue “my small local model is just as good,” the counterexamples almost always involve exactly these emergence effects. Understand GPT-3 and you understand why we keep building bigger models despite the cost.</p>
+:ET

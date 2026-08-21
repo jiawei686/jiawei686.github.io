@@ -1,0 +1,2 @@
+I";<p>DeepSeek-R1 (DeepSeek, 2025, arXiv:2501.12948) is the release that showed the world you can get <strong>o1-level reasoning from an open-weight model</strong> — and, more importantly, that you can train reasoning with <strong>reinforcement learning alone</strong>, without hand-labeled reasoning traces. For anyone building with self-hosted models, this was a landmark. I’m writing this because R1’s recipe (pure-RL emergence of long reasoning, then distillation) is now a template people reuse, and the “aha moment” it reported is genuinely instructive.</p>
+:ET

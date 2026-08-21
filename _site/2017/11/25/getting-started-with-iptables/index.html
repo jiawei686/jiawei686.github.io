@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+  <head>
+  <meta name="baidu-site-verification" content="5GAItV9OXY" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+  <meta name="google-adsense-account" content="ca-pub-7129764839688468">
+
+  <!-- ===== SEO (per-page dynamic) ===== -->
+  
+  
+  <meta name="description" content="iptables is the user-space tool for configuring the Linux kernel firewall (netfilter). It looks arcane at first, but it’s really just a set of tables, each c...">
+  <meta name="keywords" content="engineering">
+  <meta name="author" content="Jiawei Cui">
+  <meta name="robots" content="index,follow">
+  <link rel="canonical" href="https://cuijiawei.cn/2017/11/25/getting-started-with-iptables/">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Jiawei's Blog">
+  <meta property="og:title" content="Getting Started with iptables">
+  <meta property="og:description" content="iptables is the user-space tool for configuring the Linux kernel firewall (netfilter). It looks arcane at first, but it’s really just a set of tables, each c...">
+  <meta property="og:url" content="https://cuijiawei.cn/2017/11/25/getting-started-with-iptables/">
+
+  
+  <meta property="og:image" content="https://cuijiawei.cn/public/img/og/getting-started-with-iptables.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:locale" content="en_US">
+  
+  <meta property="article:published_time" content="2017-11-25T00:00:00+08:00">
+  <meta property="article:section" content="engineering">
+  <meta property="article:tag" content="engineering">
+  
+  
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Getting Started with iptables">
+  <meta name="twitter:description" content="iptables is the user-space tool for configuring the Linux kernel firewall (netfilter). It looks arcane at first, but it’s really just a set of tables, each c...">
+  <meta name="twitter:image" content="https://cuijiawei.cn/public/img/og/getting-started-with-iptables.png">
+
+  <title>
+    
+       Getting Started with iptables 
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Slab:700|PT+Serif:400,400italic,700,700italic" type="text/css">
+  <link rel="stylesheet" href="/public/css/poole.css">
+  <link rel="stylesheet" href="/public/css/hyde.css">
+  <!--  <link rel="stylesheet" href="/public/css/jekyll-github.css">-->
+  <link rel="stylesheet" href="/public/css/rouge.css">
+
+  
+
+  
+
+  
+
+  <style>
+    .content a,
+    .related-posts li a:hover {
+      color: #64748b;
+    }
+    ::selection {
+      color: #fff;
+      background: #64748b;
+    }
+    ::-moz-selection {
+      color: #fff;
+      background: #64748b;
+    }
+  </style>
+
+  <!-- Icons -->
+  <link rel="icon" href="/public/img/logo.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/public/img/apple-touch-icon.png">
+
+  <!-- RSS -->
+  <link rel="alternate" type="application/atom+xml" title="Jiawei's Blog" href="/atom.xml">
+
+  <!-- MathJax for LaTeX math rendering -->
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']]
+      }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <!-- Baidu analytics -->
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?4a3679fd1f44022a55666cfdd9025484";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+  <!-- Baidu active push: submits each visited URL to Baidu for faster indexing -->
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') { bp.src = 'https://zz.bdstatic.com/linksubmit/push.js'; }
+      else { bp.src = 'http://push.zhanzhang.baidu.com/push.js'; }
+      var s = document.getElementsByTagName('script')[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7129764839688468"
+     crossorigin="anonymous"></script>
+
+  <!-- ===== Structured data ===== -->
+  
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "Getting Started with iptables",
+    "description": "iptables is the user-space tool for configuring the Linux kernel firewall (netfilter). It looks arcane at first, but it’s really just a set of tables, each c...",
+    "image": "https://cuijiawei.cn/public/img/og/getting-started-with-iptables.png",
+    "datePublished": "2017-11-25T00:00:00+08:00",
+    "dateModified": "2017-11-25T00:00:00+08:00",
+    "keywords": "engineering",
+    "articleSection": "engineering",
+    "mainEntityOfPage": { "@type": "WebPage", "@id": "https://cuijiawei.cn/2017/11/25/getting-started-with-iptables/" },
+    "author": {
+      "@type": "Person",
+      "name": "Jiawei Cui",
+      "alternateName": ["kiritocui", "崔家维", "cuijiawei"]
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "Jiawei Cui",
+      "logo": { "@type": "ImageObject", "url": "https://cuijiawei.cn/public/img/logo.svg" }
+    }
+  }
+  </script>
+  
+
+</head>
+
+  <body>
+
+    <main class="content container">
+      
+
+
+<article class="post">
+  <h1 class="post-title">Getting Started with iptables</h1>
+  <div class="post-date">
+    <time datetime="2017-11-25T00:00:00+08:00">11/25/17</time>
+    <span>on <a href="/tag/engineering/">Engineering Archive</a></span>
+  </div>
+  <hr/>
+  <p><code class="language-plaintext highlighter-rouge">iptables</code> is the user-space tool for configuring the Linux kernel firewall (netfilter). It looks arcane at first, but it’s really just a set of <strong>tables</strong>, each containing <strong>chains</strong> of rules that packets traverse in order. Here are the commands I actually reached for when learning it, with the “why” behind each flag.</p>
+
+<h2 id="basic-commands">Basic commands</h2>
+
+<h3 id="syntax-and-listing-rules">Syntax and listing rules</h3>
+
+<p>Save the help to a file so you can study it offline:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>iptables <span class="nt">-h</span> <span class="o">&gt;</span> ~/iptables_help
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">iptables</code> is organized into <strong>tables</strong>, and each table has <strong>chains</strong>. In most cases you only need the <code class="language-plaintext highlighter-rouge">filter</code> and <code class="language-plaintext highlighter-rouge">nat</code> tables. List the rules in the <code class="language-plaintext highlighter-rouge">filter</code> table with:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>iptables <span class="nt">-L</span> <span class="nt">-n</span>
+</code></pre></div></div>
+
+<p>Flag breakdown:</p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">-L</code> — list rules.</li>
+  <li><code class="language-plaintext highlighter-rouge">-n</code> — don’t resolve hostnames (faster, and avoids DNS hangs).</li>
+</ul>
+
+<p>By default this shows the <code class="language-plaintext highlighter-rouge">filter</code> table, which has three built-in chains: <code class="language-plaintext highlighter-rouge">INPUT</code>, <code class="language-plaintext highlighter-rouge">FORWARD</code>, <code class="language-plaintext highlighter-rouge">OUTPUT</code>. With no rules yet, packets pass through untouched.</p>
+
+<h3 id="scenario-block-access-to-a-destination">Scenario: block access to a destination</h3>
+
+<p>With no firewall, <code class="language-plaintext highlighter-rouge">ping www.baidu.com</code> succeeds. Suppose as an admin you don’t want this machine to ping a particular server:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>iptables <span class="nt">-I</span> OUTPUT <span class="nt">-p</span> icmp <span class="nt">-d</span> www.baidu.com <span class="nt">-j</span> DROP
+</code></pre></div></div>
+
+<p>Flags:</p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">-I</code> — insert the rule at the <strong>top</strong> of the chain.</li>
+  <li><code class="language-plaintext highlighter-rouge">-p icmp</code> — match the ICMP protocol (what <code class="language-plaintext highlighter-rouge">ping</code> uses).</li>
+  <li><code class="language-plaintext highlighter-rouge">-d</code> — match the destination address.</li>
+  <li><code class="language-plaintext highlighter-rouge">-j DROP</code> — the target action: silently drop the packet.</li>
+</ul>
+
+<p><strong>Important:</strong> rules in a chain run top to bottom. A <code class="language-plaintext highlighter-rouge">-j REJECT</code> that blocks <em>everything</em> must sit at the <strong>bottom</strong> of the chain, with the “allow” rules above it — otherwise every packet matches the reject first and all connections die. After the rule, <code class="language-plaintext highlighter-rouge">iptables -L -n</code> shows the new <code class="language-plaintext highlighter-rouge">OUTPUT</code> entries with the DNS-resolved Baidu IPs, and <code class="language-plaintext highlighter-rouge">ping</code> now fails:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ping <span class="nt">-c</span> 4 www.baidu.com
+PING www.a.shifen.com <span class="o">(</span>220.181.111.188<span class="o">)</span> 56<span class="o">(</span>84<span class="o">)</span> bytes of data.
+ping: sendmsg: Operation not permitted
+</code></pre></div></div>
+
+<h2 id="export-edit-import-rules">Export, edit, import rules</h2>
+
+<h3 id="export">Export</h3>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>iptables-save <span class="o">&gt;</span> /home/ubuntu/iptables_rules
+</code></pre></div></div>
+
+<h3 id="edit">Edit</h3>
+
+<p>Open <code class="language-plaintext highlighter-rouge">iptables_rules</code>, and under the <code class="language-plaintext highlighter-rouge">:OUTPUT ACCEPT</code> line in the <code class="language-plaintext highlighter-rouge">filter</code> table, add:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-A OUTPUT -p icmp -d 114.114.114.114 -j DROP
+</code></pre></div></div>
+
+<p>Save with <code class="language-plaintext highlighter-rouge">Ctrl-S</code>.</p>
+
+<h3 id="import">Import</h3>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>iptables-restore /home/ubuntu/iptables_rules
+</code></pre></div></div>
+
+<p>Verify with <code class="language-plaintext highlighter-rouge">iptables -L -n</code> and a <code class="language-plaintext highlighter-rouge">ping 114.114.114.114</code>.</p>
+
+<h2 id="advanced-scenario-blacklist--whitelist-with-a-custom-chain">Advanced scenario: blacklist / whitelist with a custom chain</h2>
+
+<p>Suppose this machine is a gateway and you want to block two destinations (114.114.114.114 and 220.181.111.188) for the local PC.</p>
+
+<p>Find the local interface IP:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>ip a show eth0
+</code></pre></div></div>
+
+<p>The address after <code class="language-plaintext highlighter-rouge">inet</code> (e.g. <code class="language-plaintext highlighter-rouge">10.135.166.86</code>) is your interface IP.</p>
+
+<p>Build a dedicated <code class="language-plaintext highlighter-rouge">BLACKLIST</code> chain:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>iptables <span class="nt">-F</span>                       <span class="c"># flush existing rules</span>
+<span class="nb">sudo </span>iptables <span class="nt">-X</span>                       <span class="c"># delete custom chains</span>
+<span class="nb">sudo </span>iptables <span class="nt">-N</span> BLACKLIST             <span class="c"># create a new chain</span>
+<span class="nb">sudo </span>iptables <span class="nt">-A</span> OUTPUT <span class="nt">-s</span> 10.135.166.86 <span class="nt">-j</span> BLACKLIST   <span class="c"># jump to it for local source</span>
+<span class="nb">sudo </span>iptables <span class="nt">-A</span> BLACKLIST <span class="nt">-d</span> 114.114.114.114 <span class="nt">-j</span> DROP
+<span class="nb">sudo </span>iptables <span class="nt">-A</span> BLACKLIST <span class="nt">-d</span> 220.181.111.188 <span class="nt">-j</span> DROP
+</code></pre></div></div>
+
+<p>Now local pings to either address fail. To block a new destination later, just append a rule to <code class="language-plaintext highlighter-rouge">BLACKLIST</code>. To restrict a <em>different</em> PC going through this gateway, add a source-IP match in <code class="language-plaintext highlighter-rouge">OUTPUT</code> that jumps to <code class="language-plaintext highlighter-rouge">BLACKLIST</code>.</p>
+
+<h2 id="advanced-scenario-port-forwarding">Advanced scenario: port forwarding</h2>
+
+<p>Normally you’d configure the app to listen on multiple ports or put a load balancer in front, but for a quick test you can forward port 8080 to 80 with <code class="language-plaintext highlighter-rouge">iptables</code>.</p>
+
+<p>First confirm both are closed:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>telnet 0 80
+telnet 0 8080
+</code></pre></div></div>
+
+<p>Listen on 80 with <code class="language-plaintext highlighter-rouge">netcat</code>:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>nc <span class="nt">-k</span> <span class="nt">-l</span> 80 &amp;
+</code></pre></div></div>
+
+<p>Now <code class="language-plaintext highlighter-rouge">telnet 0 80</code> works. (To exit <code class="language-plaintext highlighter-rouge">telnet</code>: press <code class="language-plaintext highlighter-rouge">Ctrl + ]</code>, then <code class="language-plaintext highlighter-rouge">q</code> + Enter.)</p>
+
+<p>Forward 8080 → 80 on localhost:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>iptables <span class="nt">-t</span> nat <span class="nt">-A</span> OUTPUT <span class="nt">-p</span> tcp <span class="nt">-d</span> 127.0.0.1 <span class="nt">--dport</span> 8080 <span class="nt">-j</span> DNAT <span class="nt">--to</span> 127.0.0.1:80
+</code></pre></div></div>
+
+<p>Here <code class="language-plaintext highlighter-rouge">-t nat</code> selects the NAT table, and <code class="language-plaintext highlighter-rouge">-j DNAT</code> rewrites the destination to port 80. Now <code class="language-plaintext highlighter-rouge">telnet 0 8080</code> also works.</p>
+
+<p>For external traffic (not localhost), use <code class="language-plaintext highlighter-rouge">PREROUTING</code> instead:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>iptables <span class="nt">-t</span> nat <span class="nt">-A</span> PREROUTING <span class="nt">-p</span> tcp <span class="nt">--dport</span> 8080 <span class="nt">-j</span> REDIRECT <span class="nt">--to-ports</span> 80
+</code></pre></div></div>
+
+<h2 id="my-take">My take</h2>
+
+<p>The single most important thing to internalize is <strong>order matters</strong>. A chain is just a for-loop over rules, and the first match wins — so “allow” rules must precede any catch-all “reject.” The second lesson is that <code class="language-plaintext highlighter-rouge">iptables</code> is really two tools: the <code class="language-plaintext highlighter-rouge">filter</code> table (allow/deny) and the <code class="language-plaintext highlighter-rouge">nat</code> table (rewrite addresses/ports). Once you stop seeing it as one big firewall and start seeing it as “tables of ordered chains with targets,” it stops being scary. For anything persistent, always <code class="language-plaintext highlighter-rouge">iptables-save</code> to a file and load it on boot — rules typed at the prompt vanish on reboot.</p>
+
+</article>
+
+
+<aside class="author">
+  <h2 class="aside-title">About</h2>
+
+  
+  <img class="me" src="/public/img/head.jpg" alt="Jiawei Cui"/>
+  
+
+  <p>I’m Jiawei — a developer who spent years shipping software (networking,
+distributed systems) and is now going all-in on AI and machine learning.</p>
+
+<p>This blog is where I think in public: deep dives into LLMs and the papers
+behind them, practical ML, and the occasional build. Formerly writing code
+for a living; now training and shipping models.</p>
+
+<p><em>Don’t you close your eyes.</em></p>
+
+</aside>
+
+
+
+<aside class="related">
+  <h2 class="aside-title">Related Posts</h2>
+  <ul class="related-posts">
+    
+    
+    
+      
+      
+        <li>
+          <h4>
+            <a href="/2018/04/26/ie-button-a-tag-click-fix/">
+              <span>IE Quirk: Clicks on &lt;a&gt; Inside &lt;button&gt; Don't Fire</span>
+              <small>04/26/18</small>
+            </a>
+          </h4>
+        </li>
+      
+    
+      
+      
+        <li>
+          <h4>
+            <a href="/2017/12/01/linux-mail-server-postfix-dovecot/">
+              <span>Building a Linux Mail Server with Postfix and Dovecot</span>
+              <small>12/01/17</small>
+            </a>
+          </h4>
+        </li>
+      
+    
+      
+        
+        
+      
+      
+        <li>
+          <h4>
+            <a href="/2017/06/26/principles-of-economics/">
+              <span>Principles of Economics (Mankiw)</span>
+              <small>06/26/17</small>
+            </a>
+          </h4>
+        </li>
+      
+    
+  </ul>
+</aside>
+
+
+
+    </main>
+    <div class="love content container">
+      © 2026 Jiawei &nbsp;&nbsp;
+      <a href="/about/">About</a> ·
+      <a href="/contact/">Contact</a> ·
+      <a href="/privacy/">Privacy</a> &nbsp;&nbsp;
+      <a href="https://beian.miit.gov.cn/" target="_blank">粤ICP备18035774号</a>
+    </div>
+    
+
+
+
+
+
+<div id="_backdrop"></div>
+<a   id="_menu" href="#_sidebar">☰</a>
+
+<aside id="_sidebar" class="sidebar" style="background-image:url('/public/img/mrrobot.jpg')">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <h1><a href="/">Jiawei's Blog</a></h1>
+      <p>Notes on LLMs, deep learning, and building things that work.</p>
+
+    </div>
+
+    <nav class="sidebar-nav">
+      
+        
+        <a class="sidebar-nav-item" href="/tag/llm/">Paper Deep-Dives</a>
+      
+        
+        <a class="sidebar-nav-item" href="/tag/ai/">AI & Machine Learning</a>
+      
+        
+        <a class="sidebar-nav-item" href="/tag/data/">Data Science</a>
+      
+        
+        <a class="sidebar-nav-item" href="/tag/projects/">Projects</a>
+      
+        
+        <a class="sidebar-nav-item" href="/tag/engineering/">Engineering Archive</a>
+      
+
+      
+
+      
+      
+        
+          
+            
+          
+        
+      
+        
+          
+            
+              <a class="sidebar-nav-item" href="/about/">About</a>
+            
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+            
+          
+        
+      
+        
+          
+        
+      
+        
+          
+            
+              <a class="sidebar-nav-item" href="/playground/">Playground</a>
+            
+          
+        
+      
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+    </nav>
+
+    <div class="sidebar-social">
+      
+        <a href="https://github.com/jiawei686"><span class="icon-icon-github"></span></a>
+
+      
+    </div>
+  </div>
+</aside>
+
+
+  </body>
+</html>

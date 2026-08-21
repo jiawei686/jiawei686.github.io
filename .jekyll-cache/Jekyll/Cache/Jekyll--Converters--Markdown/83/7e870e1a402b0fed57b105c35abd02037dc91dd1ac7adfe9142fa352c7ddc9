@@ -1,0 +1,56 @@
+I"�<p>Reflexion (Shinn et al., 2023, arXiv:2303.11366) solves a frustrating problem with LLM agents: they make the <em>same mistake twice</em>. A standard ReAct agent that fails a task will, on a retry, often repeat the exact bad action. Reflexion adds a <strong>self-reflection step</strong> that turns failures into memory the agent consults next time. I’m writing this because it’s a cheap, weight-free way to make agents actually learn from experience, and the pattern is something I use constantly in agent builds.</p>
+
+<h2 id="the-problem-agents-dont-remember-their-mistakes">The problem: agents don’t remember their mistakes</h2>
+
+<p>A vanilla agent runs: think, act, observe. If it fails, you can re-run it, but it has no <em>memory</em> of why it failed — so it fails the same way. Real learning (gradient descent) is expensive and unavailable at inference. Reflexion’s insight: you don’t need to change weights to learn; you can <strong>learn in language</strong>.</p>
+
+<h2 id="the-reflexion-loop">The Reflexion loop</h2>
+
+<p>After a failed (or suboptimal) trajectory, the agent writes a <strong>verbal reflection</strong>: a short natural-language summary of what went wrong and what to do differently. That reflection is stored in an episodic memory and prepended to the next attempt.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Attempt 1: think → act → observe → FAIL
+Reflection: "I called the search tool with too broad a query and got noise;
+            next time, include the year and specific entity name."
+Attempt 2: [reflection] → think → act → observe → SUCCESS
+</code></pre></div></div>
+
+<p>No gradients, no fine-tuning — just text memory of past mistakes.</p>
+
+<h2 id="why-this-works-better-than-youd-expect">Why this works better than you’d expect</h2>
+
+<ul>
+  <li><strong>It’s targeted.</strong> The reflection addresses the <em>specific</em> failure, so the next attempt avoids it directly.</li>
+  <li><strong>It’s cheap.</strong> Writing one paragraph of reflection costs a single generation; no training run.</li>
+  <li><strong>It compounds.</strong> Over multiple attempts the agent accumulates a growing “lessons learned” buffer that improves robustness on hard, multi-step tasks.</li>
+  <li><strong>It’s model-agnostic.</strong> Works on any LLM, since it’s pure prompting + memory.</li>
+</ul>
+
+<p>The paper showed meaningful gains on reasoning, coding (where the agent reflects on failed test runs), and sequential decision tasks, often outperforming agents without reflection.</p>
+
+<h2 id="a-minimal-sketch">A minimal sketch</h2>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">memory</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">attempt</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_tries</span><span class="p">):</span>
+    <span class="n">prompt</span> <span class="o">=</span> <span class="n">build_prompt</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">memory</span><span class="p">)</span>
+    <span class="n">traj</span><span class="p">,</span> <span class="n">outcome</span> <span class="o">=</span> <span class="n">run_agent</span><span class="p">(</span><span class="n">prompt</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">outcome</span><span class="p">.</span><span class="n">ok</span><span class="p">:</span> <span class="k">break</span>
+    <span class="n">reflection</span> <span class="o">=</span> <span class="n">model</span><span class="p">.</span><span class="n">reflect</span><span class="p">(</span><span class="n">traj</span><span class="p">,</span> <span class="n">outcome</span><span class="p">)</span>   <span class="c1"># "why did this fail?"
+</span>    <span class="n">memory</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">reflection</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">model.reflect</code> call is just a prompted generation: “Here’s what happened and the result. What went wrong, and what should you change?” The output is plain text appended to memory.</p>
+
+<h2 id="practical-notes-for-builders">Practical notes for builders</h2>
+
+<ul>
+  <li><strong>Make reflections specific and actionable.</strong> Vague reflections (“I should try harder”) don’t help. Good ones name the bad action and the fix.</li>
+  <li><strong>Bound the memory.</strong> Don’t dump every reflection forever; keep the most recent / most relevant few to avoid context bloat.</li>
+  <li><strong>Use a verifier when possible.</strong> Reflection is strongest when the agent <em>knows</em> it failed (a test failed, an answer was wrong) rather than guessing.</li>
+  <li><strong>Pair with ReAct</strong> (covered separately): ReAct gives the action loop, Reflexion gives the learning loop on top.</li>
+  <li>Watch for <strong>reflection loops</strong> — the agent might reflect endlessly without trying; cap attempts.</li>
+</ul>
+
+<h2 id="my-take">My take</h2>
+
+<p>Reflexion is the cheapest “learning” upgrade you can add to an agent, and I treat it as near-default for any multi-step agent that can fail. The principle — <em>turn experience into language and feed it back</em> — is profound: it’s a form of reinforcement learning where the “gradient” is a sentence. If your agent keeps repeating mistakes, stop re-running it blindly; add a reflection step and let it remember. Just keep the reflections tight and the memory bounded, or you’ll trade one failure mode (repeat mistakes) for another (context overflow).</p>
+:ET

@@ -1,0 +1,2 @@
+I"�<p>Chain-of-Thought (CoT) prompting (Wei et al., 2022) is probably the highest-ROI prompting technique ever published. It costs you almost nothing — a sentence in the prompt — and can lift a model’s accuracy on math, logic, and multi-step tasks by double digits. I’m writing this because CoT is the foundation of essentially all LLM “reasoning” behavior you see today, and understanding <em>why</em> it works changes how you prompt.</p>
+:ET

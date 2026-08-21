@@ -1,0 +1,52 @@
+I"�<p>Machine learning explainability is the set of methods for answering “why did the model predict <em>that</em>?” As models moved from simple linear regressions to opaque neural nets and gradient-boosted trees, their predictions got better and their reasoning got invisible. Explainability pushes back against that opacity — for debugging, for trust, and often because regulation demands it. I’m writing this as a practical intro: which tools exist, what they actually tell you, and where they mislead.</p>
+
+<h2 id="why-explainability-matters">Why explainability matters</h2>
+
+<ul>
+  <li><strong>Debugging:</strong> if a model performs oddly, you need to know <em>what</em> it’s keying on. (I’ve caught models that “cheated” by reading a timestamp column that leaked the label.)</li>
+  <li><strong>Trust &amp; adoption:</strong> a doctor or loan officer won’t use a model they can’t sanity-check.</li>
+  <li><strong>Fairness &amp; compliance:</strong> many domains legally require a rationale for decisions affecting people.</li>
+  <li><strong>Edge-case discovery:</strong> explanations reveal brittle behavior you’d miss from aggregate accuracy alone.</li>
+</ul>
+
+<h2 id="the-spectrum-intrinsic-vs-post-hoc">The spectrum: intrinsic vs. post-hoc</h2>
+
+<ul>
+  <li><strong>Intrinsic interpretability:</strong> use a simple, inherently explainable model (linear regression, small decision tree). You trade some accuracy for transparency you get for free.</li>
+  <li><strong>Post-hoc explainability:</strong> train any model, then explain its behavior <em>after</em> with separate methods. This is where LIME and SHAP live.</li>
+</ul>
+
+<p>The accuracy/interpretability trade-off is real but overstated — often a well-tuned simple model is “explainable enough” and nearly as good.</p>
+
+<h2 id="key-techniques">Key techniques</h2>
+
+<p><strong>Feature importance (global):</strong> ranking which inputs most affect predictions overall. For tree models this is built-in; for others, permutation importance (shuffle a column, measure accuracy drop) is a model-agnostic baseline.</p>
+
+<p><strong>LIME (Local Interpretable Model-agnostic Explanations):</strong> explain a <em>single prediction</em> by perturbing the input, seeing how the prediction changes, and fitting a simple local model around that point. Answer: “for <em>this</em> instance, these features pushed the prediction up/down.” Cheap and intuitive, but local and sometimes unstable.</p>
+
+<p><strong>SHAP (SHapley Additive exPlanations):</strong> grounded in cooperative game theory — it assigns each feature a “fair share” of the prediction by averaging its marginal contribution across all feature subsets. More principled and consistent than LIME, but more computationally expensive. SHAP values have nice properties (they sum to the prediction), which makes them the go-to for serious work.</p>
+
+<p><strong>Partial dependence / ICE plots:</strong> show how the prediction changes as one feature varies, holding others fixed — great for spotting non-linear effects.</p>
+
+<h2 id="where-explainability-misleads">Where explainability misleads</h2>
+
+<ul>
+  <li><strong>Correlation ≠ causation.</strong> “Feature X is important” doesn’t mean X <em>causes</em> the outcome; it means the model uses it.</li>
+  <li><strong>LIME instability:</strong> tiny input changes can flip the explanation; don’t over-trust a single local explanation.</li>
+  <li><strong>SHAP under feature dependence:</strong> default SHAP assumes features are independent; with correlated features the “subset” counterfactuals can be unrealistic. Use the right estimator.</li>
+  <li><strong>Explanations can be gamed or superficial</strong>, especially on adversarially-tuned models.</li>
+</ul>
+
+<h2 id="practical-guidance">Practical guidance</h2>
+
+<ul>
+  <li>Start with <strong>global feature importance</strong> to sanity-check the whole model.</li>
+  <li>Use <strong>SHAP</strong> for reliable per-prediction explanations; <strong>LIME</strong> for quick local intuition.</li>
+  <li>Always cross-check an explanation against domain knowledge — if it says something absurd, suspect data leakage or a bug.</li>
+  <li>Pick interpretable models when the stakes are high and accuracy headroom is small; reserve black boxes for when they clearly earn their opacity.</li>
+</ul>
+
+<h2 id="my-take">My take</h2>
+
+<p>Explainability is less about “opening the black box” (you rarely can, fully) and more about <em>building justified trust and catching errors</em>. The single most valuable habit: before trusting any model, look at which features drive it — nine times out of ten you’ll find something revealing, good or bad. SHAP is my default for serious explanations; LIME for fast checks. But never confuse an explanation with causality, and never skip the domain sanity-check. A model that’s explainable-but-wrong is still wrong; explainability is a debugging and trust tool, not a correctness guarantee.</p>
+:ET

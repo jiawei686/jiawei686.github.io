@@ -1,0 +1,2 @@
+I"y<p>These are my notes on the TCP chapters from <em>Computer Networking: A Top-Down Approach</em> (Kurose &amp; Ross). TCP is the protocol that makes the unreliable IP layer feel reliable, and the mechanisms it uses — connection setup, sequence numbers, adaptive timeouts, flow and congestion control — are worth understanding concretely rather than as vague buzzwords.</p>
+:ET

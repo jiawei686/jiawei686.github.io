@@ -1,0 +1,2 @@
+I" <p>LLaMA (Meta, 2023) is the release that kicked off the open-weight LLM ecosystem we now take for granted. Before it, if you wanted a capable model you used a closed API (GPT, Claude) or you were stuck with much weaker open checkpoints. LLaMA changed the calculus: a model small enough to run on a single machine, yet competitive with models an order of magnitude larger. I’m writing this because understanding <em>why</em> LLaMA worked explains almost every open-model release since — including the ones you can deploy locally today.</p>
+:ET

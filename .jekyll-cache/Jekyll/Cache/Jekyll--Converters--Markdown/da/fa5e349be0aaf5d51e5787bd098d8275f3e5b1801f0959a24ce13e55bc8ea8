@@ -1,0 +1,59 @@
+I"�<p>Geospatial analysis is working with data that has a <em>location</em> — coordinates, regions, routes. It shows up everywhere once you notice it: delivery zones, disease spread, urban planning, ride-sharing, environmental monitoring, even “which store is nearest.” I’m writing this as a practical intro because location data has gotchas (coordinate systems!) that bite newcomers, and a standard Python toolkit that makes the hard parts routine.</p>
+
+<h2 id="the-first-gotcha-coordinate-reference-systems-crs">The first gotcha: coordinate reference systems (CRS)</h2>
+
+<p>The single most common geospatial bug is mixing coordinate systems. A “point” is meaningless without knowing <em>what framework</em> its numbers refer to.</p>
+
+<ul>
+  <li><strong>Latitude/longitude (EPSG:4326):</strong> degrees on the globe. What you see on Google Maps. Good for storage, bad for measuring distances (a degree of longitude is a different distance near the poles vs. the equator).</li>
+  <li><strong>Projected systems (e.g. Web Mercator EPSG:3857, or local UTM zones):</strong> flat x/y in meters. Needed for accurate distances, areas, and overlaps.</li>
+</ul>
+
+<p>Rule I follow: <strong>store in lat/long, project to a metric CRS for any calculation.</strong> Forgetting this gives distances that are off by orders of magnitude.</p>
+
+<h2 id="core-operations">Core operations</h2>
+
+<ul>
+  <li><strong>Spatial join:</strong> attach attributes from one layer to another by location (“which neighborhood is each crime report in?”). This is the geospatial analog of a SQL join, but on geometry instead of a key.</li>
+  <li><strong>Buffering:</strong> “everything within 500m of a river” = buffer the river line by 500m, then intersect.</li>
+  <li><strong>Overlay/intersection:</strong> combine polygons (zip code × flood zone) to find areas in both.</li>
+  <li><strong>Distance &amp; nearest neighbor:</strong> route planning, facility location, “nearest clinic.”</li>
+</ul>
+
+<h2 id="the-python-stack">The Python stack</h2>
+
+<ul>
+  <li><strong>GeoPandas:</strong> pandas with geometry columns. Does spatial joins, buffers, overlays, CRS handling. The daily-driver.</li>
+  <li><strong>Shapely:</strong> the geometry engine underneath — points, lines, polygons, and their predicates (intersects, contains, distance).</li>
+  <li><strong>Folium / Plotly / Kepler.gl:</strong> interactive map visualization. Folium (Leaflet-based) is my quick default.</li>
+  <li><strong>OSMnx:</strong> pull real street networks from OpenStreetMap and analyze them (great for network/graph problems).</li>
+  <li><strong>PyProj / rasterio:</strong> CRS transforms and raster (image-like grid) data respectively.</li>
+</ul>
+
+<p>A typical workflow: load shapefiles/GeoJSON with GeoPandas → set/check CRS → do spatial joins/buffers → visualize with Folium. Most “hard” problems reduce to picking the right operation and a correct CRS.</p>
+
+<h2 id="practical-pitfalls">Practical pitfalls</h2>
+
+<ul>
+  <li><strong>CRS mismatch</strong> between layers → silently wrong results. Always check <code class="language-plaintext highlighter-rouge">.crs</code> on every layer before joining.</li>
+  <li><strong>Performance:</strong> spatial operations are <code class="language-plaintext highlighter-rouge">O(n²)</code> if naive; GeoPandas uses spatial indexes (RTree) — make sure they’re built (<code class="language-plaintext highlighter-rouge">sindex</code>).</li>
+  <li><strong>Precision vs. reality:</strong> a “nearest hospital” calculation ignores road networks unless you use network distance (OSMnx), so straight-line distance can mislead.</li>
+  <li><strong>Data size:</strong> large geometries are memory-heavy; simplify polygons (<code class="language-plaintext highlighter-rouge">.simplify()</code>) when visuals don’t need full detail.</li>
+</ul>
+
+<h2 id="a-minimal-example">A minimal example</h2>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">geopandas</span> <span class="k">as</span> <span class="n">gpd</span>
+
+<span class="n">points</span> <span class="o">=</span> <span class="n">gpd</span><span class="p">.</span><span class="n">read_file</span><span class="p">(</span><span class="s">"incidents.geojson"</span><span class="p">).</span><span class="n">to_crs</span><span class="p">(</span><span class="mi">3857</span><span class="p">)</span>   <span class="c1"># metric
+</span><span class="n">zones</span>  <span class="o">=</span> <span class="n">gpd</span><span class="p">.</span><span class="n">read_file</span><span class="p">(</span><span class="s">"districts.geojson"</span><span class="p">).</span><span class="n">to_crs</span><span class="p">(</span><span class="mi">3857</span><span class="p">)</span>
+<span class="n">joined</span> <span class="o">=</span> <span class="n">gpd</span><span class="p">.</span><span class="n">sjoin</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">zones</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s">"left"</span><span class="p">,</span> <span class="n">predicate</span><span class="o">=</span><span class="s">"within"</span><span class="p">)</span>
+<span class="n">counts</span> <span class="o">=</span> <span class="n">joined</span><span class="p">.</span><span class="n">groupby</span><span class="p">(</span><span class="s">"district"</span><span class="p">).</span><span class="n">size</span><span class="p">()</span>
+</code></pre></div></div>
+
+<p>That <code class="language-plaintext highlighter-rouge">to_crs(3857)</code> on both layers is the step people skip and then wonder why the join returns nothing.</p>
+
+<h2 id="my-take">My take</h2>
+
+<p>Geospatial work is 20% clever algorithms and 80% <em>getting coordinate systems and joins right</em>. The toolkit (GeoPandas/Shapely) is mature and pleasant; the craft is knowing which spatial operation matches your question and respecting the CRS. If you’re starting out, internalize “store lat/long, compute in a metric projection, always verify CRS before a spatial join” and you’ll avoid the mistakes that cost most of the debugging time. Location data is everywhere — once these basics click, a huge class of “where” questions becomes straightforward.</p>
+:ET

@@ -1,0 +1,2 @@
+I"�<p>LoRA (Hu et al., 2021) is the technique that made it practical for ordinary people — not just labs with clusters — to <em>specialize</em> a large model. If you’ve ever downloaded a “chat” or “instruct” variant of a base model, or swapped a “style” adapter on a Stable Diffusion model, you’ve used LoRA’s idea. I’m writing this because it’s one of the highest-leverage tricks in the entire fine-tuning toolkit, and the math is simpler than its reputation.</p>
+:ET

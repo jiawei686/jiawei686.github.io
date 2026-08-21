@@ -1,0 +1,79 @@
+I"�<p>Every large language model you use today — GPT, Claude, LLaMA, Gemini — is built on a single 2017 paper that, frankly, I did not fully appreciate when it came out. “Attention Is All You Need” replaced recurrence and convolution with a mechanism called <strong>self-attention</strong>, and in doing so removed the biggest bottleneck in sequence modeling: the need to process text strictly left-to-right.</p>
+
+<p>I’m writing this because the Transformer is no longer just “a paper.” It is the substrate of an entire industry, and understanding <em>why</em> it won explains almost everything about how modern models behave.</p>
+
+<h2 id="the-problem-it-actually-solved">The problem it actually solved</h2>
+
+<p>Before 2017, the dominant architectures were RNNs and LSTMs. They read a sentence one token at a time and tried to compress the whole context into a fixed-size hidden state. That design has two nasty consequences:</p>
+
+<ol>
+  <li><strong>You can’t parallelize training.</strong> Token <em>t</em> depends on token <em>t-1</em>, so the whole sequence is a serial chain. On a GPU that loves massive parallelism, this is painful.</li>
+  <li><strong>Information decays over distance.</strong> By the time the model reads the 50th word, the signal from the 1st word has been squashed through 49 updates. Long-range dependencies get lost.</li>
+</ol>
+
+<p>Convolutions helped a bit (you can look at a few neighboring words at once) but still needed many layers to connect distant positions.</p>
+
+<p>Self-attention throws this out. Every token looks at <em>every other token directly</em>, in one step, with no recurrence. Position 1 can attend to position 50 just as easily as to position 2.</p>
+
+<h2 id="what-self-attention-actually-computes">What self-attention actually computes</h2>
+
+<p>For each token we learn three vectors: a <strong>query</strong> <code class="language-plaintext highlighter-rouge">Q</code>, a <strong>key</strong> <code class="language-plaintext highlighter-rouge">K</code>, and a <strong>value</strong> <code class="language-plaintext highlighter-rouge">V</code>. The intuition I find most useful: think of it like a database lookup.</p>
+
+<ul>
+  <li>The query is <em>what this token is looking for</em>.</li>
+  <li>The keys are <em>what each token offers</em>.</li>
+  <li>The values are <em>what each token actually contributes</em>.</li>
+</ul>
+
+<p>We score how well query matches each key, normalize those scores into weights that sum to 1, and take a weighted average of the values:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>scores = Q @ K.T / sqrt(d_k)
+weights = softmax(scores)        # each row sums to 1
+output = weights @ V
+</code></pre></div></div>
+
+<p>That <code class="language-plaintext highlighter-rouge">sqrt(d_k)</code> is not decoration. The dot product of two <em>d_k</em>-dimensional random vectors grows like <code class="language-plaintext highlighter-rouge">sqrt(d_k)</code> in magnitude, so without scaling the softmax gets pushed into a region where gradients vanish. I’ve debugged attention heads that “collapsed” to near-uniform weights — nine times out of ten it was a missing or wrong scaling factor.</p>
+
+<h2 id="multi-head-attention">Multi-head attention</h2>
+
+<p>One attention pattern is rarely enough. The Transformer runs <em>h</em> attention operations in parallel (“heads”), each with its own Q/K/V projections, then concatenates the results. In practice different heads learn different things: one tracks subject-verb agreement, another resolves which “it” refers to, another connects a noun to its modifier across a clause. You can actually probe individual heads and find surprisingly interpretable behavior — though most heads are a mush of correlated signals, and that’s normal.</p>
+
+<h2 id="positions-matter-and-recurrence-doesnt-give-them-for-free">Positions matter (and recurrence doesn’t give them for free)</h2>
+
+<p>Because attention is order-agnostic — it sees a <em>set</em> of tokens, not a sequence — we must inject position information ourselves. The original paper used fixed sinusoidal encodings added to the token embeddings:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>PE(pos, 2i)   = sin(pos / 10000^(2i/d_model))
+PE(pos, 2i+1) = cos(pos / 10000^(2i/d_model))
+</code></pre></div></div>
+
+<p>These have a neat property: the offset between position <em>p</em> and <em>p+k</em> is a linear function of the encoding at <em>p</em>, which lets the model generalize to sequence lengths it didn’t see in training. Later models (like RoPE, which I cover separately) improved on this, but the principle — <em>position is a first-class signal you must add explicitly</em> — is still how every Transformer works.</p>
+
+<h2 id="the-encoder-decoder-split">The encoder-decoder split</h2>
+
+<p>The original Transformer was built for translation, so it had two stacks:</p>
+
+<ul>
+  <li>An <strong>encoder</strong> that reads the source sentence and builds a rich contextual representation.</li>
+  <li>A <strong>decoder</strong> that generates the target sentence one token at a time, using <em>masked</em> self-attention so it can only look at positions it has already produced (plus cross-attention into the encoder).</li>
+</ul>
+
+<p>The masking is the clever bit: during training we feed the whole target sequence at once (fast!), but we zero out the upper triangle of the attention matrix so token <em>t</em> can’t peek at <em>t+1</em>. This is “teacher forcing” done right.</p>
+
+<h2 id="why-this-architecture-ate-the-world">Why this architecture ate the world</h2>
+
+<p>Three properties compounded:</p>
+
+<ol>
+  <li><strong>Parallelism.</strong> Self-attention is <code class="language-plaintext highlighter-rouge">O(1)</code> sequential steps vs <code class="language-plaintext highlighter-rouge">O(n)</code> for RNNs. You can train on huge corpora fast.</li>
+  <li><strong>Constant path length.</strong> Any two positions are one attention hop apart, so long-range dependencies are learnable.</li>
+  <li><strong>It scales.</strong> Bigger models on more data just kept getting better (see the Scaling Laws post). The architecture didn’t fight scaling the way RNNs did.</li>
+</ol>
+
+<p>From here the field forked: decoder-only models (GPT) dropped the encoder and became the backbone of chat assistants; encoder-only models (BERT) became the workhorse for classification; and encoder-decoder survived mostly in translation. But the attention core is shared by all of them.</p>
+
+<h2 id="my-take">My take</h2>
+
+<p>If you only read one paper in this series, read this one. Not because the math is hard — it isn’t — but because <em>every</em> subsequent technique (efficient attention, positional embeddings, RLHF, mixture-of-experts) is a modification bolted onto this skeleton. Once self-attention clicks, the rest of the LLM stack stops feeling like magic.</p>
+
+<p>A practical note if you implement it: the naive <code class="language-plaintext highlighter-rouge">Q@K.T</code> is <code class="language-plaintext highlighter-rouge">O(n^2)</code> in memory and is exactly what FlashAttention (covered separately) fixes for long sequences. For a toy model on short text you can ignore that; for anything production-scale you cannot.</p>
+:ET

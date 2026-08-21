@@ -1,0 +1,2 @@
+I"�<p>Reinforcement learning (RL) is the branch of ML where an agent learns by <strong>trial and error</strong>, receiving rewards for good actions and penalties for bad ones — rather than being told the right answer directly. Games have been RL’s perfect laboratory: clear rules, a score to optimize, and a built-in opponent. I’m writing this as an intro because RL is also the engine behind LLM alignment (RLHF, covered separately), so understanding the game-AI lineage makes the modern stuff click.</p>
+:ET

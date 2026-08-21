@@ -1,0 +1,57 @@
+I"0<p>AutoGen (Microsoft, 2023) is a framework that treats <strong>multi-agent conversation as the unit of computation</strong>. Instead of one prompt solving a task, you spin up several agents — a “user proxy” that executes code, a “assistant” that reasons, maybe a critic, maybe a retrieval agent — and let them talk until the task is done. I’m writing this because multi-agent orchestration is now a core way to build robust LLM systems, and AutoGen (alongside similar frameworks) established the patterns: configurable agents, human-in-the-loop, and conversation as control flow.</p>
+
+<h2 id="the-shift-from-one-prompt-to-a-conversation">The shift: from one prompt to a conversation</h2>
+
+<p>A single LLM call is brittle for complex tasks — it has to plan, act, and verify all at once. AutoGen’s bet: decompose the work across <strong>specialized agents</strong> that converse:</p>
+
+<ul>
+  <li><strong>AssistantAgent:</strong> reasons, writes code, proposes steps.</li>
+  <li><strong>UserProxyAgent:</strong> a stand-in for the user that can <em>execute code</em> and return results (or pause for a human).</li>
+  <li>Optional <strong>critic / coder / retriever</strong> agents with narrow roles.</li>
+</ul>
+
+<p>The framework handles message passing, termination conditions, and tool execution so you focus on agent <em>roles</em> and <em>prompts</em>.</p>
+
+<h2 id="why-multiple-agents-help">Why multiple agents help</h2>
+
+<ul>
+  <li><strong>Separation of concerns.</strong> One agent reasons; another just runs code and reports output. This mirrors how humans divide “think” vs. “do.”</li>
+  <li><strong>Natural tool use.</strong> The UserProxyAgent executes generated code and feeds the result back into the conversation — the model sees real output and corrects, exactly like the ReAct/Reflexion loops (covered separately) but orchestrated for you.</li>
+  <li><strong>Human-in-the-loop.</strong> You can inject a human at any point (approve code, give direction) without restructuring the whole app.</li>
+  <li><strong>Specialization improves quality.</strong> A “critic” agent reviewing the “coder” agent’s output catches errors a single self-prompted model misses.</li>
+</ul>
+
+<h2 id="a-typical-flow">A typical flow</h2>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>UserProxy: "Plot sales by region from data.csv"
+Assistant: writes pandas code
+UserProxy: executes it, returns the plot / error
+Assistant: if error, debugs; if success, explains
+... until done or max turns
+</code></pre></div></div>
+
+<p>The conversation <em>is</em> the program. Termination can be “task complete” message, max turns, or a human stop.</p>
+
+<h2 id="practical-notes-from-using-it">Practical notes from using it</h2>
+
+<ul>
+  <li><strong>Define clear agent roles.</strong> Overlapping roles cause agents to talk past each other. I keep roles minimal: a reasoner, an executor, sometimes a reviewer.</li>
+  <li><strong>Code execution needs sandboxing.</strong> AutoGen can run generated code — awesome for capability, dangerous by default. Always execute in a restricted environment, never on a privileged host. (This is non-negotiable; arbitrary LLM-generated code is a security risk.)</li>
+  <li><strong>Set termination conditions.</strong> Without a max-turns or “done” signal, agents can loop. I always bound conversations.</li>
+  <li><strong>It’s heavier than a single call.</strong> More agents = more tokens and latency; use multi-agent only when the task justifies it (complex coding, multi-step planning), not for simple Q&amp;A.</li>
+  <li><strong>Debugging is conversational.</strong> When it goes wrong, you read the chat log — which is actually nicer than tracing a monolithic prompt.</li>
+</ul>
+
+<h2 id="limitations">Limitations</h2>
+
+<ul>
+  <li><strong>Cost/latency</strong> scale with agents and turns.</li>
+  <li><strong>Agent chatter</strong> can drift or stall; good termination + role design matter.</li>
+  <li><strong>Quality still depends on the base model.</strong> Frameworks orchestrate; they don’t add reasoning the model lacks.</li>
+  <li><strong>Security</strong> of code execution must be handled deliberately.</li>
+</ul>
+
+<h2 id="my-take">My take</h2>
+
+<p>AutoGen popularized a mental model I now use for hard tasks: <em>don’t make one model do everything — give each agent one job and let them converse.</em> The framework handles the plumbing (message passing, execution, termination), so you invest in role design and prompts. The big caveats are real: sandbox any code execution, bound the conversation, and don’t reach for multi-agent when a single well-prompted call suffices. But for complex coding or planning tasks, a reasoner+executor+critic trio consistently beats a lone model. Conversation as computation is a genuinely useful paradigm — just watch the token bill.</p>
+:ET

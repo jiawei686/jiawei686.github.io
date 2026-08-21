@@ -1,0 +1,46 @@
+I"<p>Mixtral (Mistral AI, 2023) is the model that made <strong>mixture-of-experts (MoE)</strong> practical and popular in the open ecosystem. The idea behind MoE is old, but Mixtral shipped it in a way that actually beat dense models of similar <em>active</em> compute — at 7x the total parameter count — and ran efficiently. I’m writing this because MoE is now how most frontier models (and a lot of efficient ones) get their capacity, and the trade-offs are subtle.</p>
+
+<h2 id="the-problem-more-params-help-but-theyre-expensive">The problem: more params help, but they’re expensive</h2>
+
+<p>A bigger dense model is smarter, but every token pays the full cost of every parameter. If you double the model, every prediction gets twice as slow and twice as memory-hungry. That’s wasteful: for any given token, only some of the model’s knowledge is relevant.</p>
+
+<p>MoE’s fix: replace some feed-forward layers with <strong>many parallel “expert” networks</strong> and a small <strong>router</strong> that sends each token to only a few of them.</p>
+
+<h2 id="how-mixtral-works">How Mixtral works</h2>
+
+<p>Mixtral is a standard Transformer where each token, at certain layers, passes through a <strong>sparse MoE feed-forward block</strong> made of 8 expert MLPs. A router (a small linear layer) computes a score for each expert and selects the <strong>top 2</strong>. So:</p>
+
+<ul>
+  <li>Total parameters: ~46B (all 8 experts × layers).</li>
+  <li><strong>Active</strong> parameters per token: ~12.9B (only 2 of 8 experts run).</li>
+</ul>
+
+<p>The result: you get the knowledge capacity of a 46B model, but the per-token compute of a ~13B model. That’s the entire appeal — <em>capacity without proportional cost</em>.</p>
+
+<h2 id="why-this-is-genuinely-better-than-a-dense-model">Why this is genuinely better than a dense model</h2>
+
+<p>A dense 13B model spends its 13B params on everything. Mixtral spends 46B params total, but for any token activates only the experts the router deems relevant. Different experts specialize: one might handle code, another math, another dialogue. The model effectively carries more total knowledge while keeping inference cheap.</p>
+
+<p>Empirically, Mixtral-8x7B outperformed LLaMA-2-70B on many benchmarks while using far less compute per token. That’s a rare “win on both quality and efficiency” result, which is why MoE spread fast (you’ll see it in Mixtral, later Mistral variants, and frontier models like Gemini/Claude internally).</p>
+
+<h2 id="the-catch-moe-has-sharp-edges">The catch: MoE has sharp edges</h2>
+
+<ul>
+  <li><strong>Memory, not compute, is the bottleneck.</strong> You must load <em>all</em> 46B params into RAM/VRAM even though you only use 13B per token. So MoE saves compute and latency, not memory. This surprises people who expect “12.9B active = fits in 13B worth of VRAM.” It doesn’t — you still need room for the full weights.</li>
+  <li><strong>Routing can be unbalanced.</strong> If the router sends most tokens to the same 2 experts, you lose the benefit and some experts starve. Training includes a load-balancing auxiliary loss to spread tokens around. Bad routing = wasted capacity.</li>
+  <li><strong>Batching is trickier.</strong> Different tokens use different experts, so you can’t naively batch the FFN; efficient MoE kernels group tokens by expert.</li>
+  <li><strong>Fine-tuning nuances.</strong> LoRA on MoE needs care about <em>which</em> experts/layers you adapt; naive LoRA may underperform.</li>
+</ul>
+
+<h2 id="practical-notes">Practical notes</h2>
+
+<ul>
+  <li>For <em>serving</em> (latency/throughput), MoE is great if you have the memory. For <em>fitting on small hardware</em>, a dense model of the active size is easier.</li>
+  <li>Quantization still applies: you can 4-bit quantize Mixtral, but you’re quantizing all 46B, so memory stays high.</li>
+  <li>When evaluating an MoE, look at <strong>active</strong> params for speed and <strong>total</strong> params for capacity — conflating them is the most common mistake I see in model comparisons.</li>
+</ul>
+
+<h2 id="my-take">My take</h2>
+
+<p>Mixtral made MoE stop being a research curiosity and start being a deployment strategy. The key mental model: MoE trades <em>memory</em> for <em>compute efficiency</em>, giving you a bigger brain that only wakes the relevant parts per token. If you’re serving at scale and memory isn’t the constraint, MoE is one of the best efficiency levers available. If you’re memory-constrained on the edge, prefer a dense model sized to your active budget. Know which constraint you’re actually hitting.</p>
+:ET

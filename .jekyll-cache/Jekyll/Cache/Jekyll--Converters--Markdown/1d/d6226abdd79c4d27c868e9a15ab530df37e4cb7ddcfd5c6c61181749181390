@@ -1,0 +1,2 @@
+I"�<p>Toolformer (Schick et al., 2023, arXiv:2302.04761) asked a deceptively simple question: <em>can a model learn to use tools on its own, without humans demonstrating how?</em> The answer — yes, by generating its own supervised training data — was a key step toward the tool-use we now take for granted in chat models. I’m writing this because Toolformer’s “self-supervised tool learning” idea is the ancestor of function-calling in modern LLMs, and the method is clever and reusable.</p>
+:ET

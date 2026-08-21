@@ -1,0 +1,2 @@
+I"<p>ReAct (Yao et al., 2022) is the paper that gave us the recognizable shape of an <strong>LLM agent</strong>: think, act, observe, repeat. Before ReAct, reasoning (Chain-of-Thought) and acting (using tools) were treated as separate things. ReAct showed you get better results by <strong>interleaving</strong> them — let the model reason about what to do, take an action, see the result, and reason again. I’m writing this because if you’ve built or used an AI agent, you’ve used ReAct’s loop, whether you knew the name or not.</p>
+:ET

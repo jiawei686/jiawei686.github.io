@@ -1,0 +1,64 @@
+I"n<p>DPO (Rafailov et al., 2023) is the method I now reach for by default when aligning a model. It delivers what RLHF gives you — a model that prefers responses humans like — but <strong>without a separate reward model and without an unstable RL training loop</strong>. I’m writing this because DPO quietly became the workhorse of open-model alignment, and understanding it saves you from a lot of PPO pain.</p>
+
+<h2 id="the-problem-with-rlhfs-complexity">The problem with RLHF’s complexity</h2>
+
+<p>Recall RLHF: train a reward model from preferences, then run PPO to maximize it under a KL constraint. That’s <em>four</em> models in flight (policy, reference, reward, value) and RL is finicky — reward hacking, collapse, hyperparameter hell. For most teams, that overhead isn’t worth it.</p>
+
+<h2 id="dpos-key-insight">DPO’s key insight</h2>
+
+<p>DPO noticed something elegant: under the RLHF objective, the <em>optimal policy</em> has a closed form in terms of the reward and the reference policy. And the reward itself can be expressed in terms of the optimal policy. So instead of:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>preferences → reward model → PPO → aligned policy
+</code></pre></div></div>
+
+<p>you can <strong>directly optimize the policy</strong> on the preference pairs with a single, stable classification-style loss — no reward model, no RL.</p>
+
+<h2 id="the-loss-intuitively">The loss, intuitively</h2>
+
+<p>Given a prompt and a “chosen” vs “rejected” response pair, DPO trains the policy to increase the likelihood of the chosen one and decrease the rejected one, <em>relative to a frozen reference model</em>:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>loss = -log σ( β · (log π(chosen)/π_ref(chosen)
+                   - log π(rejected)/π_ref(rejected) ) )
+</code></pre></div></div>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">π</code> is the policy you’re training; <code class="language-plaintext highlighter-rouge">π_ref</code> is the frozen starting model.</li>
+  <li>The <code class="language-plaintext highlighter-rouge">log π / log π_ref</code> ratio is the implicit reward — DPO derives it from the policy itself.</li>
+  <li><code class="language-plaintext highlighter-rouge">β</code> controls how strongly you enforce the preference vs. stay near the reference.</li>
+</ul>
+
+<p>That’s it. It’s a standard supervised-style update (no sampling, no value network, no KL-in-RL gymnastics), so it trains like a normal fine-tune — stable and predictable.</p>
+
+<h2 id="why-this-is-a-big-deal-in-practice">Why this is a big deal in practice</h2>
+
+<ul>
+  <li><strong>No reward model to train or get wrong.</strong> The reward-model bugs (distributional shift, hacking) mostly disappear because there’s no free-standing reward model.</li>
+  <li><strong>Stable and cheap.</strong> It’s essentially a weighted fine-tune; you can run it on modest hardware, often with LoRA on top.</li>
+  <li><strong>Easy to debug.</strong> Loss goes down monotonically like normal training; no mysterious RL reward curves.</li>
+  <li><strong>Quality is competitive</strong> with RLHF on standard preference benchmarks.</li>
+</ul>
+
+<p>I’ve aligned 7B–13B models with DPO+LoRA where full RLHF would’ve been impractical, and the results were solid for most tasks.</p>
+
+<h2 id="practical-notes">Practical notes</h2>
+
+<ul>
+  <li><strong>Data quality dominates.</strong> DPO is only as good as your (chosen, rejected) pairs. Noisy or mislabeled preferences → a confused model. Curate carefully.</li>
+  <li><strong>β matters.</strong> Too low → model ignores preference; too high → it barely moves from reference. Tune it.</li>
+  <li><strong>LoRA + DPO</strong> is a great combo: train a tiny adapter, keep the base frozen as reference.</li>
+  <li><strong>It still can’t invent capability</strong> the base model lacks — same limit as all alignment methods.</li>
+  <li>Pair with a good SFT first; DPO refines style/preference, it doesn’t teach skills from zero.</li>
+</ul>
+
+<h2 id="limitations">Limitations</h2>
+
+<ul>
+  <li>DPO optimizes the <em>training</em> preferences; if your preference data doesn’t cover a behavior, DPO won’t instill it.</li>
+  <li>It can still produce verbose/sycophantic tendencies if the preference data rewards those (same root cause as RLHF).</li>
+  <li>For extremely subtle or adversarial alignment, some still prefer RLHF’s flexibility — but that’s the exception.</li>
+</ul>
+
+<h2 id="my-take">My take</h2>
+
+<p>DPO is the “make alignment boring” breakthrough, and boring is good. It took a fragile, four-model RL pipeline and collapsed it into a single stable loss over preference pairs — which means most teams <em>can</em> align a model without a research infra. If you’re aligning an open-weight model, start with SFT then DPO (ideally DPO+LoRA); reserve full RLHF for when you have evidence you need it. The mental model: DPO = “nudge the model toward chosen answers and away from rejected ones, relative to where it started.” Simple, stable, effective.</p>
+:ET

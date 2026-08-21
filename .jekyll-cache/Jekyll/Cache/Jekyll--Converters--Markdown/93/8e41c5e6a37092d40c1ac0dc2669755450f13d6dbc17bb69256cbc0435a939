@@ -1,0 +1,2 @@
+I"<p>Generative Agents (Park et al., 2023) is the famous “AI town” paper — 25 LLM-powered characters who go to work, gossip, throw parties, and form relationships in a sandbox. Beyond the demo’s charm, it contributed a clean <strong>agent architecture</strong> (memory → planning → reflection) that’s now a standard reference for building believable autonomous characters and simulations. I’m writing this because the architecture is a template you can reuse for any “agent with a persistent self,” not just game NPCs.</p>
+:ET

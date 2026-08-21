@@ -1,0 +1,46 @@
+I"1<p>InstructGPT (Ouyang et al., 2022) is the paper that made LLMs <em>useful</em> as assistants. Before it, GPT-3 was a brilliant next-token predictor that rarely did what you asked. InstructGPT showed that a three-step recipe — supervised fine-tuning, a reward model, and RLHF — turns a raw model into one that follows instructions, is less toxic, and is genuinely helpful. I’m writing this because it’s the direct ancestor of ChatGPT, and understanding the recipe explains why modern models “listen” to you.</p>
+
+<h2 id="the-problem-capability--helpfulness">The problem: capability ≠ helpfulness</h2>
+
+<p>A base model trained to predict text has no concept of “what the user wants.” Ask it to write a poem and it might complete “write a poem about…” as if echoing a prompt. It’s powerful but not <em>alignable</em>. InstructGPT’s goal: make the model <strong>follow instructions</strong> and <strong>prefer responses humans rate highly</strong>.</p>
+
+<h2 id="the-three-step-recipe">The three-step recipe</h2>
+
+<ol>
+  <li><strong>Supervised Fine-Tuning (SFT).</strong> Collect a dataset of (prompt, ideal response) pairs written by human labelers, and fine-tune the base model on it. This teaches basic instruction-following format.</li>
+  <li><strong>Reward Model (RM).</strong> Collect comparisons: for a prompt, have labelers rank several model outputs best→worst. Train a model to predict these preferences — it outputs a single score for “how good is this response?”</li>
+  <li><strong>RLHF (PPO).</strong> Use reinforcement learning (PPO) to optimize the LM to <em>maximize the reward model’s score</em>, while a KL penalty keeps it from drifting too far from the SFT model (which would degrade language quality).</li>
+</ol>
+
+<p>The result: a model that, on human evaluations, was <strong>preferred over the 175B GPT-3 despite being ~100x smaller</strong> (1.3B InstructGPT beat 175B GPT-3). That’s the power of alignment over raw scale.</p>
+
+<h2 id="why-this-was-a-turning-point">Why this was a turning point</h2>
+
+<ul>
+  <li>It established <strong>RLHF as the standard alignment method</strong> — every major chat model since (ChatGPT, Claude, Llama-2-chat, etc.) uses a variant.</li>
+  <li>It proved <strong>alignment can outweigh scale</strong>: a well-aligned small model beats a bigger unaligned one on usefulness.</li>
+  <li>It made models <strong>follow instructions</strong> instead of just completing text — the birth of the “assistant” UX.</li>
+</ul>
+
+<h2 id="the-honest-caveats">The honest caveats</h2>
+
+<ul>
+  <li><strong>Reward models are imperfect and gameable.</strong> The LM can find ways to score high that don’t correspond to genuine quality (“reward hacking”). The KL penalty and careful data mitigate but don’t eliminate this.</li>
+  <li><strong>Human preference data is expensive and biased.</strong> Labelers’ preferences shape the model; who labels matters. RLHF bakes in the values of the raters.</li>
+  <li><strong>Mode collapse / verbosity.</strong> Optimizing for “helpful-looking” can make models overly long-winded or sycophantic (telling users what they want to hear). This is a known RLHF side effect.</li>
+  <li><strong>It’s complex to train.</strong> Three models (SFT, RM, RL policy) and tricky RL stability. That’s why later methods (DPO, covered separately) sought simpler alternatives.</li>
+</ul>
+
+<h2 id="practical-notes">Practical notes</h2>
+
+<ul>
+  <li>If you’re aligning a model, SFT first to teach format, then preference-tuning; skipping SFT and going straight to RLHF usually struggles.</li>
+  <li>The RM is the linchpin — invest in clean, consistent preference comparisons.</li>
+  <li>Watch for reward hacking during RL; monitor KL divergence and sample quality, don’t just trust the reward curve.</li>
+  <li>For most applied teams, <strong>DPO or supervised preference methods</strong> are easier than full PPO-RLHF and often sufficient.</li>
+</ul>
+
+<h2 id="my-take">My take</h2>
+
+<p>InstructGPT is the paper that made LLMs into tools instead of toys. The durable lesson: <strong>alignment is a separate problem from capability</strong>, and solving it (via human preference signals) matters more for real usability than raw parameters. Every assistant you use rides on this recipe. Understand it and you understand both why models are helpful <em>and</em> why they’re sometimes sycophantic or verbose — those are side effects of optimizing a reward model trained on human ratings. Newer methods (DPO, RLAIF) simplify the training, but the core idea — <em>train the model to match human preference</em> — is unchanged.</p>
+:ET

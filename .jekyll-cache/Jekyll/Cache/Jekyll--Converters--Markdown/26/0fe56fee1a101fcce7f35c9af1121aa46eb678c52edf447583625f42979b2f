@@ -1,0 +1,2 @@
+I"�<p>Geospatial analysis is working with data that has a <em>location</em> — coordinates, regions, routes. It shows up everywhere once you notice it: delivery zones, disease spread, urban planning, ride-sharing, environmental monitoring, even “which store is nearest.” I’m writing this as a practical intro because location data has gotchas (coordinate systems!) that bite newcomers, and a standard Python toolkit that makes the hard parts routine.</p>
+:ET

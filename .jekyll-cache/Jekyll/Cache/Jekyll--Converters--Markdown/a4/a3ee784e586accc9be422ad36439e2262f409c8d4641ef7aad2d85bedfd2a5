@@ -1,0 +1,52 @@
+I"x<p>DeepSeek-R1 (DeepSeek, 2025, arXiv:2501.12948) is the release that showed the world you can get <strong>o1-level reasoning from an open-weight model</strong> — and, more importantly, that you can train reasoning with <strong>reinforcement learning alone</strong>, without hand-labeled reasoning traces. For anyone building with self-hosted models, this was a landmark. I’m writing this because R1’s recipe (pure-RL emergence of long reasoning, then distillation) is now a template people reuse, and the “aha moment” it reported is genuinely instructive.</p>
+
+<h2 id="the-goal-o1-style-think-long-then-answer">The goal: o1-style “think long, then answer”</h2>
+
+<p>OpenAI’s o1 had shown that training models to spend more tokens <em>reasoning</em> (internally) before answering dramatically improved hard problems. But o1 was closed. DeepSeek-R1 asked: can we reproduce this with open weights and a transparent method? The answer was yes, and the method was cleaner than expected.</p>
+
+<h2 id="the-headline-result-reasoning-emerges-from-rl-alone">The headline result: reasoning emerges from RL alone</h2>
+
+<p>The most surprising finding came from <strong>R1-Zero</strong>, an experimental model trained <em>only</em> with RL on a base model — <strong>no supervised fine-tuning on reasoning data at all</strong>. Given just a reward signal (correct answers to math/code problems), the model <em>spontaneously</em> learned to produce long chains of thought, self-verify, and allocate more reasoning to harder problems. The paper called the point where the model discovers “let me think longer” on its own the <strong>“aha moment.”</strong></p>
+
+<p>This matters because it suggests reasoning behavior isn’t something you must distill from a teacher — it can <em>emerge</em> from rewarding correct outcomes. That’s a fundamentally cheaper training story.</p>
+
+<h2 id="the-actual-r1-recipe">The actual R1 recipe</h2>
+
+<p>R1-Zero had a flaw: its reasoning was often unreadable (mixing languages, messy). So the full R1 used a refined pipeline:</p>
+
+<ol>
+  <li><strong>Cold-start SFT:</strong> a small amount of high-quality, readable reasoning data to give the model a clean format to build on.</li>
+  <li><strong>Reasoning RL:</strong> RL on reasoning-heavy tasks (math, code, logic) with correctness rewards.</li>
+  <li><strong>Rejection sampling + SFT:</strong> generate many reasoning traces, keep the good ones, fine-tune.</li>
+  <li><strong>RL for helpfulness &amp; safety:</strong> a final RL stage aligning with general usefulness and safety, not just reasoning.</li>
+</ol>
+
+<p>The result matched or approached o1 on math (AIME) and code (Codeforces) benchmarks — from an open-weight model.</p>
+
+<h2 id="distillation-small-models-that-reason">Distillation: small models that reason</h2>
+
+<p>A pragmatic part of the release: DeepSeek <strong>distilled</strong> R1’s reasoning into smaller models (e.g. 7B, 14B, 32B) by training them on R1’s generated reasoning traces. These distilled small models punched far above their weight — a 7B “R1-distill” could reason better than a much larger non-reasoning model. For local deployment this is huge: you can get real reasoning on a single GPU.</p>
+
+<h2 id="why-this-resonated-with-builders">Why this resonated with builders</h2>
+
+<ul>
+  <li><strong>Open weights</strong> meant you could self-host o1-class reasoning without a closed API.</li>
+  <li><strong>Pure-RL emergence</strong> suggested cheaper training paths for specialist reasoners (math tutor, code agent) — reward correctness, let reasoning surface.</li>
+  <li><strong>Distillation</strong> made it runnable on commodity hardware.</li>
+</ul>
+
+<p>I’ve used R1-distill models locally for math/code assistance and the step-by-step verification quality is noticeably above non-reasoning 7B–14B models.</p>
+
+<h2 id="honest-limitations">Honest limitations</h2>
+
+<ul>
+  <li>Reasoning models are <strong>slow and token-hungry</strong> — they generate long internal chains, so latency and cost are higher. Not for every query.</li>
+  <li>The RL reward must be <strong>verifiable</strong> (math/code have graders; open-ended tasks don’t, which is why R1 focuses there).</li>
+  <li>Long chains can still <strong>overthink</strong> simple problems or occasionally ramble.</li>
+  <li>“Thinking” is internal; you often want to expose or cap it for UX.</li>
+</ul>
+
+<h2 id="my-take">My take</h2>
+
+<p>DeepSeek-R1 is the paper that democratized “slow thinking.” The two takeaways I’d internalize: (1) reasoning can <em>emerge</em> from RL on verifiable rewards — you don’t always need a teacher’s traces — and (2) you can <em>distill</em> that reasoning into small models and run it locally. If you build anything involving math, code, or logic with self-hosted models, R1-distill variants should be on your shortlist. Just budget for the extra latency; reasoning costs tokens, and that’s the price of the accuracy.</p>
+:ET

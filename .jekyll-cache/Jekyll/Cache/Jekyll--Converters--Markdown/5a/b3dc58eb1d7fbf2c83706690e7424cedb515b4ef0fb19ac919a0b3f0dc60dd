@@ -1,0 +1,42 @@
+I"�<p>LLaMA (Meta, 2023) is the release that kicked off the open-weight LLM ecosystem we now take for granted. Before it, if you wanted a capable model you used a closed API (GPT, Claude) or you were stuck with much weaker open checkpoints. LLaMA changed the calculus: a model small enough to run on a single machine, yet competitive with models an order of magnitude larger. I’m writing this because understanding <em>why</em> LLaMA worked explains almost every open-model release since — including the ones you can deploy locally today.</p>
+
+<h2 id="the-core-insight-data-quality-beats-raw-size">The core insight: data quality beats raw size</h2>
+
+<p>LLaMA’s headline result: a 13B model trained on ~1.2 trillion tokens <em>outperformed</em> GPT-3 (175B) on many benchmarks. The lesson wasn’t “make it bigger” — it was “train a smaller model on <em>more and cleaner tokens</em> for <em>longer</em>.” This directly contradicted the then-common intuition that parameter count was destiny.</p>
+
+<p>The training recipe mattered as much as the scale:</p>
+
+<ul>
+  <li>A large, <strong>deduplicated, high-quality</strong> corpus (CommonCrawl cleaned aggressively, plus books, code, arXiv, Wikipedia).</li>
+  <li>Standard Transformer architecture with modern tweaks: <strong>RoPE</strong> positional embeddings, <strong>SwiGLU</strong> activations, <strong>RMSNorm</strong> instead of LayerNorm.</li>
+  <li>Trained for many more tokens per parameter than GPT-3 was.</li>
+</ul>
+
+<p>These architectural choices now appear in virtually every open model.</p>
+
+<h2 id="why-open-weights-mattered-more-than-open-source">Why “open weights” mattered more than “open source”</h2>
+
+<p>Meta released the <em>weights</em> (under a non-commercial license initially), not the full training code or data. That distinction is important: you couldn’t fully reproduce LLaMA from scratch, but you <em>could</em> download it, run it, fine-tune it, and build on it. Within days the community had leaked it, quantized it, and spawned derivatives (Alpaca, Vicuna, and eventually the entire LLaMA-2/3 and Mistral family tree).</p>
+
+<p>This is the lineage of almost every model you can self-host today. Mistral, Qwen, Gemma, Phi — they all follow the “LLaMA architecture + their own data” pattern. When you load a GGUF file into llama.cpp, you are running a direct descendant.</p>
+
+<h2 id="practical-consequences-for-builders">Practical consequences for builders</h2>
+
+<ul>
+  <li><strong>Local deployment became real.</strong> A 7B–13B LLaMA-class model runs on a single 16–24GB GPU, or even CPU with quantization. I’ve served 7B models on modest hardware for internal tooling.</li>
+  <li><strong>Fine-tuning got cheap.</strong> Combined with LoRA/QLoRA (covered separately), you could specialize a base LLaMA on a workstation.</li>
+  <li><strong>The “base vs. chat” split appeared.</strong> Base models (raw pretrained) are completion engines; instruction-tuned “chat” variants add usability. Knowing which you need matters.</li>
+</ul>
+
+<h2 id="limitations-and-honest-caveats">Limitations and honest caveats</h2>
+
+<ul>
+  <li>The original license restricted commercial use; later LLaMA-2/3 and truly open models (Mistral, etc.) loosened this. Check licenses before shipping commercially — I always do.</li>
+  <li>A 7B model is <em>not</em> a 175B model. It will hallucinate more, reason worse, and know less. LLaMA proved small can be <em>surprisingly</em> good, not that small equals large.</li>
+  <li>Pretraining data quality is the secret sauce; you can’t just copy the architecture and expect the same results without comparable data.</li>
+</ul>
+
+<h2 id="my-take">My take</h2>
+
+<p>LLaMA is the paper/release that turned LLMs from a “closed API service” into a “thing you can own and modify.” Its real contribution wasn’t a novel architecture — it was demonstrating that <em>data curation + modern architecture + longer training</em> lets a small model punch far above its weight, and then <em>giving the weights to the world</em>. If you do anything with self-hosted models, you’re standing on LLaMA’s shoulders. Understand its design choices (RoPE, SwiGLU, RMSNorm) and you understand 90% of the open-model landscape.</p>
+:ET

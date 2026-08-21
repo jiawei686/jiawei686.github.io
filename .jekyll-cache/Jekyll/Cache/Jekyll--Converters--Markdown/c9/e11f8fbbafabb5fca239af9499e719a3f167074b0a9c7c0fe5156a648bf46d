@@ -1,0 +1,2 @@
+I";<p>Chinchilla (Hoffmann et al., 2022) is the paper that corrected a mistake the entire field was making about how to train large language models. It asked a deceptively simple question: <em>given a fixed compute budget, what’s the optimal split between model size and training data?</em> The answer overturned the prevailing “just make the model bigger” doctrine. I’m writing this because Chinchilla’s “20 tokens per parameter” rule is something every model trainer should have internalized, and ignoring it is a classic way to waste a training budget.</p>
+:ET

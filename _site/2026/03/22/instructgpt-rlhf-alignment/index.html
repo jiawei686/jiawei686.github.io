@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+  <head>
+  <meta name="baidu-site-verification" content="5GAItV9OXY" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+  <meta name="google-adsense-account" content="ca-pub-7129764839688468">
+
+  <!-- ===== SEO (per-page dynamic) ===== -->
+  
+  
+  <meta name="description" content="InstructGPT is the paper that turned RLHF into the standard recipe for making LLMs helpful and follow instructions — the direct ancestor of ChatGPT.">
+  <meta name="keywords" content="llm">
+  <meta name="author" content="Jiawei Cui">
+  <meta name="robots" content="index,follow">
+  <link rel="canonical" href="https://cuijiawei.cn/2026/03/22/instructgpt-rlhf-alignment/">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Jiawei's Blog">
+  <meta property="og:title" content="InstructGPT: Aligning LLMs with Human Preference (RLHF)">
+  <meta property="og:description" content="InstructGPT is the paper that turned RLHF into the standard recipe for making LLMs helpful and follow instructions — the direct ancestor of ChatGPT.">
+  <meta property="og:url" content="https://cuijiawei.cn/2026/03/22/instructgpt-rlhf-alignment/">
+
+  
+  <meta property="og:image" content="https://cuijiawei.cn/public/img/og/instructgpt-rlhf-alignment.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:locale" content="en_US">
+  
+  <meta property="article:published_time" content="2026-03-22T00:00:00+08:00">
+  <meta property="article:section" content="llm">
+  <meta property="article:tag" content="llm">
+  
+  
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="InstructGPT: Aligning LLMs with Human Preference (RLHF)">
+  <meta name="twitter:description" content="InstructGPT is the paper that turned RLHF into the standard recipe for making LLMs helpful and follow instructions — the direct ancestor of ChatGPT.">
+  <meta name="twitter:image" content="https://cuijiawei.cn/public/img/og/instructgpt-rlhf-alignment.png">
+
+  <title>
+    
+       InstructGPT: Aligning LLMs with Human Preference (RLHF) 
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Slab:700|PT+Serif:400,400italic,700,700italic" type="text/css">
+  <link rel="stylesheet" href="/public/css/poole.css">
+  <link rel="stylesheet" href="/public/css/hyde.css">
+  <!--  <link rel="stylesheet" href="/public/css/jekyll-github.css">-->
+  <link rel="stylesheet" href="/public/css/rouge.css">
+
+  
+
+  
+
+  
+
+  <style>
+    .content a,
+    .related-posts li a:hover {
+      color: #6b46c1;
+    }
+    ::selection {
+      color: #fff;
+      background: #6b46c1;
+    }
+    ::-moz-selection {
+      color: #fff;
+      background: #6b46c1;
+    }
+  </style>
+
+  <!-- Icons -->
+  <link rel="icon" href="/public/img/logo.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/public/img/apple-touch-icon.png">
+
+  <!-- RSS -->
+  <link rel="alternate" type="application/atom+xml" title="Jiawei's Blog" href="/atom.xml">
+
+  <!-- MathJax for LaTeX math rendering -->
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']]
+      }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <!-- Baidu analytics -->
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?4a3679fd1f44022a55666cfdd9025484";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+  <!-- Baidu active push: submits each visited URL to Baidu for faster indexing -->
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') { bp.src = 'https://zz.bdstatic.com/linksubmit/push.js'; }
+      else { bp.src = 'http://push.zhanzhang.baidu.com/push.js'; }
+      var s = document.getElementsByTagName('script')[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7129764839688468"
+     crossorigin="anonymous"></script>
+
+  <!-- ===== Structured data ===== -->
+  
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "InstructGPT: Aligning LLMs with Human Preference (RLHF)",
+    "description": "InstructGPT is the paper that turned RLHF into the standard recipe for making LLMs helpful and follow instructions — the direct ancestor of ChatGPT.",
+    "image": "https://cuijiawei.cn/public/img/og/instructgpt-rlhf-alignment.png",
+    "datePublished": "2026-03-22T00:00:00+08:00",
+    "dateModified": "2026-03-22T00:00:00+08:00",
+    "keywords": "llm",
+    "articleSection": "llm",
+    "mainEntityOfPage": { "@type": "WebPage", "@id": "https://cuijiawei.cn/2026/03/22/instructgpt-rlhf-alignment/" },
+    "author": {
+      "@type": "Person",
+      "name": "Jiawei Cui",
+      "alternateName": ["kiritocui", "崔家维", "cuijiawei"]
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "Jiawei Cui",
+      "logo": { "@type": "ImageObject", "url": "https://cuijiawei.cn/public/img/logo.svg" }
+    }
+  }
+  </script>
+  
+
+</head>
+
+  <body>
+
+    <main class="content container">
+      
+
+
+<article class="post">
+  <h1 class="post-title">InstructGPT: Aligning LLMs with Human Preference (RLHF)</h1>
+  <div class="post-date">
+    <time datetime="2026-03-22T00:00:00+08:00">03/22/26</time>
+    <span>on <a href="/tag/llm/">Paper Deep-Dives</a></span>
+  </div>
+  <hr/>
+  <p>InstructGPT (Ouyang et al., 2022) is the paper that made LLMs <em>useful</em> as assistants. Before it, GPT-3 was a brilliant next-token predictor that rarely did what you asked. InstructGPT showed that a three-step recipe — supervised fine-tuning, a reward model, and RLHF — turns a raw model into one that follows instructions, is less toxic, and is genuinely helpful. I’m writing this because it’s the direct ancestor of ChatGPT, and understanding the recipe explains why modern models “listen” to you.</p>
+
+<h2 id="the-problem-capability--helpfulness">The problem: capability ≠ helpfulness</h2>
+
+<p>A base model trained to predict text has no concept of “what the user wants.” Ask it to write a poem and it might complete “write a poem about…” as if echoing a prompt. It’s powerful but not <em>alignable</em>. InstructGPT’s goal: make the model <strong>follow instructions</strong> and <strong>prefer responses humans rate highly</strong>.</p>
+
+<h2 id="the-three-step-recipe">The three-step recipe</h2>
+
+<ol>
+  <li><strong>Supervised Fine-Tuning (SFT).</strong> Collect a dataset of (prompt, ideal response) pairs written by human labelers, and fine-tune the base model on it. This teaches basic instruction-following format.</li>
+  <li><strong>Reward Model (RM).</strong> Collect comparisons: for a prompt, have labelers rank several model outputs best→worst. Train a model to predict these preferences — it outputs a single score for “how good is this response?”</li>
+  <li><strong>RLHF (PPO).</strong> Use reinforcement learning (PPO) to optimize the LM to <em>maximize the reward model’s score</em>, while a KL penalty keeps it from drifting too far from the SFT model (which would degrade language quality).</li>
+</ol>
+
+<p>The result: a model that, on human evaluations, was <strong>preferred over the 175B GPT-3 despite being ~100x smaller</strong> (1.3B InstructGPT beat 175B GPT-3). That’s the power of alignment over raw scale.</p>
+
+<h2 id="why-this-was-a-turning-point">Why this was a turning point</h2>
+
+<ul>
+  <li>It established <strong>RLHF as the standard alignment method</strong> — every major chat model since (ChatGPT, Claude, Llama-2-chat, etc.) uses a variant.</li>
+  <li>It proved <strong>alignment can outweigh scale</strong>: a well-aligned small model beats a bigger unaligned one on usefulness.</li>
+  <li>It made models <strong>follow instructions</strong> instead of just completing text — the birth of the “assistant” UX.</li>
+</ul>
+
+<h2 id="the-honest-caveats">The honest caveats</h2>
+
+<ul>
+  <li><strong>Reward models are imperfect and gameable.</strong> The LM can find ways to score high that don’t correspond to genuine quality (“reward hacking”). The KL penalty and careful data mitigate but don’t eliminate this.</li>
+  <li><strong>Human preference data is expensive and biased.</strong> Labelers’ preferences shape the model; who labels matters. RLHF bakes in the values of the raters.</li>
+  <li><strong>Mode collapse / verbosity.</strong> Optimizing for “helpful-looking” can make models overly long-winded or sycophantic (telling users what they want to hear). This is a known RLHF side effect.</li>
+  <li><strong>It’s complex to train.</strong> Three models (SFT, RM, RL policy) and tricky RL stability. That’s why later methods (DPO, covered separately) sought simpler alternatives.</li>
+</ul>
+
+<h2 id="practical-notes">Practical notes</h2>
+
+<ul>
+  <li>If you’re aligning a model, SFT first to teach format, then preference-tuning; skipping SFT and going straight to RLHF usually struggles.</li>
+  <li>The RM is the linchpin — invest in clean, consistent preference comparisons.</li>
+  <li>Watch for reward hacking during RL; monitor KL divergence and sample quality, don’t just trust the reward curve.</li>
+  <li>For most applied teams, <strong>DPO or supervised preference methods</strong> are easier than full PPO-RLHF and often sufficient.</li>
+</ul>
+
+<h2 id="my-take">My take</h2>
+
+<p>InstructGPT is the paper that made LLMs into tools instead of toys. The durable lesson: <strong>alignment is a separate problem from capability</strong>, and solving it (via human preference signals) matters more for real usability than raw parameters. Every assistant you use rides on this recipe. Understand it and you understand both why models are helpful <em>and</em> why they’re sometimes sycophantic or verbose — those are side effects of optimizing a reward model trained on human ratings. Newer methods (DPO, RLAIF) simplify the training, but the core idea — <em>train the model to match human preference</em> — is unchanged.</p>
+
+</article>
+
+
+<aside class="author">
+  <h2 class="aside-title">About</h2>
+
+  
+  <img class="me" src="/public/img/head.jpg" alt="Jiawei Cui"/>
+  
+
+  <p>I’m Jiawei — a developer who spent years shipping software (networking,
+distributed systems) and is now going all-in on AI and machine learning.</p>
+
+<p>This blog is where I think in public: deep dives into LLMs and the papers
+behind them, practical ML, and the occasional build. Formerly writing code
+for a living; now training and shipping models.</p>
+
+<p><em>Don’t you close your eyes.</em></p>
+
+</aside>
+
+
+
+<aside class="related">
+  <h2 class="aside-title">Related Posts</h2>
+  <ul class="related-posts">
+    
+    
+    
+      
+      
+        <li>
+          <h4>
+            <a href="/2026/07/18/softmax/">
+              <span>Softmax: Turning Logits into Probabilities</span>
+              <small>07/18/26</small>
+            </a>
+          </h4>
+        </li>
+      
+    
+      
+      
+        <li>
+          <h4>
+            <a href="/2026/07/11/clip/">
+              <span>CLIP: Learning Transferable Visual Models From Language Supervision</span>
+              <small>07/11/26</small>
+            </a>
+          </h4>
+        </li>
+      
+    
+      
+      
+        <li>
+          <h4>
+            <a href="/2026/07/10/self-consistency/">
+              <span>Self-Consistency: Improving Chain-of-Thought Reasoning</span>
+              <small>07/10/26</small>
+            </a>
+          </h4>
+        </li>
+      
+    
+      
+      
+    
+  </ul>
+</aside>
+
+
+
+    </main>
+    <div class="love content container">
+      © 2026 Jiawei &nbsp;&nbsp;
+      <a href="/about/">About</a> ·
+      <a href="/contact/">Contact</a> ·
+      <a href="/privacy/">Privacy</a> &nbsp;&nbsp;
+      <a href="https://beian.miit.gov.cn/" target="_blank">粤ICP备18035774号</a>
+    </div>
+    
+
+
+
+
+
+<div id="_backdrop"></div>
+<a   id="_menu" href="#_sidebar">☰</a>
+
+<aside id="_sidebar" class="sidebar" style="background-image:url('/public/img/mrrobot.jpg')">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <h1><a href="/">Jiawei's Blog</a></h1>
+      <p>Notes on LLMs, deep learning, and building things that work.</p>
+
+    </div>
+
+    <nav class="sidebar-nav">
+      
+        
+        <a class="sidebar-nav-item" href="/tag/llm/">Paper Deep-Dives</a>
+      
+        
+        <a class="sidebar-nav-item" href="/tag/ai/">AI & Machine Learning</a>
+      
+        
+        <a class="sidebar-nav-item" href="/tag/data/">Data Science</a>
+      
+        
+        <a class="sidebar-nav-item" href="/tag/projects/">Projects</a>
+      
+        
+        <a class="sidebar-nav-item" href="/tag/engineering/">Engineering Archive</a>
+      
+
+      
+
+      
+      
+        
+          
+            
+          
+        
+      
+        
+          
+            
+              <a class="sidebar-nav-item" href="/about/">About</a>
+            
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+            
+          
+        
+      
+        
+          
+        
+      
+        
+          
+            
+              <a class="sidebar-nav-item" href="/playground/">Playground</a>
+            
+          
+        
+      
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+    </nav>
+
+    <div class="sidebar-social">
+      
+        <a href="https://github.com/jiawei686"><span class="icon-icon-github"></span></a>
+
+      
+    </div>
+  </div>
+</aside>
+
+
+  </body>
+</html>

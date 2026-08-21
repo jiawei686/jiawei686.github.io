@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+  <head>
+  <meta name="baidu-site-verification" content="5GAItV9OXY" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+  <meta name="google-adsense-account" content="ca-pub-7129764839688468">
+
+  <!-- ===== SEO (per-page dynamic) ===== -->
+  
+  
+  <meta name="description" content="Notes on LLMs, deep learning, and building things that work.">
+  <meta name="keywords" content="cuijiawei, kiritocui, 崔家维, Jiawei Cui, LLM, large language models, deep learning, transformer, machine learning, AI blog, paper deep-dive">
+  <meta name="author" content="Jiawei Cui">
+  <meta name="robots" content="index,follow">
+  <link rel="canonical" href="https://cuijiawei.cn/">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Jiawei's Blog">
+  <meta property="og:title" content="Jiawei — Notes on LLMs, Deep Learning & ML Systems">
+  <meta property="og:description" content="Notes on LLMs, deep learning, and building things that work.">
+  <meta property="og:url" content="https://cuijiawei.cn/">
+
+  
+  <meta property="og:image" content="https://cuijiawei.cn/public/img/og/og-default.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:locale" content="en_US">
+  
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Jiawei — Notes on LLMs, Deep Learning & ML Systems">
+  <meta name="twitter:description" content="Notes on LLMs, deep learning, and building things that work.">
+  <meta name="twitter:image" content="https://cuijiawei.cn/public/img/og/og-default.png">
+
+  <title>
+    
+       Jiawei — Notes on LLMs, Deep Learning & ML Systems 
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Slab:700|PT+Serif:400,400italic,700,700italic" type="text/css">
+  <link rel="stylesheet" href="/public/css/poole.css">
+  <link rel="stylesheet" href="/public/css/hyde.css">
+  <!--  <link rel="stylesheet" href="/public/css/jekyll-github.css">-->
+  <link rel="stylesheet" href="/public/css/rouge.css">
+
+  
+
+  
+
+  
+
+  <style>
+    .content a,
+    .related-posts li a:hover {
+      color: #656565;
+    }
+    ::selection {
+      color: #fff;
+      background: #656565;
+    }
+    ::-moz-selection {
+      color: #fff;
+      background: #656565;
+    }
+  </style>
+
+  <!-- Icons -->
+  <link rel="icon" href="/public/img/logo.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/public/img/apple-touch-icon.png">
+
+  <!-- RSS -->
+  <link rel="alternate" type="application/atom+xml" title="Jiawei's Blog" href="/atom.xml">
+
+  <!-- MathJax for LaTeX math rendering -->
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']]
+      }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <!-- Baidu analytics -->
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?4a3679fd1f44022a55666cfdd9025484";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+  <!-- Baidu active push: submits each visited URL to Baidu for faster indexing -->
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') { bp.src = 'https://zz.bdstatic.com/linksubmit/push.js'; }
+      else { bp.src = 'http://push.zhanzhang.baidu.com/push.js'; }
+      var s = document.getElementsByTagName('script')[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7129764839688468"
+     crossorigin="anonymous"></script>
+
+  <!-- ===== Structured data ===== -->
+  
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Jiawei's Blog",
+    "url": "https://cuijiawei.cn",
+    "sameAs": ["https://github.com/jiawei686"]
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "Jiawei Cui",
+    "alternateName": ["kiritocui", "崔家维", "cuijiawei"],
+    "url": "https://cuijiawei.cn",
+    "sameAs": ["https://github.com/jiawei686"]
+  }
+  </script>
+  
+
+</head>
+
+  <body>
+
+    <main class="content container">
+      <p class="lead">
+  Notes on LLMs, deep learning, and building things that work.
+</p>
+
+
+
+
+
+
+
+
+  <h2 id="llm" class="page-title">
+    <a href="/tag/llm/">Paper Deep-Dives</a>
+    <small>26 posts</small>
+  </h2>
+  
+  
+    
+    
+    
+    
+    
+      <h3 class="sub-title">Architecture &amp; Attention <small>4</small></h3>
+      <ul class="related-posts">
+        
+          <li>
+            <h4>
+              <a href="/2026/07/18/softmax/">
+                <span>Softmax: Turning Logits into Probabilities</span>
+                <small>07/18</small>
+              </a>
+            </h4>
+          </li>
+        
+          <li>
+            <h4>
+              <a href="/2026/07/03/rope/">
+                <span>RoPE: Rotary Position Embedding</span>
+                <small>07/03</small>
+              </a>
+            </h4>
+          </li>
+        
+          <li>
+            <h4>
+              <a href="/2026/04/12/flashattention-efficient-attention/">
+                <span>FlashAttention: IO-Aware Exact Attention</span>
+                <small>04/12</small>
+              </a>
+            </h4>
+          </li>
+        
+          <li>
+            <h4>
+              <a href="/2026/03/01/the-transformer-attention-is-all-you-need/">
+                <span>The Transformer: Attention Is All You Need</span>
+                <small>03/01</small>
+              </a>
+            </h4>
+          </li>
+        
+      </ul>
+    
+  
+    
+    
+    
+    
+    
+      <h3 class="sub-title">Training &amp; Scaling <small>7</small></h3>
+      <ul class="related-posts">
+        
+          <li>
+            <h4>
+              <a href="/2026/06/30/chinchilla/">
+                <span>Chinchilla: Training Compute-Optimal Large Language Models</span>
+                <small>06/30</small>
+              </a>
+            </h4>
+          </li>
+        
+          <li>
+            <h4>
+              <a href="/2026/06/28/scaling-laws/">
+                <span>Scaling Laws for Neural Language Models</span>
+                <small>06/28</small>
+              </a>
+            </h4>
+          </li>
+        
+          <li>
+            <h4>
+              <a href="/2026/04/26/mixtral-mixture-of-experts/">
+                <span>Mixtral of Experts: Sparse Mixture of Experts</span>
+                <small>04/26</small>
+              </a>
+            </h4>
+          </li>
+        
+          <li>
+            <h4>
+              <a href="/2026/04/19/llama-open-weights-revolution/">
+                <span>LLaMA: The Open-Weight Catalyst</span>
+                <small>04/19</small>
+              </a>
+            </h4>
+          </li>
+        
+          <li>
+            <h4>
+              <a href="/2026/04/05/lora-low-rank-adaptation/">
+                <span>LoRA: Low-Rank Adaptation of Large Models</span>
+                <small>04/05</small>
+              </a>
+            </h4>
+          </li>
+        
+          <li>
+            <h4>
+              <a href="/2026/03/15/gpt-3-few-shot-learners/">
+                <span>GPT-3 and Few-Shot Learning at Scale</span>
+                <small>03/15</small>
+              </a>
+            </h4>
+          </li>
+        
+          <li>
+            <h4>
+              <a href="/2026/03/08/bert-bidirectional-pretraining/">
+                <span>BERT: Bidirectional Pretraining from Transformers</span>
+                <small>03/08</small>
+              </a>
+            </h4>
+          </li>
+        
+      </ul>
+    
+  
+    
+    
+    
+    
+    
+      <h3 class="sub-title">Alignment &amp; RLHF <small>4</small></h3>
+      <ul class="related-posts">
+        
+          <li>
+            <h4>
+              <a href="/2026/07/09/constitutional-ai/">
+                <span>Constitutional AI: Harmlessness from AI Feedback</span>
+                <small>07/09</small>
+              </a>
+            </h4>
+          </li>
+        
+          <li>
+            <h4>
+              <a href="/2026/07/07/dpo/">
+                <span>DPO: Direct Preference Optimization</span>
+                <small>07/07</small>
+              </a>
+            </h4>
+          </li>
+        
+          <li>
+            <h4>
+              <a href="/2026/07/05/rlhf-from-human-preferences/">
+                <span>RLHF: Deep Reinforcement Learning from Human Preferences</span>
+                <small>07/05</small>
+              </a>
+            </h4>
+          </li>
+        
+          <li>
+            <h4>
+              <a href="/2026/03/22/instructgpt-rlhf-alignment/">
+                <span>InstructGPT: Aligning LLMs with Human Preference (RLHF)</span>
+                <small>03/22</small>
+              </a>
+            </h4>
+          </li>
+        
+      </ul>
+    
+  
+    
+    
+    
+    
+    
+      <h3 class="sub-title">Reasoning <small>4</small></h3>
+      <ul class="related-posts">
+        
+          <li>
+            <h4>
+              <a href="/2026/07/10/self-consistency/">
+                <span>Self-Consistency: Improving Chain-of-Thought Reasoning</span>
+                <small>07/10</small>
+              </a>
+            </h4>
+          </li>
+        
+          <li>
+            <h4>
+              <a href="/2026/06/21/tree-of-thoughts/">
+                <span>Tree of Thoughts: Deliberate Problem Solving</span>
+                <small>06/21</small>
+              </a>
+            </h4>
+          </li>
+        
+          <li>
+            <h4>
+              <a href="/2026/05/03/deepseek-r1-reasoning-rl/">
+                <span>DeepSeek-R1: Reasoning via Reinforcement Learning</span>
+                <small>05/03</small>
+              </a>
+            </h4>
+          </li>
+        
+          <li>
+            <h4>
+              <a href="/2026/03/29/chain-of-thought-prompting/">
+                <span>Chain-of-Thought Prompting: Let the Model Think Step by Step</span>
+                <small>03/29</small>
+              </a>
+            </h4>
+          </li>
+        
+      </ul>
+    
+  
+    
+    
+    
+    
+    
+      <h3 class="sub-title">Agents &amp; Tools <small>6</small></h3>
+      <ul class="related-posts">
+        
+          <li>
+            <h4>
+              <a href="/2026/06/14/autogen-multi-agent/">
+                <span>AutoGen: Multi-Agent Conversation as Computation</span>
+                <small>06/14</small>
+              </a>
+            </h4>
+          </li>
+        
+          <li>
+            <h4>
+              <a href="/2026/06/07/generative-agents/">
+                <span>Generative Agents: Believable Simulacra of Human Behavior</span>
+                <small>06/07</small>
+              </a>
+            </h4>
+          </li>
+        
+          <li>
+            <h4>
+              <a href="/2026/05/31/reflexion-verbal-rl/">
+                <span>Reflexion: Verbal Reinforcement Learning for Language Agents</span>
+                <small>05/31</small>
+              </a>
+            </h4>
+          </li>
+        
+          <li>
+            <h4>
+              <a href="/2026/05/24/toolformer-tools/">
+                <span>Toolformer: Language Models That Teach Themselves to Use Tools</span>
+                <small>05/24</small>
+              </a>
+            </h4>
+          </li>
+        
+          <li>
+            <h4>
+              <a href="/2026/05/17/react-reasoning-acting/">
+                <span>ReAct: Reasoning + Acting in Language Models</span>
+                <small>05/17</small>
+              </a>
+            </h4>
+          </li>
+        
+          <li>
+            <h4>
+              <a href="/2026/05/10/rag-retrieval-augmented-generation/">
+                <span>RAG: Retrieval-Augmented Generation</span>
+                <small>05/10</small>
+              </a>
+            </h4>
+          </li>
+        
+      </ul>
+    
+  
+    
+    
+    
+    
+    
+      <h3 class="sub-title">Multimodal <small>1</small></h3>
+      <ul class="related-posts">
+        
+          <li>
+            <h4>
+              <a href="/2026/07/11/clip/">
+                <span>CLIP: Learning Transferable Visual Models From Language Supervision</span>
+                <small>07/11</small>
+              </a>
+            </h4>
+          </li>
+        
+      </ul>
+    
+  
+  <hr/>
+
+
+
+
+  
+  
+    
+    <h2 id="ai" class="page-title">
+      <a href="/tag/ai/">AI & Machine Learning</a>
+      <small>4 posts</small>
+    </h2>
+    <ul class="related-posts">
+      
+        <li>
+          <h4>
+            <a href="/2026/01/15/computer-vision/">
+              <span>Computer Vision</span>
+              <small>01/15</small>
+            </a>
+          </h4>
+        </li>
+      
+        <li>
+          <h4>
+            <a href="/2025/12/28/machine-learning-explainability/">
+              <span>Machine Learning Explainability</span>
+              <small>12/28</small>
+            </a>
+          </h4>
+        </li>
+      
+        <li>
+          <h4>
+            <a href="/2025/12/20/intro-to-game-ai-and-reinforcement-learning/">
+              <span>Game AI and Reinforcement Learning</span>
+              <small>12/20</small>
+            </a>
+          </h4>
+        </li>
+      
+        <li>
+          <h4>
+            <a href="/2025/10/22/intro-to-deep-learning/">
+              <span>Deep Learning</span>
+              <small>10/22</small>
+            </a>
+          </h4>
+        </li>
+      
+    </ul>
+    <hr/>
+  
+
+  
+  
+    
+    <h2 id="data" class="page-title">
+      <a href="/tag/data/">Data Science</a>
+      <small>3 posts</small>
+    </h2>
+    <ul class="related-posts">
+      
+        <li>
+          <h4>
+            <a href="/2026/01/10/advanced-sql/">
+              <span>Advanced SQL</span>
+              <small>01/10</small>
+            </a>
+          </h4>
+        </li>
+      
+        <li>
+          <h4>
+            <a href="/2026/01/02/geospatial-analysis/">
+              <span>Geospatial Analysis</span>
+              <small>01/02</small>
+            </a>
+          </h4>
+        </li>
+      
+        <li>
+          <h4>
+            <a href="/2025/09/15/kaggle-data-science-practical-notes/">
+              <span>Kaggle & Data Science - Practical Tips and Best Practices</span>
+              <small>09/15</small>
+            </a>
+          </h4>
+        </li>
+      
+    </ul>
+    <hr/>
+  
+
+  
+  
+    
+    <h2 id="projects" class="page-title">
+      <a href="/tag/projects/">Projects</a>
+      <small>3 posts</small>
+    </h2>
+    <ul class="related-posts">
+      
+        <li>
+          <h4>
+            <a href="/2026/02/04/complete-raspberry-pi-openclaw-deployment-guide/">
+              <span>Deploy OpenClaw AI on Raspberry Pi: Our Open Source Guide</span>
+              <small>02/04</small>
+            </a>
+          </h4>
+        </li>
+      
+        <li>
+          <h4>
+            <a href="/2026/02/02/introducing-homeware-sense-skill-unified-smart-home-integration-for-openclaw-ai/">
+              <span>Homeware Sense: Open Source Smart Home Integration for OpenClaw AI</span>
+              <small>02/02</small>
+            </a>
+          </h4>
+        </li>
+      
+        <li>
+          <h4>
+            <a href="/2026/01/31/wechat-dev-mcp/">
+              <span>wechat-dev-mcp: Bridging AI and WeChat Mini-Program Development</span>
+              <small>01/31</small>
+            </a>
+          </h4>
+        </li>
+      
+    </ul>
+    <hr/>
+  
+
+
+    </main>
+    <div class="love content container">
+      © 2026 Jiawei &nbsp;&nbsp;
+      <a href="/about/">About</a> ·
+      <a href="/contact/">Contact</a> ·
+      <a href="/privacy/">Privacy</a> &nbsp;&nbsp;
+      <a href="https://beian.miit.gov.cn/" target="_blank">粤ICP备18035774号</a>
+    </div>
+    
+
+
+
+
+
+<div id="_backdrop"></div>
+<a   id="_menu" href="#_sidebar">☰</a>
+
+<aside id="_sidebar" class="sidebar" style="background-image:url('/public/img/nap.jpg')">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <h1><a href="/">Jiawei's Blog</a></h1>
+      <p>Notes on LLMs, deep learning, and building things that work.</p>
+
+    </div>
+
+    <nav class="sidebar-nav">
+      
+        
+        <a class="sidebar-nav-item" href="/tag/llm/">Paper Deep-Dives</a>
+      
+        
+        <a class="sidebar-nav-item" href="/tag/ai/">AI & Machine Learning</a>
+      
+        
+        <a class="sidebar-nav-item" href="/tag/data/">Data Science</a>
+      
+        
+        <a class="sidebar-nav-item" href="/tag/projects/">Projects</a>
+      
+        
+        <a class="sidebar-nav-item" href="/tag/engineering/">Engineering Archive</a>
+      
+
+      
+
+      
+      
+        
+          
+            
+          
+        
+      
+        
+          
+            
+              <a class="sidebar-nav-item" href="/about/">About</a>
+            
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+            
+          
+        
+      
+        
+          
+        
+      
+        
+          
+            
+              <a class="sidebar-nav-item" href="/playground/">Playground</a>
+            
+          
+        
+      
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+    </nav>
+
+    <div class="sidebar-social">
+      
+        <a href="https://github.com/jiawei686"><span class="icon-icon-github"></span></a>
+
+      
+    </div>
+  </div>
+</aside>
+
+
+  </body>
+</html>

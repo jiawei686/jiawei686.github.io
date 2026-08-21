@@ -1,0 +1,44 @@
+I"<p>A friend in the US asked me to help with a parent-child education website. During our conversation I learned there are still a fair number of IE users over there, so he wanted the site to work in IE. The pay wasn’t much, but he’s a friend — and every detail of a site you ship should be handled carefully.</p>
+
+<p>While debugging in IE, I found that an <code class="language-plaintext highlighter-rouge">&lt;a&gt;</code> tag nested inside a <code class="language-plaintext highlighter-rouge">&lt;button&gt;</code> simply stopped working. The markup looked roughly like this:</p>
+
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;button</span> <span class="na">class =</span><span class="s">"link"</span><span class="nt">&gt;</span>Health and Safety <span class="nt">&lt;a</span> <span class="na">href =</span><span class="s">"Health&amp;Safety.html"</span><span class="nt">&gt;&lt;/a&gt;&lt;/button&gt;</span>
+</code></pre></div></div>
+
+<p>Clicking the link did nothing. My first guess was that IE was rendering the <code class="language-plaintext highlighter-rouge">&lt;button&gt;</code> <em>on top of</em> the <code class="language-plaintext highlighter-rouge">&lt;a&gt;</code>, so I added <code class="language-plaintext highlighter-rouge">z-index: 1</code> to the link’s stylesheet. No effect whatsoever.</p>
+
+<p>A quick search confirmed IE really does have this bug — and it goes both ways: an <code class="language-plaintext highlighter-rouge">&lt;a&gt;</code> wrapping a <code class="language-plaintext highlighter-rouge">&lt;button&gt;</code> also fails to navigate.</p>
+
+<p>I tried a snippet from a blog that solved the “<code class="language-plaintext highlighter-rouge">&lt;a&gt;</code> outside <code class="language-plaintext highlighter-rouge">&lt;button&gt;</code> won’t navigate” case, hoping it would cover ours too:</p>
+
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;a</span> <span class="na">href =</span><span class="s">"1.html"</span> <span class="na">onclick =</span><span class="s">"Javascript:window.location.href='2.html'"</span><span class="nt">&gt;&lt;button&gt;</span>click me<span class="nt">&lt;/button&gt;&lt;/a&gt;</span>
+</code></pre></div></div>
+
+<p>Still didn’t fix our problem.</p>
+
+<p>So I had to solve it myself. I didn’t want to manually move every <code class="language-plaintext highlighter-rouge">&lt;a&gt;</code>’s <code class="language-plaintext highlighter-rouge">href</code> onto its parent <code class="language-plaintext highlighter-rouge">&lt;button&gt;</code> and bind a click handler one by one. Instead I wrote a small script: for each button, grab the <code class="language-plaintext highlighter-rouge">href</code> of the <code class="language-plaintext highlighter-rouge">&lt;a&gt;</code> inside it, then bind a click handler that navigates. To make the URL correct on every click I used a <strong>closure</strong> to capture the loop index — otherwise every click would jump to whatever the last <code class="language-plaintext highlighter-rouge">&lt;a&gt;</code> pointed at.</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">function</span> <span class="nx">isIE</span><span class="p">()</span> <span class="p">{</span> <span class="c1">// ie?</span>
+     <span class="k">if</span> <span class="p">(</span><span class="o">!!</span><span class="nb">window</span><span class="p">.</span><span class="nx">ActiveXObject</span> <span class="o">||</span> <span class="dl">"</span><span class="s2">ActiveXObject</span><span class="dl">"</span> <span class="k">in</span> <span class="nb">window</span><span class="p">)</span> <span class="k">return</span> <span class="kc">true</span><span class="p">;</span>
+     <span class="k">else</span> <span class="k">return</span> <span class="kc">false</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="k">if</span> <span class="p">(</span><span class="nx">isIE</span><span class="p">())</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">index</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="nx">$</span><span class="p">(</span><span class="dl">"</span><span class="s2">.small-link</span><span class="dl">"</span><span class="p">).</span><span class="nx">each</span><span class="p">(</span><span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+        <span class="nx">$</span><span class="p">(</span><span class="k">this</span><span class="p">).</span><span class="nx">click</span><span class="p">(</span><span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+            <span class="kd">var</span> <span class="nx">index_inner</span> <span class="o">=</span> <span class="nx">index</span><span class="p">;</span>
+            <span class="k">return</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+                <span class="nb">window</span><span class="p">.</span><span class="nx">location</span><span class="p">.</span><span class="nx">href</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="dl">"</span><span class="s2">.small-link a</span><span class="dl">"</span><span class="p">).</span><span class="nx">eq</span><span class="p">(</span><span class="nx">index_inner</span><span class="p">).</span><span class="nx">attr</span><span class="p">(</span><span class="dl">'</span><span class="s1">href</span><span class="dl">'</span><span class="p">);</span>
+            <span class="p">}</span>
+        <span class="p">}(</span><span class="nx">index</span><span class="p">));</span>
+        <span class="nx">index</span><span class="o">++</span><span class="p">;</span>
+    <span class="p">});</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Debugging inside a virtual machine was painful, but in the end it worked.</p>
+
+<h2 id="my-take">My take</h2>
+
+<p>The root cause is an old IE rendering quirk: it doesn’t treat a nested <code class="language-plaintext highlighter-rouge">&lt;a&gt;</code> inside a <code class="language-plaintext highlighter-rouge">&lt;button&gt;</code> as a clickable navigation target, so the click is swallowed by the button. The cleanest fix by today’s standards is to <strong>not nest them at all</strong> — wrap the button styling around a real <code class="language-plaintext highlighter-rouge">&lt;a&gt;</code>, or make the whole control an <code class="language-plaintext highlighter-rouge">&lt;a&gt;</code> styled to look like a button. The closure trick above was the pragmatic fix for a legacy codebase where the markup was already everywhere; the captured <code class="language-plaintext highlighter-rouge">index_inner</code> is the classic “loop variable in an event handler” gotcha that still bites people in every language with closures. If you’re writing new code, just restructure the markup and skip the workaround entirely.</p>
+:ET

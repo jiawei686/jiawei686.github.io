@@ -1,0 +1,364 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://cuijiawei.cn/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <url>
+    <loc>https://cuijiawei.cn/2026/07/18/softmax/</loc>
+    <lastmod>2026-07-18T00:00:00+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://cuijiawei.cn/2026/07/11/clip/</loc>
+    <lastmod>2026-07-11T00:00:00+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://cuijiawei.cn/2026/07/10/self-consistency/</loc>
+    <lastmod>2026-07-10T00:00:00+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://cuijiawei.cn/2026/07/09/constitutional-ai/</loc>
+    <lastmod>2026-07-09T00:00:00+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://cuijiawei.cn/2026/07/07/dpo/</loc>
+    <lastmod>2026-07-07T00:00:00+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://cuijiawei.cn/2026/07/05/rlhf-from-human-preferences/</loc>
+    <lastmod>2026-07-05T00:00:00+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://cuijiawei.cn/2026/07/03/rope/</loc>
+    <lastmod>2026-07-03T00:00:00+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://cuijiawei.cn/2026/06/30/chinchilla/</loc>
+    <lastmod>2026-06-30T00:00:00+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://cuijiawei.cn/2026/06/28/scaling-laws/</loc>
+    <lastmod>2026-06-28T00:00:00+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://cuijiawei.cn/2026/06/21/tree-of-thoughts/</loc>
+    <lastmod>2026-06-21T00:00:00+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://cuijiawei.cn/2026/06/14/autogen-multi-agent/</loc>
+    <lastmod>2026-06-14T00:00:00+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://cuijiawei.cn/2026/06/07/generative-agents/</loc>
+    <lastmod>2026-06-07T00:00:00+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://cuijiawei.cn/2026/05/31/reflexion-verbal-rl/</loc>
+    <lastmod>2026-05-31T00:00:00+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://cuijiawei.cn/2026/05/24/toolformer-tools/</loc>
+    <lastmod>2026-05-24T00:00:00+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://cuijiawei.cn/2026/05/17/react-reasoning-acting/</loc>
+    <lastmod>2026-05-17T00:00:00+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://cuijiawei.cn/2026/05/10/rag-retrieval-augmented-generation/</loc>
+    <lastmod>2026-05-10T00:00:00+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://cuijiawei.cn/2026/05/03/deepseek-r1-reasoning-rl/</loc>
+    <lastmod>2026-05-03T00:00:00+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://cuijiawei.cn/2026/04/26/mixtral-mixture-of-experts/</loc>
+    <lastmod>2026-04-26T00:00:00+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://cuijiawei.cn/2026/04/19/llama-open-weights-revolution/</loc>
+    <lastmod>2026-04-19T00:00:00+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://cuijiawei.cn/2026/04/12/flashattention-efficient-attention/</loc>
+    <lastmod>2026-04-12T00:00:00+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://cuijiawei.cn/2026/04/05/lora-low-rank-adaptation/</loc>
+    <lastmod>2026-04-05T00:00:00+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://cuijiawei.cn/2026/03/29/chain-of-thought-prompting/</loc>
+    <lastmod>2026-03-29T00:00:00+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://cuijiawei.cn/2026/03/22/instructgpt-rlhf-alignment/</loc>
+    <lastmod>2026-03-22T00:00:00+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://cuijiawei.cn/2026/03/15/gpt-3-few-shot-learners/</loc>
+    <lastmod>2026-03-15T00:00:00+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://cuijiawei.cn/2026/03/08/bert-bidirectional-pretraining/</loc>
+    <lastmod>2026-03-08T00:00:00+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://cuijiawei.cn/2026/03/01/the-transformer-attention-is-all-you-need/</loc>
+    <lastmod>2026-03-01T00:00:00+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://cuijiawei.cn/2026/02/04/complete-raspberry-pi-openclaw-deployment-guide/</loc>
+    <lastmod>2026-02-04T17:00:00+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://cuijiawei.cn/2026/02/02/introducing-homeware-sense-skill-unified-smart-home-integration-for-openclaw-ai/</loc>
+    <lastmod>2026-02-02T14:00:00+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://cuijiawei.cn/2026/01/31/wechat-dev-mcp/</loc>
+    <lastmod>2026-01-31T00:00:00+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://cuijiawei.cn/2026/01/15/computer-vision/</loc>
+    <lastmod>2026-01-15T00:00:00+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://cuijiawei.cn/2026/01/10/advanced-sql/</loc>
+    <lastmod>2026-01-10T00:00:00+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://cuijiawei.cn/2026/01/02/geospatial-analysis/</loc>
+    <lastmod>2026-01-02T00:00:00+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://cuijiawei.cn/2025/12/28/machine-learning-explainability/</loc>
+    <lastmod>2025-12-28T00:00:00+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://cuijiawei.cn/2025/12/20/intro-to-game-ai-and-reinforcement-learning/</loc>
+    <lastmod>2025-12-20T00:00:00+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://cuijiawei.cn/2025/10/22/intro-to-deep-learning/</loc>
+    <lastmod>2025-10-22T00:00:00+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://cuijiawei.cn/2025/09/15/kaggle-data-science-practical-notes/</loc>
+    <lastmod>2025-09-15T10:00:00+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://cuijiawei.cn/2018/04/26/ie-button-a-tag-click-fix/</loc>
+    <lastmod>2018-04-26T00:00:00+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://cuijiawei.cn/2017/12/01/linux-mail-server-postfix-dovecot/</loc>
+    <lastmod>2017-12-01T00:00:00+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://cuijiawei.cn/2017/11/25/getting-started-with-iptables/</loc>
+    <lastmod>2017-11-25T00:00:00+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://cuijiawei.cn/2017/06/26/principles-of-economics/</loc>
+    <lastmod>2017-06-26T00:00:00+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://cuijiawei.cn/2017/05/18/connection-oriented-transport-tcp/</loc>
+    <lastmod>2017-05-18T00:00:00+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://cuijiawei.cn/2017/03/16/advanced-javascript-exercises/</loc>
+    <lastmod>2017-03-16T00:00:00+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  
+    
+  
+    
+  <url>
+    <loc>https://cuijiawei.cn/about/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+    
+  
+    
+  
+    
+  
+    
+  <url>
+    <loc>https://cuijiawei.cn/contact/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  <url>
+    <loc>https://cuijiawei.cn/playground/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+    
+  
+    
+  <url>
+    <loc>https://cuijiawei.cn/privacy/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+    
+  
+</urlset>

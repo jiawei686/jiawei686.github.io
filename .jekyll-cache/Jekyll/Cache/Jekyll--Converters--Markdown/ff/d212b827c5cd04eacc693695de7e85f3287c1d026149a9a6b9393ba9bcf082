@@ -1,0 +1,71 @@
+I"<p>Notes from Mankiw’s <em>Principles of Economics</em>. The book’s framing is deceptively simple — ten principles that supposedly explain most of what economics studies. What I found useful is how each principle directly contradicts a naive intuition, which is exactly why the subject exists.</p>
+
+<h2 id="chapter-1--ten-principles-of-economics">Chapter 1 — Ten principles of economics</h2>
+
+<ul>
+  <li><strong>Principle 1: People face trade-offs.</strong> To get one thing, you give up another. Two goals that constantly trade off:
+    <ul>
+      <li><strong>Efficiency</strong> — getting the maximum possible benefit from scarce resources.</li>
+      <li><strong>Equality</strong> — distributing those benefits evenly across society.</li>
+    </ul>
+  </li>
+  <li><strong>Principle 2: The cost of something is what you give up to get it.</strong> That “opportunity cost” is everything you forgo. Good decision-makers weigh the opportunity cost of every option, not just its price tag.</li>
+  <li><strong>Principle 3: Rational people think at the margin.</strong> A <strong>rational person</strong> acts purposefully to achieve a goal. A <strong>marginal change</strong> is a small incremental adjustment to a plan — most real decisions are “a little more or a little less,” not all-or-nothing.</li>
+  <li><strong>Principle 4: People respond to incentives.</strong> An <strong>incentive</strong> is something that induces a person to act. Change the incentive and behavior follows.</li>
+  <li><strong>Principle 5: Trade can make everyone better off.</strong> By trading with others, people obtain a wider variety of goods and services at lower cost than they could produce alone.</li>
+  <li><strong>Principle 6: Markets are usually a good way to organize economic activity.</strong> Prices and self-interest guide decisions better than a central planner in most cases.</li>
+  <li><strong>Principle 7: Governments can sometimes improve market outcomes.</strong> Markets need rules (property rights, antitrust) and can fail (externalities, inequality) — that’s where government has a role.</li>
+  <li><strong>Principle 8: A country’s standard of living depends on its ability to produce goods and services.</strong> Productivity, not money supply, is the root cause of living-standard differences.</li>
+</ul>
+
+<h2 id="chapter-4--the-forces-of-supply-and-demand">Chapter 4 — The forces of supply and demand</h2>
+
+<blockquote>
+  <p>Supply and demand are the forces that make a market economy work; they determine both the quantity of each good produced and the price at which it sells.</p>
+</blockquote>
+
+<h3 id="41-markets-and-competition">4.1 Markets and competition</h3>
+
+<ul>
+  <li>A <strong>market</strong> is a group of buyers and sellers of some good or service. Buyers determine <strong>demand</strong>; sellers determine <strong>supply</strong>.</li>
+  <li>A <strong>competitive market</strong> requires two features:
+    <ul>
+      <li>the goods on offer are identical, and</li>
+      <li>there are so many buyers and sellers that none can influence the market price.</li>
+    </ul>
+  </li>
+</ul>
+
+<p>Because they must accept the market price, competitive buyers and sellers are called <strong>price takers</strong>.</p>
+
+<h3 id="42-demand">4.2 Demand</h3>
+
+<ul>
+  <li><strong>Quantity demanded</strong> is the amount a buyer is willing and able to purchase.</li>
+  <li><strong>The law of demand</strong>: when the price of a good rises (all else equal), the quantity demanded falls, and vice versa.</li>
+  <li>Market demand is the sum of individual demands.</li>
+</ul>
+
+<p>Two ways to <em>reduce</em> demand (using cigarettes as the example):</p>
+<ol>
+  <li>Public-health ads, warning labels, and ad bans <strong>shift the demand curve left</strong> (at any given price, people want less).</li>
+  <li>A tax <strong>raises the effective price</strong> consumers pay, moving along the curve to a higher price / lower quantity point.</li>
+</ol>
+
+<h3 id="44-supply-meets-demand">4.4 Supply meets demand</h3>
+
+<ul>
+  <li><strong>Equilibrium</strong> is the point where the supply and demand curves cross — the market-clearing price and quantity.</li>
+  <li>To analyze any shock, follow three steps:
+    <ol>
+      <li>Is it the supply curve or the demand curve that shifts (or both)?</li>
+      <li>In which direction does it shift?</li>
+      <li>Use the supply-demand diagram to see how the shift changes equilibrium price and quantity.</li>
+    </ol>
+  </li>
+</ul>
+
+<h2 id="my-take">My take</h2>
+
+<p>The principle I keep coming back to — both in economics and in engineering — is <strong>thinking at the margin</strong> (Principle 3). Almost every “should we?” question is really “should we do a little more of this?” Marginal cost vs. marginal benefit is the actual decision rule, yet people instinctively reason in absolutes. And the three-step equilibrium analysis is a genuinely useful template: whenever something in a system changes, ask <em>what shifts, which direction, and what’s the new steady state</em> — it works for queues, caches, and markets alike.</p>
+:ET

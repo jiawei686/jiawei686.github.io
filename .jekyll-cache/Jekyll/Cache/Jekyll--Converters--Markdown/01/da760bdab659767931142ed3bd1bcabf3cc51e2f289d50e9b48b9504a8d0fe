@@ -1,0 +1,50 @@
+I"�<p>Deep learning is the subfield of machine learning built around <strong>neural networks with many layers</strong> — “deep” because of the stack of transformations between input and output. If you’ve used speech recognition, a photo app that tags faces, or any modern chatbot, you’ve used deep learning. I’m writing this as a grounded intro: not the math for its own sake, but the intuition and the moving parts you actually need to understand the rest of this blog (most of which assumes you know what a neural net is).</p>
+
+<h2 id="the-basic-unit-the-neuron">The basic unit: the neuron</h2>
+
+<p>A single artificial neuron takes several numbers, weights them, sums them, adds a bias, and passes the result through a non-linear <strong>activation function</strong>:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>output = activation( w1·x1 + w2·x2 + ... + b )
+</code></pre></div></div>
+
+<p>The “weights” <code class="language-plaintext highlighter-rouge">w</code> and bias <code class="language-plaintext highlighter-rouge">b</code> are the <em>learned</em> parameters. A neural network is just many of these arranged in layers: layer 1 reads the input, the last layer produces the output, and the layers in between (“hidden layers”) learn progressively richer representations.</p>
+
+<h2 id="why-the-non-linearity-matters">Why the non-linearity matters</h2>
+
+<p>Without an activation function, stacking layers would collapse into a single linear transformation — you could never learn “X-shaped” or “circular” boundaries. The non-linearity (ReLU, tanh, sigmoid, GELU…) is what lets networks approximate complicated functions. This is the single most common thing beginners omit and then wonder why their network can’t learn anything non-trivial.</p>
+
+<h2 id="learning-backpropagation">Learning: backpropagation</h2>
+
+<p>Training means finding weights that make the network’s outputs match the data. The loop:</p>
+
+<ol>
+  <li><strong>Forward pass:</strong> run an input through the network to get a prediction.</li>
+  <li><strong>Loss:</strong> measure the error (e.g. how far the prediction is from the true answer).</li>
+  <li><strong>Backward pass (backprop):</strong> use the chain rule to compute how much each weight contributed to the error.</li>
+  <li><strong>Update:</strong> nudge every weight slightly in the direction that reduces the error (gradient descent / its variants).</li>
+</ol>
+
+<p>Repeat over the dataset many times. Backprop is just “compute gradients efficiently through the whole graph” — the chain rule applied mechanically. Modern frameworks (PyTorch, JAX) do it automatically; you rarely write it by hand, but understanding <em>that</em> it’s happening explains why a bad learning rate or a vanishing gradient breaks training.</p>
+
+<h2 id="the-architectures-youll-meet">The architectures you’ll meet</h2>
+
+<ul>
+  <li><strong>MLPs (multilayer perceptrons):</strong> the vanilla stack. Good for tabular/structured data; bad at spatial or sequential structure.</li>
+  <li><strong>CNNs (convolutional nets):</strong> use local filters that slide over an image, exploiting translation invariance. The backbone of classic computer vision (covered in the CV post).</li>
+  <li><strong>RNNs / LSTMs:</strong> process sequences step by step, carrying a hidden state. Formerly the default for text; now mostly supplanted by Transformers (covered in depth separately).</li>
+  <li><strong>Transformers:</strong> attention-based, parallel-friendly, the architecture behind every LLM. The most important one to understand today.</li>
+</ul>
+
+<h2 id="practical-realities">Practical realities</h2>
+
+<ul>
+  <li><strong>Data is the bottleneck</strong>, not algorithms. A simple model on lots of clean data usually beats a fancy model on little data.</li>
+  <li><strong>Overfitting is the default failure.</strong> Your network will memorize training data if you let it; regularization, validation splits, and early stopping are how you fight back.</li>
+  <li><strong>GPUs matter.</strong> Matrix multiplies at scale need them; this is why deep learning exploded after GPUs became accessible.</li>
+  <li><strong>Start simple.</strong> For a new problem I reach for a baseline (logistic regression or a small MLP) before anything deep, to know what “easy” looks like.</li>
+</ul>
+
+<h2 id="my-take">My take</h2>
+
+<p>Deep learning isn’t magic — it’s differentiable functions + gradient descent + lots of data and compute. The conceptual spine (neuron → layer → forward/backward → update) is learnable in an afternoon; the <em>engineering</em> (data pipelines, regularization, debugging training) is where real skill lives. If you’re here to understand LLMs, treat this post as the foundation: every Transformer and attention mechanism later in this blog is just a specific, very successful arrangement of these same building blocks. Get comfortable with backprop intuition and you’ll never be lost.</p>
+:ET

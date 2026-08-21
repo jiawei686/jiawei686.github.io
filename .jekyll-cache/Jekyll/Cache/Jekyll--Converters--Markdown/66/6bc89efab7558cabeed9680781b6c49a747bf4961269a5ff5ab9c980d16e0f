@@ -1,0 +1,2 @@
+I"E<p>Tree of Thoughts (ToT, Yao et al., 2023, arXiv:2305.10601) takes Chain-of-Thought and makes it <em>deliberate</em>. Instead of generating one linear reasoning path and hoping it’s right, ToT has the model explore <strong>many</strong> paths, evaluate them, and <strong>backtrack</strong> when one looks wrong. It’s the difference between free-associating an answer and actually doing a search. I’m writing this because ToT crystallizes a core idea in LLM reasoning — <em>search over thoughts</em> — that underlies a lot of agentic and “slow thinking” systems.</p>
+:ET

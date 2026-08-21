@@ -1,0 +1,55 @@
+I"9<p>CLIP (Radford et al., 2021, OpenAI) is the model that connected vision and language in a way that actually transferred. Trained on 400 million (image, text) pairs scraped from the internet, it learns to map images and their captions into the <em>same</em> embedding space. The payoff: you can classify an image into <em>any</em> category by just writing text, with no per-task training. I’m writing this because CLIP is the backbone of an enormous amount of modern multimodal AI — from DALL·E’s grounding to vision-language assistants — and the “contrastive pretraining” idea is worth understanding deeply.</p>
+
+<h2 id="the-problem-with-standard-image-classification">The problem with standard image classification</h2>
+
+<p>Classic computer vision trained a model to map an image to one of <em>N fixed labels</em> (ImageNet’s 1000 classes). That’s brittle: change the label set, retrain. And the labels carry no semantic richness — “cat” and “dog” are just integers 0 and 1 to the model. CLIP asked: what if we learn <em>visual concepts described in language</em>, so the model understands “cat” as a word with meaning, not a class index?</p>
+
+<h2 id="the-method-contrastive-language-image-pretraining">The method: contrastive language-image pretraining</h2>
+
+<ol>
+  <li><strong>Data:</strong> ~400M (image, caption) pairs from the web.</li>
+  <li><strong>Two encoders:</strong> an image encoder (ViT or ResNet) and a text encoder (Transformer). Each maps its input to a vector in a shared space.</li>
+  <li><strong>Contrastive loss:</strong> within a batch, pull matching (image, caption) pairs closer and push all non-matching pairs apart. So the image of a dog and the text “a photo of a dog” end up near each other; the dog image stays far from “a slice of pizza.”</li>
+</ol>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>batch of N image-text pairs
+positive: (img_i, text_i)  for each i
+negatives: (img_i, text_j) for i != j
+loss: maximize alignment on positives, minimize on negatives
+</code></pre></div></div>
+
+<p>No per-class labels needed — the natural language captions <em>are</em> the supervision.</p>
+
+<h2 id="zero-shot-classification-the-killer-feature">Zero-shot classification: the killer feature</h2>
+
+<p>Because text and images share a space, you can classify <em>without training on the target classes</em>:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>embed the image
+embed candidate labels as text:
+  "a photo of a cat", "a photo of a dog", "a photo of a pizza"
+pick the label whose text embedding is closest to the image
+</code></pre></div></div>
+
+<p>You just <em>wrote</em> a classifier for any categories you can name. No fine-tuning, no labeled data for those classes. This zero-shot ability is what made CLIP revolutionary — and what makes it the standard “bridge” between text prompts and images in generative systems.</p>
+
+<h2 id="why-it-mattered-and-still-does">Why it mattered (and still does)</h2>
+
+<ul>
+  <li><strong>Transferable representations.</strong> CLIP features work across many downstream vision tasks, often beating supervised ImageNet features.</li>
+  <li><strong>Foundation for generative AI.</strong> DALL·E, Stable Diffusion, and friends use CLIP (or CLIP-style text encoders) to turn your text prompt into a conditioning signal the image model can use. The “prompt understands your words” part is CLIP.</li>
+  <li><strong>Multimodal assistants.</strong> Vision-language models (GPT-4V-style) build on CLIP-like encoders to “see.”</li>
+</ul>
+
+<h2 id="practical-notes">Practical notes</h2>
+
+<ul>
+  <li>CLIP isn’t great at <strong>fine-grained</strong> or <strong>novel</strong> categories it didn’t see in web text, and it inherits web biases (it can reflect stereotypes present in its training captions). Know this before deploying.</li>
+  <li>For production classification, CLIP zero-shot is a strong <em>baseline</em>; if you have labeled data, a fine-tuned classifier usually wins, but CLIP gets you far with zero labels.</li>
+  <li>Text prompt <em>wording</em> matters — “a photo of a dog” vs “dog” can shift results; ensembling multiple prompt templates (prompt engineering) is standard.</li>
+  <li>There are many open CLIP-weight variants (OpenCLIP, multilingual CLIP, SigLIP which improves the loss) — SigLIP’s sigmoid contrastive loss is a notable upgrade worth knowing.</li>
+</ul>
+
+<h2 id="my-take">My take</h2>
+
+<p>CLIP is the paper that made “image understanding” and “language” the same problem space. The big idea — <em>learn a joint embedding from paired data with a contrastive loss</em> — is a template you’ll see everywhere (text-audio, text-code, text-molecule). Its zero-shot classification is genuinely useful and its role as the text-image bridge in generative models is why every modern image model “understands” your prompt. If you work in multimodal AI, CLIP (and its successors like SigLIP) is mandatory background — understand the contrastive loss and you understand the whole family.</p>
+:ET

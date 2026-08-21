@@ -1,0 +1,2 @@
+I"<p>Reflexion (Shinn et al., 2023, arXiv:2303.11366) solves a frustrating problem with LLM agents: they make the <em>same mistake twice</em>. A standard ReAct agent that fails a task will, on a retry, often repeat the exact bad action. Reflexion adds a <strong>self-reflection step</strong> that turns failures into memory the agent consults next time. I’m writing this because it’s a cheap, weight-free way to make agents actually learn from experience, and the pattern is something I use constantly in agent builds.</p>
+:ET

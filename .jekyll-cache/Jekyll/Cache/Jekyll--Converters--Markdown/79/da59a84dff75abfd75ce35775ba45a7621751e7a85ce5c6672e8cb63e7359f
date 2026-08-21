@@ -1,0 +1,50 @@
+I"|<p>Scaling Laws (Kaplan et al., 2020) is the paper that turned “make the model bigger” from folklore into <em>engineering guidance</em>. Before it, nobody could say how much bigger, or whether data or parameters mattered more. The authors showed that test loss improves as a <strong>smooth, predictable power law</strong> in compute, dataset size, and parameter count. I’m writing this because scaling laws are the implicit reason every lab keeps building larger models — and the later Chinchilla paper (covered separately) corrected a crucial mistake in the original.</p>
+
+<h2 id="the-central-empirical-claim">The central empirical claim</h2>
+
+<p>For a fixed compute budget, model loss <code class="language-plaintext highlighter-rouge">L</code> follows roughly:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>L ∝ C^(-α)        # α ≈ 0.076 for compute
+</code></pre></div></div>
+
+<p>where <code class="language-plaintext highlighter-rouge">C</code> is training compute (FLOPs). Equivalent relationships hold for parameters <code class="language-plaintext highlighter-rouge">N</code> and data size <code class="language-plaintext highlighter-rouge">D</code>. The striking part: these are <strong>smooth power laws with no obvious kink</strong> — meaning nowhere in the range they tested did “bigger stops helping.” That’s the empirical green light for scaling.</p>
+
+<h2 id="what-this-meant-in-practice">What this meant in practice</h2>
+
+<p>The original paper’s guidance, roughly:</p>
+
+<ul>
+  <li>For a given compute budget, spend most of it on <strong>parameters</strong>, and train on a <em>relatively small</em> amount of data (they found diminishing returns from more data at fixed params).</li>
+  <li>Predictable loss → you can estimate the cost of hitting a target performance before spending the money.</li>
+</ul>
+
+<p>This is exactly why GPT-3 was trained the way it was (huge model, “only” a few hundred billion tokens by today’s standards). The law said: maximize parameters.</p>
+
+<h2 id="the-subtle-but-critical-caveat-and-chinchillas-correction">The subtle but critical caveat (and Chinchilla’s correction)</h2>
+
+<p>The Kaplan scaling laws were fit in a regime where models were <em>not</em> trained to convergence on their data — they were undertrained. That biased the conclusion toward “parameters matter most.” The later Chinchilla work showed that if you train properly, <strong>data and parameters should scale together</strong> (roughly 20 tokens per parameter), and earlier models were <em>starved of data</em>. So the “spend on parameters” advice turned out to be partly an artifact of undertraining.</p>
+
+<p>I cover Chinchilla separately, but the lesson is here: scaling laws are empirical fits over a <em>range you tested</em>. Extrapolate past it and you may be wrong — as the field discovered when data became the constraint.</p>
+
+<h2 id="why-scaling-laws-still-matter-to-you">Why scaling laws still matter to you</h2>
+
+<p>Even with the correction, the core insight is durable:</p>
+
+<ol>
+  <li><strong>Budget allocation is a real decision.</strong> Given a fixed compute budget, how do you split it between model size and training tokens? This is the single most important training-design choice, and scaling laws (Chinchilla-corrected) answer it.</li>
+  <li><strong>Predictability enables planning.</strong> You can estimate “how big a model do I need for task X” before burning a cluster.</li>
+  <li><strong>Emergent abilities</strong> (the surprising capabilities that appear past a scale threshold, like GPT-3’s in-context learning) sit on top of these smooth laws and are <em>not</em> predicted by them — a reminder that averages hide phase transitions.</li>
+</ol>
+
+<h2 id="practical-takeaways-for-builders">Practical takeaways for builders</h2>
+
+<ul>
+  <li>Don’t blindly copy old “make it huge” recipes. The modern rule of thumb is ~20 tokens per parameter (Chinchilla ratio); undertraining a giant model wastes compute.</li>
+  <li>If you’re training a model and your loss curve is well above the predicted scaling-law curve for your compute, something is wrong (data quality, bugs, hyperparameters) — the law is a sanity check.</li>
+  <li>For fine-tuning/specialization, you’re usually <em>not</em> in the compute-limited scaling regime; LoRA-style methods are more relevant there.</li>
+</ul>
+
+<h2 id="my-take">My take</h2>
+
+<p>Scaling laws are the most consequential “boring” paper in the field — a set of empirical curves that quietly justified billions in compute spending. The real story isn’t the smooth line; it’s that the line was <em>almost</em> right and the correction (Chinchilla) changed how every model since is trained. If you train models, internalize both: the power law tells you loss will keep dropping as you scale, and Chinchilla tells you to feed it enough data or you’re wasting the parameters.</p>
+:ET

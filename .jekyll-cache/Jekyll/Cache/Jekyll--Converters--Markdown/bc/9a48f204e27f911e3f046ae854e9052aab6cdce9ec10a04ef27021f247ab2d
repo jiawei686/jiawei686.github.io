@@ -1,0 +1,2 @@
+I"�<p>Self-Consistency (Wang et al., 2022, arXiv:2203.11171) is, in my experience, the <strong>best accuracy-per-dollar trick</strong> in LLM reasoning. It builds directly on Chain-of-Thought: instead of generating one reasoning path, you generate <em>many</em>, then take the <strong>majority answer</strong>. I’m writing this because it’s shockingly effective, trivial to implement, and a perfect example of “let the model vote instead of guess once.”</p>
+:ET
