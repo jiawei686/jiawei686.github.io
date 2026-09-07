@@ -280,3 +280,11 @@ a.cv-title:hover { text-decoration: underline; color: var(--accent); }
   .wrow { flex-direction: column; gap: 2px; }
   .wrow .date { flex-basis: auto; }
 }
+
+/* 首页 CV 奖项链接：可点开奖项图，hover 预览 */
+.award-link { position: relative; color: var(--accent); text-decoration: none; border-bottom: 1px dashed rgba(42,122,226,.5); cursor: pointer; white-space: nowrap; }
+.award-link::after { content: ' \2197'; font-size: .8em; opacity: .7; }
+.award-link:hover { text-decoration: none; border-bottom-color: var(--accent); }
+.award-preview { position: absolute; bottom: calc(100% + 8px); left: 0; width: 300px; max-width: 78vw; height: auto; border-radius: 8px; background: #fff; box-shadow: 0 8px 28px rgba(0,0,0,.22), 0 0 0 1px rgba(0,0,0,.06); opacity: 0; pointer-events: none; transform: translateY(4px); transition: opacity .18s ease, transform .18s ease; z-index: 30; }
+.award-link:hover .award-preview { opacity: 1; transform: translateY(0); }
+.pmc-tip { border-bottom: 1px dotted rgba(42,122,226,.45); }
