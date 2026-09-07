@@ -287,4 +287,7 @@ a.cv-title:hover { text-decoration: underline; color: var(--accent); }
 .award-link:hover { text-decoration: none; border-bottom-color: var(--accent); }
 .award-preview { position: absolute; bottom: calc(100% + 8px); left: 0; width: 300px; max-width: 78vw; height: auto; border-radius: 8px; background: #fff; box-shadow: 0 8px 28px rgba(0,0,0,.22), 0 0 0 1px rgba(0,0,0,.06); opacity: 0; pointer-events: none; transform: translateY(4px); transition: opacity .18s ease, transform .18s ease; z-index: 30; }
 .award-link:hover .award-preview { opacity: 1; transform: translateY(0); }
-.pmc-tip { border-bottom: 1px dotted rgba(42,122,226,.45); }
+.pmc-tip { position: relative; border-bottom: 1px dotted rgba(42,122,226,.45); }
+.pmc-tip::after { content: attr(data-tip); position: absolute; bottom: calc(100% + 8px); left: 0; width: max-content; max-width: 260px; padding: 7px 10px; border-radius: 8px; background: #1f2733; color: #f4f1ea; font-size: 12.5px; line-height: 1.45; white-space: normal; text-align: left; box-shadow: 0 8px 24px rgba(0,0,0,.25); opacity: 0; pointer-events: none; transform: translateY(4px); transition: opacity .18s ease, transform .18s ease; z-index: 30; }
+.pmc-tip:hover::after { opacity: 1; transform: translateY(0); }
+
